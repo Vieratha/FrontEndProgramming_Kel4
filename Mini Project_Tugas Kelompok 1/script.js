@@ -119,7 +119,7 @@ function tampilkanReferensiKecepatan(nilai) {
   return hasilKecepatan;
 }
 
-// Mengubah waktu menjadi minggu, hari, jam, menit, dan detik
+// Mengubah waktu dari jam menjadi minggu, hari, jam, menit, dan detik
 function konversiWaktu(jam) {
   let totalDetik = jam * 60 * 60;
 
@@ -135,26 +135,39 @@ function konversiWaktu(jam) {
   let menit = Math.floor(totalDetik / 60);
   let detik = totalDetik % 60;
 
-  return (
-    "<p><strong>Konversi waktu:</strong></p>" +
-    "<ul>" +
-    "<li>" +
-    minggu +
-    " minggu</li>" +
-    "<li>" +
-    hari +
-    " hari</li>" +
-    "<li>" +
-    jamSisa +
-    " jam</li>" +
-    "<li>" +
-    menit +
-    " menit</li>" +
-    "<li>" +
-    detik.toFixed(2) +
-    " detik</li>" +
-    "</ul>"
-  );
+  let hasilKonversi = "";
+
+  // Menampilkan minggu jika ada
+  if (minggu > 0) {
+    hasilKonversi += minggu + " minggu ";
+  }
+
+  // Menampilkan hari jika ada
+  if (hari > 0) {
+    hasilKonversi += hari + " hari ";
+  }
+
+  // Menampilkan jam jika ada
+  if (jamSisa > 0) {
+    hasilKonversi += jamSisa + " jam ";
+  }
+
+  // Menampilkan menit jika ada
+  if (menit > 0) {
+    hasilKonversi += menit + " menit ";
+  }
+
+  // Menampilkan detik jika ada
+  if (detik > 0) {
+    hasilKonversi += detik.toFixed(2) + " detik";
+  }
+
+  // Jika hasil terlalu kecil
+  if (hasilKonversi == "") {
+    hasilKonversi = "Kurang dari 1 detik";
+  }
+
+  return "<p><strong>Konversi waktu:</strong><br>" + hasilKonversi + "</p>";
 }
 
 // Fungsi utama perhitungan
