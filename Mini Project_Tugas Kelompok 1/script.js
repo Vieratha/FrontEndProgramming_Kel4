@@ -1,172 +1,224 @@
-// Mengambil elemen dari halaman menggunakan id
+// Mengambil elemen HTML berdasarkan id
 let pilihan = document.getElementById("pilihan");
 let jarak = document.getElementById("jarak");
 let waktu = document.getElementById("waktu");
 let kecepatan = document.getElementById("kecepatan");
+
+let inputJarak = document.getElementById("inputJarak");
+let inputWaktu = document.getElementById("inputWaktu");
+let inputKecepatan = document.getElementById("inputKecepatan");
+
 let btnHitung = document.getElementById("btnHitung");
 let btnReset = document.getElementById("btnReset");
 let hasil = document.getElementById("hasil");
 
-// Array berisi nama dan nilai jarak referensi a
-let namaJarak = [
-  "",
-  "Jakarta → Bandung",
-  "Jakarta → Surabaya",
-  "Jakarta → Bali",
-  "Bumi → Bulan",
-];
-
-let nilaiJarak = [150, 780, 950, 384400];
-
-// Kecepatan cahaya dalam km/jam.
-// Data ini digunakan sebagai pembanding dalam simulasi.
+// Data referensi kecepatan
+let kecepatanSuara = 1235;
 let kecepatanCahaya = 1079251200;
 
-// Fungsi untuk mencari jarak referensi yang paling dekat
-function cariReferensi(nilai) {
-  let selisihTerkecil = nilai - nilaiJarak[0];
+// Menampilkan input yang diperlukan sesuai pilihan
+function ubahInput() {
+    inputJarak.style.display = "block";
+    inputWaktu.style.display = "block";
+    inputKecepatan.style.display = "block";
 
-  if (selisihTerkecil < 0) {
-    selisihTerkecil = selisihTerkecil * -1;
-  }
-
-  let indexTerdekat = 0;
-
-  // Perulangan untuk memeriksa seluruh data referensi
-  for (let i = 1; i < nilaiJarak.length; i++) {
-    let selisih = nilai - nilaiJarak[i];
-
-    if (selisih < 0) {
-      selisih = selisih * -1;
+    if (pilihan.value == "kecepatan") {
+        inputKecepatan.style.display = "none";
+    }
+    else if (pilihan.value == "jarak") {
+        inputJarak.style.display = "none";
+    }
+    else if (pilihan.value == "waktu") {
+        inputWaktu.style.display = "none";
     }
 
-    if (selisih < selisihTerkecil) {
-      selisihTerkecil = selisih;
-      indexTerdekat = i;
+    hasil.innerHTML =
+        "<h2>Hasil Perhitungan</h2>" +
+        "<p>Masukkan data lalu tekan tombol Hitung.</p>";
+}
+
+// Membuat angka lebih mudah dibaca
+function formatAngka(angka) {
+    return angka.toLocaleString("id-ID", {
+        maximumFractionDigits: 4
+    });
+}
+
+// Menentukan perbandingan jarak berdasarkan skala
+function tampilkanReferensiJarak(nilai) {
+    if (nilai < 1) {
+        return "<p><strong>Skala jarak:</strong><br>" +
+            formatAngka(nilai * 1000) + " meter.</p>";
     }
-  }
-
-  return indexTerdekat;
+    else if (nilai < 150) {
+        return "<p><strong>Skala jarak:</strong><br>" +
+            formatAngka(nilai) +
+            " km, masih lebih pendek dari jarak Jakarta → Bandung.</p>";
+    }
+    else if (nilai < 780) {
+        return "<p><strong>Perbandingan jarak:</strong><br>" +
+            formatAngka(nilai) +
+            " km berada dalam skala perjalanan Jakarta → Bandung hingga Jakarta → Surabaya.</p>";
+    }
+    else if (nilai < 384400) {
+        return "<p><strong>Perbandingan jarak:</strong><br>" +
+            formatAngka(nilai) +
+            " km masih berada di bawah jarak rata-rata Bumi → Bulan.</p>";
+    }
+    else {
+        return "<p><strong>Skala jarak:</strong><br>" +
+            formatAngka(nilai / 384400) +
+            " × jarak rata-rata Bumi → Bulan.</p>";
+    }
 }
 
-// Fungsi untuk menampilkan perbandingan jarak
-function tampilkanReferensi(nilai) {
-  let index = cariReferensi(nilai);
+// Menampilkan perbandingan khusus untuk hasil kecepatan
+function tampilkanReferensiKecepatan(nilai) {
+    let hasilKecepatan = "";
 
-  return (
-    "<p><strong>Perbandingan jarak:</strong><br>" +
-    nilai +
-    " km kira-kira mendekati " +
-    namaJarak[index] +
-    " (" +
-    nilaiJarak[index] +
-    " km).</p>"
-  );
+    if (nilai < kecepatanSuara) {
+        hasilKecepatan =
+            "<p><strong>Kecepatan suara:</strong><br>" +
+            formatAngka(nilai / kecepatanSuara * 100) +
+            "% dari kecepatan suara.</p>";
+    }
+    else if (nilai == kecepatanSuara) {
+        hasilKecepatan =
+            "<p><strong>Kecepatan suara:</strong><br>" +
+            "Kira-kira sama dengan kecepatan suara.</p>";
+    }
+    else {
+        hasilKecepatan =
+            "<p><strong>Kecepatan suara:</strong><br>" +
+            formatAngka(nilai / kecepatanSuara) +
+            " × kecepatan suara.</p>";
+    }
+
+    if (nilai == kecepatanCahaya) {
+        hasilKecepatan +=
+            "<p><strong>Kecepatan cahaya:</strong><br>" +
+            "Nilai ini sama dengan kecepatan cahaya.</p>";
+    }
+    else if (nilai > kecepatanCahaya) {
+        hasilKecepatan +=
+            "<div class='peringatan'>" +
+            "<strong>⚠ Melebihi kecepatan cahaya.</strong><br>" +
+            "Nilai ini ditampilkan sebagai simulasi matematis.</div>" +
+            "<p>" +
+            formatAngka(nilai / kecepatanCahaya) +
+            " × kecepatan cahaya.</p>";
+    }
+    else {
+        hasilKecepatan +=
+            "<p><strong>Kecepatan cahaya:</strong><br>" +
+            formatAngka(nilai / kecepatanCahaya * 100) +
+            "% dari kecepatan cahaya.</p>";
+    }
+
+    return hasilKecepatan;
 }
 
-// Fungsi untuk menampilkan perbandingan dengan kecepatan cahaya
-function tampilkanPerbandinganKecepatan(nilai) {
-  let perbandingan = nilai / kecepatanCahaya;
+// Mengubah waktu menjadi minggu, hari, jam, menit, dan detik
+function konversiWaktu(jam) {
+    let totalDetik = jam * 60 * 60;
 
-  if (nilai > kecepatanCahaya) {
-    return (
-      "<p><strong>⚠ Kecepatan melebihi kecepatan cahaya.</strong><br>" +
-      "Nilai ini digunakan sebagai simulasi matematis, bukan sebagai " +
-      "kecepatan yang dapat dicapai benda bermassa.</p>" +
-      "<p>Perbandingan: " +
-      perbandingan.toFixed(2) +
-      " × kecepatan cahaya.</p>"
-    );
-  }
+    let minggu = Math.floor(totalDetik / (7 * 24 * 60 * 60));
+    totalDetik = totalDetik % (7 * 24 * 60 * 60);
 
-  if (nilai == kecepatanCahaya) {
-    return "<p><strong>⚡ Kecepatan sama dengan kecepatan cahaya.</strong></p>";
-  }
+    let hari = Math.floor(totalDetik / (24 * 60 * 60));
+    totalDetik = totalDetik % (24 * 60 * 60);
 
-  return (
-    "<p>Perbandingan: " + perbandingan.toFixed(8) + " × kecepatan cahaya.</p>"
-  );
+    let jamSisa = Math.floor(totalDetik / (60 * 60));
+    totalDetik = totalDetik % (60 * 60);
+
+    let menit = Math.floor(totalDetik / 60);
+    let detik = totalDetik % 60;
+
+    return "<p><strong>Konversi waktu:</strong></p>" +
+        "<ul>" +
+        "<li>" + minggu + " minggu</li>" +
+        "<li>" + hari + " hari</li>" +
+        "<li>" + jamSisa + " jam</li>" +
+        "<li>" + menit + " menit</li>" +
+        "<li>" + detik.toFixed(2) + " detik</li>" +
+        "</ul>";
 }
 
-// Fungsi utama untuk melakukan perhitungan
+// Fungsi utama perhitungan
 function hitung() {
-  // Mengambil nilai input dari pengguna
-  let nilaiJarakInput = Number(jarak.value);
-  let nilaiWaktu = Number(waktu.value);
-  let nilaiKecepatan = Number(kecepatan.value);
-  let jenis = pilihan.value;
+    let nilaiJarak = Number(jarak.value);
+    let nilaiWaktu = Number(waktu.value);
+    let nilaiKecepatan = Number(kecepatan.value);
 
-  // Menghitung kecepatan = jarak / waktu
-  if (jenis == "kecepatan") {
-    if (nilaiJarakInput <= 0 || nilaiWaktu <= 0) {
-      hasil.innerHTML =
-        "<h2>Hasil</h2>" + "<p>Masukkan jarak dan waktu yang lebih dari 0.</p>";
-      return;
+    if (pilihan.value == "kecepatan") {
+        if (nilaiJarak <= 0 || nilaiWaktu <= 0) {
+            hasil.innerHTML =
+                "<h2>Hasil Perhitungan</h2>" +
+                "<p>Masukkan jarak dan waktu yang lebih dari 0.</p>";
+            return;
+        }
+
+        let hasilKecepatan = nilaiJarak / nilaiWaktu;
+
+        hasil.innerHTML =
+            "<h2>Hasil Kecepatan</h2>" +
+            "<p><strong>Kecepatan:</strong> " +
+            formatAngka(hasilKecepatan) + " km/jam</p>" +
+            tampilkanReferensiKecepatan(hasilKecepatan);
     }
+    else if (pilihan.value == "jarak") {
+        if (nilaiKecepatan <= 0 || nilaiWaktu <= 0) {
+            hasil.innerHTML =
+                "<h2>Hasil Perhitungan</h2>" +
+                "<p>Masukkan kecepatan dan waktu yang lebih dari 0.</p>";
+            return;
+        }
 
-    let hasilKecepatan = nilaiJarakInput / nilaiWaktu;
+        let hasilJarak = nilaiKecepatan * nilaiWaktu;
 
-    hasil.innerHTML =
-      "<h2>Hasil Perhitungan</h2>" +
-      "<p><strong>Kecepatan:</strong> " +
-      hasilKecepatan +
-      " km/jam</p>" +
-      tampilkanPerbandinganKecepatan(hasilKecepatan);
-  }
-
-  // Menghitung jarak = kecepatan × waktu
-  else if (jenis == "jarak") {
-    if (nilaiKecepatan <= 0 || nilaiWaktu <= 0) {
-      hasil.innerHTML =
-        "<h2>Hasil</h2>" +
-        "<p>Masukkan kecepatan dan waktu yang lebih dari 0.</p>";
-      return;
+        hasil.innerHTML =
+            "<h2>Hasil Jarak</h2>" +
+            "<p><strong>Jarak:</strong> " +
+            formatAngka(hasilJarak) + " km</p>" +
+            tampilkanReferensiJarak(hasilJarak) +
+            "<div class='info'>" +
+            "<strong>Konversi:</strong><br>" +
+            formatAngka(hasilJarak * 1000) + " meter.</div>";
     }
+    else if (pilihan.value == "waktu") {
+        if (nilaiJarak <= 0 || nilaiKecepatan <= 0) {
+            hasil.innerHTML =
+                "<h2>Hasil Perhitungan</h2>" +
+                "<p>Masukkan jarak dan kecepatan yang lebih dari 0.</p>";
+            return;
+        }
 
-    let hasilJarak = nilaiKecepatan * nilaiWaktu;
+        let hasilWaktu = nilaiJarak / nilaiKecepatan;
 
-    hasil.innerHTML =
-      "<h2>Hasil Perhitungan</h2>" +
-      "<p><strong>Jarak:</strong> " +
-      hasilJarak +
-      " km</p>" +
-      tampilkanReferensi(hasilJarak) +
-      tampilkanPerbandinganKecepatan(nilaiKecepatan);
-  }
-
-  // Menghitung waktu = jarak / kecepatan
-  else if (jenis == "waktu") {
-    if (nilaiJarakInput <= 0 || nilaiKecepatan <= 0) {
-      hasil.innerHTML =
-        "<h2>Hasil</h2>" +
-        "<p>Masukkan jarak dan kecepatan yang lebih dari 0.</p>";
-      return;
+        hasil.innerHTML =
+            "<h2>Hasil Waktu</h2>" +
+            "<p><strong>Waktu:</strong> " +
+            formatAngka(hasilWaktu) + " jam</p>" +
+            konversiWaktu(hasilWaktu) +
+            tampilkanReferensiJarak(nilaiJarak);
     }
-
-    let hasilWaktu = nilaiJarakInput / nilaiKecepatan;
-
-    hasil.innerHTML =
-      "<h2>Hasil Perhitungan</h2>" +
-      "<p><strong>Waktu:</strong> " +
-      hasilWaktu +
-      " jam</p>" +
-      tampilkanReferensi(nilaiJarakInput) +
-      tampilkanPerbandinganKecepatan(nilaiKecepatan);
-  }
 }
 
-// Fungsi untuk mengosongkan input dan hasil
+// Mengosongkan input dan hasil
 function reset() {
-  jarak.value = "";
-  waktu.value = "";
-  kecepatan.value = "";
+    jarak.value = "";
+    waktu.value = "";
+    kecepatan.value = "";
 
-  hasil.innerHTML =
-    "<h2>Hasil</h2>" + "<p>Masukkan data lalu tekan tombol Hitung.</p>";
+    hasil.innerHTML =
+        "<h2>Hasil Perhitungan</h2>" +
+        "<p>Masukkan data lalu tekan tombol Hitung.</p>";
 }
 
-// Event ketika tombol Hitung diklik
+// Event listener
+pilihan.addEventListener("change", ubahInput);
 btnHitung.addEventListener("click", hitung);
-
-// Event ketika tombol Reset diklik
 btnReset.addEventListener("click", reset);
+
+// Menjalankan pengaturan input saat halaman dibuka
+ubahInput();
