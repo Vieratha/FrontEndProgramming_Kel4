@@ -1,80 +1,103 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed, Distance & Time Explorer</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- aaaaaaaaaa -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-    <header>
-      <h1>Speed, Distance & Time Explorer</h1>
-      <p>
-        Kalkulator sederhana untuk mengeksplorasi hubungan kecepatan, jarak, dan
-        waktu.
-      </p>
-    </header>
+<header>
+    <h1>Speed, Distance & Time Explorer</h1>
+    <p>Eksplorasi hubungan antara kecepatan, jarak, dan waktu.</p>
+</header>
 
-    <nav>
-      <a href="#kalkulator">Kalkulator</a>
-      <a href="#referensi">Referensi Jarak</a>
-      <a href="#informasi">Informasi</a>
-    </nav>
+<nav>
+    <a href="#kalkulator">Kalkulator</a>
+    <a href="#referensi">Referensi</a>
+    <a href="#informasi">Informasi</a>
+</nav>
 
-    <article id="kalkulator">
-      <h2>Kalkulator</h2>
+<article id="kalkulator">
+    <h2>Kalkulator</h2>
 
-      <label for="pilihan">Pilih yang ingin dihitung:</label>
-      <select id="pilihan">
+    <label for="pilihan">Pilih yang ingin dihitung:</label>
+    <select id="pilihan">
         <option value="kecepatan">Kecepatan</option>
         <option value="jarak">Jarak</option>
         <option value="waktu">Waktu</option>
-      </select>
+    </select>
 
-      <label for="jarak">Jarak (km)</label>
-      <input type="number" id="jarak" placeholder="Contoh: 780" />
+    <div id="inputJarak">
+        <label for="jarak">Jarak (km)</label>
+        <input type="number" id="jarak" placeholder="Contoh: 780">
+    </div>
 
-      <label for="waktu">Waktu (jam)</label>
-      <input type="number" id="waktu" placeholder="Contoh: 2" />
+    <div id="inputWaktu">
+        <label for="waktu">Waktu (jam)</label>
+        <input type="number" id="waktu" placeholder="Contoh: 2">
+    </div>
 
-      <label for="kecepatan">Kecepatan (km/jam)</label>
-      <input type="number" id="kecepatan" placeholder="Contoh: 390" />
+    <div id="inputKecepatan">
+        <label for="kecepatan">Kecepatan (km/jam)</label>
+        <input type="number" id="kecepatan" placeholder="Contoh: 390">
+    </div>
 
-      <button id="btnHitung">Hitung</button>
-      <button id="btnReset">Reset</button>
+    <button id="btnHitung">Hitung</button>
+    <button id="btnReset">Reset</button>
 
-      <div id="hasil">
-        <h2>Hasil</h2>
+    <div id="hasil">
+        <h2>Hasil Perhitungan</h2>
         <p>Masukkan data lalu tekan tombol Hitung.</p>
-      </div>
-    </article>
+    </div>
+</article>
 
-    <article id="referensi">
-      <h2>Referensi Jarak</h2>
-      <p>Hasil jarak akan dibandingkan dengan beberapa jarak referensi.</p>
-      <ul>
-        <li>Jakarta → Bandung: sekitar 150 km</li>
-        <li>Jakarta → Surabaya: sekitar 780 km</li>
-        <li>Jakarta → Bali: sekitar 950 km</li>
-        <li>Bumi → Bulan: sekitar 384.400 km</li>
-      </ul>
-    </article>
+<article id="referensi">
+    <h2>Referensi</h2>
 
-    <article id="informasi">
-      <h2>Informasi</h2>
-      <p>
-        Kalkulator ini menggunakan hubungan dasar antara jarak, kecepatan, dan
-        waktu. Perbandingan kecepatan cahaya digunakan sebagai simulasi
-        matematis.
-      </p>
-    </article>
+    <div class="referensi-grid">
+        <div class="referensi-card">
+            <h3>Kecepatan</h3>
+            <p><strong>1 km/jam</strong> = 0,2778 m/detik</p>
+            <p><strong>Kecepatan suara</strong> ≈ 1.235 km/jam</p>
+            <p><strong>Kecepatan cahaya</strong> ≈ 1.079.251.200 km/jam</p>
+        </div>
 
-    <footer>
-      <p>Speed, Distance & Time Explorer &copy; 2026</p>
-    </footer>
+        <div class="referensi-card">
+            <h3>Jarak</h3>
+            <p><strong>1 km</strong> = 1.000 meter</p>
+            <p><strong>Jakarta → Bandung</strong> ≈ 150 km</p>
+            <p><strong>Jakarta → Surabaya</strong> ≈ 780 km</p>
+            <p><strong>Bumi → Bulan</strong> ≈ 384.400 km</p>
+        </div>
 
-    <script src="script.js"></script>
-  </body>
+        <div class="referensi-card">
+            <h3>Waktu</h3>
+            <p><strong>1 menit</strong> = 60 detik</p>
+            <p><strong>1 jam</strong> = 60 menit</p>
+            <p><strong>1 hari</strong> = 24 jam</p>
+            <p><strong>1 minggu</strong> = 7 hari</p>
+        </div>
+    </div>
+</article>
+
+<article id="informasi">
+    <h2>Informasi</h2>
+    <p>
+        Rumus dasar yang digunakan adalah kecepatan = jarak ÷ waktu,
+        jarak = kecepatan × waktu, dan waktu = jarak ÷ kecepatan.
+    </p>
+    <p>
+        Referensi pada halaman ini digunakan untuk membantu membayangkan
+        skala hasil perhitungan. Nilainya bersifat perkiraan.
+    </p>
+</article>
+
+<footer>
+    <p>Speed, Distance & Time Explorer &copy; 2026</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
 </html>
