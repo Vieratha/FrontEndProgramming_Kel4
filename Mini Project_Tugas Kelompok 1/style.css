@@ -1,0 +1,79 @@
+/* Mengatur tampilan dasar seluruh halaman */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    color: #222222;
+}
+
+/* Mengatur tampilan header */
+header {
+    background: #8b0000;
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+/* Mengatur tampilan navigation */
+nav {
+    background: #333333;
+    padding: 12px;
+    text-align: center;
+}
+
+/* Mengatur link pada navigation */
+nav a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+}
+
+/* Mengatur bagian artikel */
+article {
+    width: 80%;
+    margin: 25px auto;
+    padding: 25px;
+    background: white;
+    border: 1px solid #cccccc;
+}
+
+/* Mengatur input dan pilihan */
+input,
+select {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 18px 0;
+    box-sizing: border-box;
+}
+
+/* Mengatur tombol */
+button {
+    padding: 10px 18px;
+    margin-right: 8px;
+    border: none;
+    background: #8b0000;
+    color: white;
+    cursor: pointer;
+}
+
+/* Mengubah tampilan tombol ketika mouse berada di atasnya */
+button:hover {
+    background: #a52a2a;
+}
+
+/* Mengatur area hasil */
+#hasil {
+    margin-top: 25px;
+    padding: 20px;
+    border: 1px solid #8b0000;
+    background: #fafafa;
+}
+
+/* Mengatur footer */
+footer {
+    background: #333333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
