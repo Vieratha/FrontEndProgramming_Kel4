@@ -1,3 +1,4 @@
+//1. Cart, untuk membuat fungsi utama yang menyimpan produk Ke keranjang//
 const cart = [];
 
 function getCartCount() {
@@ -15,7 +16,7 @@ function formatRupiah(num) {
   return "Rp " + num.toLocaleString("id-ID");
 }
 
-/* 2. TOAST NOTIFICATION - Manipulasi DOM dengan jQuery */
+//2. Notifikasi "Toast", untuk menampilkan jenis notifikasi toast//
 function showToast(message) {
   $(".kn-toast").remove();
 
@@ -37,10 +38,13 @@ function showToast(message) {
   }, 2500);
 }
 
-/* 3. CART DRAWER */
+//3. Cart drawer untuk membuat drawer untuk menampilkan isi keranjang//
 function buildCartDrawer() {
+  //Ini overlaynya
   const $overlay = $("<div>", { class: "kn-overlay" });
 
+  //Pada setiap tombolnya menyimpan posisi item di array cart agar event handler tahu item mana yang diubah.//
+  //Drawernya
   const $drawer = $(`
     <div class="kn-drawer" aria-label="Keranjang belanja">
       <div class="kn-drawer__header">
@@ -151,7 +155,7 @@ function handleCheckout() {
   setTimeout(closeCartDrawer, 600);
 }
 
-/* 4. ADD TO CART - Selector & Event Handling jQuery */
+//4. Bagian add to card untuk menambahkan produk ke keranjang//
 function initAddToCart() {
   $(".add-btn").on("click", function () {
     const $button = $(this);
@@ -180,7 +184,7 @@ function initAddToCart() {
   });
 }
 
-/* 5. CART LINK */
+//5. Ini ketika cart link diklik akan open drawer//
 function initCartLink() {
   $(".cart-link").on("click", function (e) {
     e.preventDefault();
@@ -188,7 +192,7 @@ function initCartLink() {
   });
 }
 
-/* 6. CART QUANTITY & REMOVE - Event Delegation jQuery */
+//6. Menambahkan bayangan navbar saat di-scroll*/
 function initCartControls() {
   $(".kn-cart-list").on("click", ".kn-qty-minus", function () {
     const index = parseInt($(this).data("index"), 10);
@@ -218,14 +222,14 @@ function initCartControls() {
   });
 }
 
-/* 7. STICKY NAVBAR SHADOW - Event jQuery */
+//7. Menampilkan elemen saat di-scroll Ke kalam viewport//
 function initNavbarScroll() {
   $(window).on("scroll", function () {
     $(".navbar").toggleClass("navbar--scrolled", $(window).scrollTop() > 10);
   });
 }
 
-/* 8. MOBILE HAMBURGER MENU - toggleClass + slideToggle */
+//8. Membuat "Menu Hamburger" untuk tampilan mobile//
 function initMobileMenu() {
   const $navbar = $(".navbar");
   const $navLinks = $(".nav-links");
@@ -261,7 +265,7 @@ function initMobileMenu() {
   });
 }
 
-/* 9. CARD HOVER - Event jQuery */
+//9. Menambahkan efek hover pada kartu produk//
 function initCardHover() {
   $(".product-card")
     .on("mouseenter", function () {
@@ -278,18 +282,18 @@ function initCardHover() {
     });
 }
 
-/* 10. FAQ ACCORDION - WAJIB Pertemuan 5 */
+//10. Memperbaiki teks tautan keranjang//
 function initFAQ() {
   $(".faq-question").on("click", function () {
     const $question = $(this);
     const $answer = $question.next(".faq-answer");
 
-    // Tutup FAQ lain agar hanya satu jawaban terbuka.
+    //Menutup FAQ lain agar hanya satu jawaban terbuka.
     $(".faq-answer").not($answer).stop(true, true).slideUp(250);
     $(".faq-question").not($question).removeClass("faq-question--open");
     $(".faq-question").not($question).find(".faq-icon").text("+");
 
-    // Buka/tutup jawaban yang dipilih dengan slideToggle().
+    //Buka/tutup jawaban yang dipilih dengan slideToggle().
     $answer.stop(true, true).slideToggle(250);
 
     $question.toggleClass("faq-question--open");
@@ -299,7 +303,7 @@ function initFAQ() {
   });
 }
 
-/* 11. LIKE COUNTER - Fitur Interaktif Tambahan */
+//11. Like counter yang merupakan salah satu fitur tambahan JQuery//
 function initLikeButtons() {
   $(".like-btn").on("click", function () {
     const $button = $(this);
@@ -319,7 +323,7 @@ function initLikeButtons() {
   });
 }
 
-/* 12. SCROLL REVEAL - Efek jQuery */
+//12. Scroll reveal//
 function initScrollReveal() {
   $(".product-card, .section-heading, .hero-content, .hero-image")
     .css({
@@ -334,17 +338,17 @@ function initScrollReveal() {
     });
 }
 
-/* 13. FILTER MENU - Selector, event, class, dan effect jQuery */
+//13. Filter menu yang berisi selector, event, class, dan effect jQuery//
 function initMenuFilter() {
   $(".filter-btn").on("click", function () {
     const $button = $(this);
     const selectedFilter = $button.data("filter");
 
-    // Mengubah tombol filter yang sedang aktif.
+    //Mengubah tombol filter yang sedang aktif.
     $(".filter-btn").removeClass("filter-btn--active");
     $button.addClass("filter-btn--active");
 
-    // Menampilkan kartu sesuai kategori yang dipilih.
+    //Menampilkan kartu sesuai kategori yang dipilih.
     $(".product-card").each(function () {
       const $card = $(this);
       const category = $card.data("category");
@@ -358,7 +362,7 @@ function initMenuFilter() {
   });
 }
 
-/* 14. BACK TO TOP - Scroll event + fade + animate jQuery */
+/*14. Ini bagian dari back to top*/
 function initBackToTop() {
   const $button = $(".back-to-top");
 
@@ -375,12 +379,11 @@ function initBackToTop() {
   });
 }
 
-/* 15. PATCH CART TEXT */
 function patchCartLink() {
   $(".cart-link span:last-child").addClass("cart-count");
 }
 
-/* 16. INIT */
+//16. Hanya bagian inisialisasi fungsi//
 $(document).ready(function () {
   patchCartLink();
   buildCartDrawer();

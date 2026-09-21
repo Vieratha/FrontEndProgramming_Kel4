@@ -1,3 +1,4 @@
+/*Pengaturan dasar dari web*/
 * {
   box-sizing: border-box;
 }
@@ -27,6 +28,7 @@ a {
   text-decoration: none;
 }
 
+/*Ini bagian dari button, tempat mengubah visual tombol utama web*/
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -36,6 +38,7 @@ button {
   font-family: inherit;
 }
 
+/*Ini sendiri pembungkus utama dari web*/
 .site-shell {
   width: 100%;
   max-width: 1280px;
@@ -72,6 +75,7 @@ button {
   min-height: 34px;
 }
 
+/*Ini bagian navbar*/
 .navbar {
   position: sticky;
   top: 0;
@@ -171,6 +175,7 @@ button {
   opacity: 0.58;
 }
 
+/*Ini bagian mobile nav-nya, tempat menu nav untuk layar kecil*/
 .kn-burger {
   display: flex;
   flex-direction: column;
@@ -193,7 +198,9 @@ button {
   height: 2px;
   background: #111827;
   border-radius: 2px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .kn-burger--open span:nth-child(1) {
@@ -212,6 +219,7 @@ button {
   display: flex;
 }
 
+/*Ini bagian hero section, bagian pembuka web*/
 .hero {
   padding: 42px 20px 48px;
   display: grid;
@@ -264,6 +272,7 @@ button {
   gap: 10px;
 }
 
+/*Ini bagian hero juga tapi khusus image*/
 .image-box {
   position: relative;
   overflow: hidden;
@@ -287,11 +296,13 @@ button {
   aspect-ratio: 1.395 / 1;
 }
 
+/*Ini menu section, bagian daftar menu*/
 .menu-section {
   padding: 48px 20px 54px;
   background: #fff;
 }
 
+/*Ini section heading, tempat judul dan deskripsi setiap sectionnya*/
 .section-heading {
   margin-bottom: 30px;
   text-align: center;
@@ -313,6 +324,7 @@ button {
   line-height: 1.5;
 }
 
+/*Ini product grid dan card, tempat tampilan tata letak dan kartu menu*/
 .product-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -325,7 +337,9 @@ button {
   border: 1px solid #d3d7dc;
   border-radius: 7px;
   background: #fff;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
 }
 
 .product-image {
@@ -397,6 +411,7 @@ button {
   cursor: pointer;
 }
 
+/*Ini footernya, bagian informasi dasar penutup web*/
 .footer {
   padding: 42px 20px 26px;
   background: #f7f8f9;
@@ -446,10 +461,13 @@ button {
   font-size: 9px;
 }
 
+/*Ini untuk animasi kemunculan elemen saat web di-scroll*/
 .kn-reveal {
   opacity: 0;
   transform: translateY(22px);
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease;
 }
 
 .kn-reveal--visible {
@@ -465,6 +483,7 @@ button {
   transition-delay: 0.2s;
 }
 
+/*Ini notifikasi toast, notif singkat setelah user melakukan suatu action*/
 .kn-toast {
   position: fixed;
   left: 50%;
@@ -482,7 +501,9 @@ button {
   white-space: normal;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .kn-toast--show {
@@ -490,6 +511,7 @@ button {
   transform: translateX(-50%) translateY(0);
 }
 
+/*Bagian cart overlay dan cart drawer*/
 .kn-overlay {
   position: fixed;
   inset: 0;
@@ -704,12 +726,8 @@ button {
   font-weight: 700;
   cursor: pointer;
 }
- 
 
-/* =========================
-   FILTER MENU - Fitur jQuery
-   ========================= */
-
+/*Ini bagian filter menu dari JQuery*/
 .menu-filter {
   display: flex;
   flex-wrap: wrap;
@@ -733,10 +751,7 @@ button {
   color: #fff;
 }
 
-/* =========================
-   BACK TO TOP - Fitur jQuery
-   ========================= */
-
+/*Ini bagian back to top dari JQuery*/
 .back-to-top {
   display: none;
   position: fixed;
@@ -754,10 +769,7 @@ button {
   z-index: 1000;
 }
 
-/* =========================
-   FAQ - jQuery Accordion
-   ========================= */
-
+/*Ini bagian FAQ dari JQuery*/
 .faq-section {
   padding: 48px 20px 54px;
   background: #f8f9fa;
@@ -819,10 +831,7 @@ button {
   margin: 0;
 }
 
-/* =========================
-   Like Button - jQuery
-   ========================= */
-
+/*Ini like button dari JQuery*/
 .product-actions {
   display: flex;
   align-items: center;
@@ -852,12 +861,12 @@ button {
   color: #fff;
 }
 
-/* Mobile: tombol tetap muat di satu baris */
+/*Mobile: tombol tetap muat di satu baris*/
 .product-footer {
   flex-wrap: wrap;
 }
 
-/*Tablet*/
+/*Ini bagian tablet*/
 @media (min-width: 576px) and (max-width: 992px) {
   .navbar {
     padding: 16px 30px;
@@ -917,7 +926,7 @@ button {
   }
 }
 
-/*Desktop*/
+/*Ini bagian desktop*/
 @media (min-width: 993px) {
   .navbar {
     min-height: 78px;
