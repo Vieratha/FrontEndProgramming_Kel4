@@ -1802,3 +1802,210 @@ section[id] {
     overflow: visible;
   }
 }
+
+/*Ini bagian halaman login dan register*/
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  background: #f7f3ee;
+}
+
+/*Ini bagian kotak login dan register*/
+.auth-container {
+  width: 100%;
+  max-width: 430px;
+  padding: 35px;
+  background: #ffffff;
+  border: 1px solid #e8ded6;
+  border-radius: 12px;
+}
+
+/*Ini bagian nama restoran*/
+.auth-brand {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.auth-brand h1 {
+  color: #8b4513;
+  font-size: 26px;
+}
+
+.auth-brand p {
+  margin-top: 5px;
+  color: #7d716b;
+  font-size: 14px;
+}
+
+/*Ini bagian input form*/
+.auth-group {
+  margin-bottom: 17px;
+}
+
+.auth-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.auth-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e8ded6;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+/*Ini bagian pesan login dan register*/
+.auth-message {
+  min-height: 18px;
+  margin-bottom: 10px;
+  color: #c0392b;
+  font-size: 13px;
+}
+
+/*Ini bagian tombol login dan register*/
+.auth-button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 7px;
+  background: #8b4513;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.auth-button:hover {
+  background: #6f350f;
+}
+
+/*Ini bagian link login dan register*/
+.auth-link {
+  margin-top: 20px;
+  text-align: center;
+  color: #7d716b;
+  font-size: 13px;
+}
+
+.auth-link a {
+  color: #8b4513;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/*Ini bagian link kembali*/
+.back-web {
+  display: block;
+  margin-top: 15px;
+  text-align: center;
+  color: #8b4513;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+/*Ini bagian profile customer*/
+.profile-wrapper {
+  position: relative;
+}
+
+.profile-toggle {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--red-dark);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.profile-toggle:hover {
+  transform: translateY(-2px);
+  border-color: var(--red-dark);
+}
+
+/*Ini bagian dropdown profile*/
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 230px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(40, 20, 15, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
+  z-index: 200;
+}
+
+/*Ini bagian dropdown ketika terbuka*/
+.profile-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/*Ini bagian informasi user*/
+.profile-info {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.profile-name {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profile-email {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/*Ini bagian menu profile*/
+.profile-menu {
+  margin-top: 10px;
+}
+
+.profile-menu a,
+.profile-logout {
+  width: 100%;
+  display: block;
+  padding: 10px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.profile-menu a:hover,
+.profile-logout:hover {
+  background: #f8f1eb;
+}
+
+/*Ini bagian tombol logout*/
+.profile-logout {
+  border: none;
+  color: #c0392b;
+  cursor: pointer;
+}

@@ -55,6 +55,38 @@
             </svg>
             <span class="cart-count" id="cartCount" hidden>0</span>
           </button>
+
+          <!--Ini bagian profile customer-->
+          <div class="profile-wrapper">
+            <!--Ini tombol profile-->
+            <button
+              type="button"
+              class="profile-toggle"
+              id="profileToggle"
+              aria-label="Buka profile"
+              aria-expanded="false"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path>
+              </svg>
+            </button>
+
+            <!--Ini dropdown profile-->
+            <div class="profile-dropdown" id="profileDropdown">
+              <!--Isi profile akan diatur oleh JavaScript-->
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -162,163 +194,7 @@
               kami yang selalu konsisten menjaga tradisi.
             </p>
           </div>
-
-          <div class="menu-grid">
-            <article class="menu-card" data-category="makanan">
-              <div class="menu-photo">
-                <img src="images/menu-soto.jpeg" alt="Soto Betawi Spesial" />
-                <span class="menu-badge">TERLARIS</span>
-              </div>
-              <div class="menu-body">
-                <h3>Soto Betawi Spesial</h3>
-                <p>
-                  Kuah santan &amp; susu gurih legendaris, daging sapi tebal
-                  empuk, jeroan, tomat segar, emping renyah, dan bawang goreng
-                  harum.
-                </p>
-                <div class="menu-bottom">
-                  <strong>Rp 48.000</strong>
-                  <!--Ini tombol favorite-->
-                  <button
-                    class="favorite-btn"
-                    type="button"
-                    aria-label="Tandai menu"
-                  >
-                    <span class="favorite-icon">♡</span>
-                    <span class="favorite-count">971</span>
-                  </button>
-                  <!--Ini tombol tambah-->
-                  <button
-                    class="circle-btn add-to-cart"
-                    type="button"
-                    data-id="soto"
-                    data-name="Soto Betawi Spesial"
-                    data-price="48000"
-                    aria-label="Tambah Soto Betawi Spesial ke keranjang"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            <article class="menu-card" data-category="makanan">
-              <div class="menu-photo">
-                <img src="images/menu-nasi-uduk.jpeg" alt="Nasi Uduk Komplit" />
-                <span class="menu-badge">FAVORIT</span>
-              </div>
-              <div class="menu-body">
-                <h3>Nasi Uduk Komplit</h3>
-                <p>
-                  Nasi uduk wangi pandan dan santan, disajikan bersama ayam
-                  goreng lengkuas, tahu tempe goreng, telur dadar iris, sambal
-                  kacang.
-                </p>
-                <div class="menu-bottom">
-                  <strong>Rp 35.000</strong>
-                  <!--Ini tombol favorite-->
-                  <button
-                    class="favorite-btn"
-                    type="button"
-                    aria-label="Tandai menu"
-                  >
-                    <span class="favorite-icon">♡</span>
-                    <span class="favorite-count">122</span>
-                  </button>
-                  <!--Ini tombol tambah-->
-                  <button
-                    class="circle-btn add-to-cart"
-                    type="button"
-                    data-id="nasi-uduk"
-                    data-name="Nasi Uduk Komplit"
-                    data-price="35000"
-                    aria-label="Tambah Nasi Uduk Komplit ke keranjang"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            <article class="menu-card" data-category="makanan">
-              <div class="menu-photo">
-                <img
-                  src="images/menu-kerak-telor.jpeg"
-                  alt="Kerak Telor Bebek"
-                />
-                <span class="menu-badge">KHAS</span>
-              </div>
-              <div class="menu-body">
-                <h3>Kerak Telor Bebek</h3>
-                <p>
-                  Jajanan khas Betawi dari beras ketan, kelapa sangrai, telur
-                  bebek segar, ebi kering, dan bawang merah goreng.
-                </p>
-                <div class="menu-bottom">
-                  <strong>Rp 28.000</strong>
-                  <!--Ini tombol favorite-->
-                  <button
-                    class="favorite-btn"
-                    type="button"
-                    aria-label="Tandai menu"
-                  >
-                    <span class="favorite-icon">♡</span>
-                    <span class="favorite-count">344</span>
-                  </button>
-                  <!--Ini tombol tambah-->
-                  <button
-                    class="circle-btn add-to-cart"
-                    type="button"
-                    data-id="kerak-telor"
-                    data-name="Kerak Telor Bebek"
-                    data-price="28000"
-                    aria-label="Tambah Kerak Telor Bebek ke keranjang"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            <article class="menu-card" data-category="minuman">
-              <div class="menu-photo">
-                <img
-                  src="images/menu-bir-pletok.jpeg"
-                  alt="Bir Pletok Rempah"
-                />
-              </div>
-              <div class="menu-body">
-                <h3>Bir Pletok Rempah</h3>
-                <p>
-                  Minuman kesehatan tradisional non-alkohol terbuat dari jahe
-                  merah, serai, kayu secang merah, pandan, dan kapulaga hangat.
-                </p>
-                <div class="menu-bottom">
-                  <strong>Rp 18.000</strong>
-                  <!--Ini tombol favorite-->
-                  <button
-                    class="favorite-btn"
-                    type="button"
-                    aria-label="Tandai menu"
-                  >
-                    <span class="favorite-icon">♡</span>
-                    <span class="favorite-count">72</span>
-                  </button>
-                  <!--Ini tombol tambah-->
-                  <button
-                    class="circle-btn add-to-cart"
-                    type="button"
-                    data-id="bir-pletok"
-                    data-name="Bir Pletok Rempah"
-                    data-price="18000"
-                    aria-label="Tambah Bir Pletok Rempah ke keranjang"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </article>
-          </div>
+          <div class="menu-grid" id="customerMenuGrid"></div>
 
           <div class="slider-dots" aria-hidden="true">
             <span></span><span class="active"></span><span></span>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Soto Betawi Jakarta</title>
+    <!--Ini bagian CSS untuk halaman admin-->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!--Ini bagian sidebar admin-->
+    <aside class="admin-sidebar">
+      <!--Ini bagian logo dan nama restoran-->
+      <div class="admin-brand">
+        <h2>Soto Betawi</h2>
+        <p>Admin Panel</p>
+      </div>
+
+      <!--Ini bagian menu admin-->
+      <nav class="admin-nav">
+        <a href="index.html" class="active">Dashboard</a>
+        <a href="menu.html">Menu</a>
+        <a href="orders.html">Pesanan</a>
+        <a href="users.html">Users</a>
+        <a href="faq.html">FAQ</a>
+        <a href="locations.html">Lokasi</a>
+      </nav>
+
+      <!--Ini bagian informasi admin-->
+      <div class="admin-profile">
+        <p>Admin</p>
+        <span>Administrator</span>
+        <!--Ini tombol untuk logout-->
+        <button id="adminLogout">Logout</button>
+      </div>
+    </aside>
+
+    <!--Ini bagian utama dashboard-->
+    <main class="admin-main">
+      <!--Ini bagian header dashboard-->
+      <header class="admin-header">
+        <div>
+          <p class="admin-greeting">Dashboard</p>
+          <h1>Selamat Datang, Admin!</h1>
+        </div>
+
+        <a href="../index.html" class="view-web"> Lihat Website </a>
+      </header>
+
+      <!--Ini bagian statistik dashboard-->
+      <section class="stats-section">
+        <!--Statistik total pesanan-->
+        <div class="stat-card">
+          <div>
+            <p>Total Pesanan</p>
+            <h2 id="totalOrders">0</h2>
+          </div>
+          <span class="stat-icon">🛒</span>
+        </div>
+        <!--Statistik pesanan hari ini-->
+        <div class="stat-card">
+          <div>
+            <p>Pesanan Hari Ini</p>
+            <h2 id="todayOrders">0</h2>
+          </div>
+          <span class="stat-icon">📋</span>
+        </div>
+        <!--Statistik pendapatan-->
+        <div class="stat-card">
+          <div>
+            <p>Pendapatan</p>
+            <h2 id="totalRevenue">Rp0</h2>
+          </div>
+          <span class="stat-icon">💰</span>
+        </div>
+        <!--Statistik menu terjual-->
+        <div class="stat-card">
+          <div>
+            <p>Menu Terjual</p>
+            <h2 id="totalItems">0</h2>
+          </div>
+          <span class="stat-icon">🍲</span>
+        </div>
+      </section>
+
+      <!--Ini bagian isi dashboard-->
+      <section class="dashboard-grid">
+        <!--Ini bagian pesanan terbaru-->
+        <div class="dashboard-card orders-card">
+          <div class="card-header">
+            <div>
+              <h2>Pesanan Terbaru</h2>
+              <p>Daftar pesanan yang masuk</p>
+            </div>
+            <a href="orders.html">Lihat Semua</a>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Pelanggan</th>
+                  <th>Total</th>
+                  <th>Waktu</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentOrders">
+                <tr>
+                  <td colspan="5" class="empty-data">Belum ada pesanan.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!--Ini bagian menu terlaris-->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <div>
+              <h2>Menu Terlaris</h2>
+              <p>Menu yang paling banyak dipesan</p>
+            </div>
+            <a href="menu.html">Kelola Menu</a>
+          </div>
+          <div id="bestMenus" class="best-menus">
+            <div class="empty-data">Belum ada data menu.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!--Ini bagian JavaScript untuk dashboard-->
+    <script src="script.js"></script>
+  </body>
+</html>

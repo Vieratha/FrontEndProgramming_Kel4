@@ -477,12 +477,10 @@
         render();
       }
     });
-
     //Tombol struk dan pesan lagi dibuat secara dinamis saat checkout
     jQuery(document).on("click", "#printReceipt", function () {
       window.print();
     });
-
     jQuery(document).on("click", "#newOrder", function () {
       resetView();
       closeCart();
@@ -493,6 +491,8 @@
           500,
         );
     });
+    //Menampilkan menu yang dikelola Admin
+    renderCustomerMenus();
 
     //Fitur pencarian, filter, dan favorit
     initMenuFilter();
@@ -500,7 +500,6 @@
     initFavoriteButtons();
     initFAQ();
   });
-
   render();
 })();
 
@@ -508,14 +507,11 @@
 function initMenuFilter() {
   $(".filter-btn").on("click", function () {
     const filter = $(this).data("filter");
-
     //Mengubah tombol filter yang aktif
     $(".filter-btn").removeClass("active");
     $(this).addClass("active");
-
     $(".menu-card").each(function () {
       const category = $(this).data("category");
-
       if (filter === "all" || category === filter) {
         $(this).fadeIn(200);
       } else {
@@ -529,10 +525,8 @@ function initMenuFilter() {
 function initMenuSearch() {
   $("#menuSearch").on("input", function () {
     const keyword = $(this).val().toLowerCase();
-
     $(".menu-card").each(function () {
       const menuName = $(this).find("h3").text().toLowerCase();
-
       if (menuName.includes(keyword)) {
         $(this).fadeIn(200);
       } else {
@@ -548,9 +542,7 @@ function initFavoriteButtons() {
     const $button = $(this);
     const $icon = $button.find(".favorite-icon");
     const $count = $button.find(".favorite-count");
-
     let count = parseInt($count.text(), 10);
-
     if ($button.hasClass("favorite-active")) {
       count--;
       $button.removeClass("favorite-active");
@@ -560,7 +552,6 @@ function initFavoriteButtons() {
       $button.addClass("favorite-active");
       $icon.text("♥");
     }
-
     $count.text(count);
   });
 }
@@ -586,3 +577,180 @@ function initFAQ() {
     });
   });
 }
+
+/*Ini bagian profile customer*/
+function initCustomerProfile() {
+  var profileToggle = document.getElementById("profileToggle");
+  var profileDropdown = document.getElementById("profileDropdown");
+  if (!profileToggle || !profileDropdown) {
+    return;
+  }
+
+  /*Ini bagian mengambil data user*/
+  function getUser() {
+    try {
+      return JSON.parse(localStorage.getItem("sotoBetawiUserLogin"));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /*Ini bagian menampilkan profile*/
+  function renderProfile() {
+    var user = getUser();
+    if (user) {
+      profileDropdown.innerHTML = `
+        <div class="profile-info">
+          <div class="profile-name">
+            ${user.name}
+          </div>
+          <div class="profile-email">
+            ${user.email}
+          </div>
+        </div>
+        <div class="profile-menu">
+          <button
+            type="button"
+            class="profile-logout"
+            id="userLogout"
+          >
+            Logout
+          </button>
+        </div>
+      `;
+
+      /*Ini bagian logout customer*/
+      var logoutButton = document.getElementById("userLogout");
+      logoutButton.addEventListener("click", function () {
+        localStorage.removeItem("sotoBetawiUserLogin");
+        profileDropdown.classList.remove("show");
+        renderProfile();
+      });
+    } else {
+      profileDropdown.innerHTML = `
+        <div class="profile-info">
+          <div class="profile-name">
+            Belum Login
+          </div>
+          <div class="profile-email">
+            Login untuk menggunakan fitur akun.
+          </div>
+        </div>
+        <div class="profile-menu">
+          <a href="login.html">
+            Login
+          </a>
+          <a href="register.html">
+            Daftar
+          </a>
+        </div>
+      `;
+    }
+  }
+
+  /*Ini bagian membuka profile*/
+  profileToggle.addEventListener("click", function (event) {
+    event.stopPropagation();
+    var isOpen = profileDropdown.classList.toggle("show");
+    profileToggle.setAttribute("aria-expanded", isOpen);
+  });
+
+  /*Ini bagian menutup profile*/
+  document.addEventListener("click", function (event) {
+    if (
+      !profileDropdown.contains(event.target) &&
+      !profileToggle.contains(event.target)
+    ) {
+      profileDropdown.classList.remove("show");
+      profileToggle.setAttribute("aria-expanded", "false");
+    }
+  });
+  renderProfile();
+}
+
+/*Ini bagian menjalankan profile*/
+initCustomerProfile();
+
+/*Ini bagian mengambil data menu dari Admin*/
+function loadCustomerMenus() {
+  try {
+    var data = JSON.parse(localStorage.getItem("sotoBetawiMenus"));
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data;
+  } catch (error) {
+    return [];
+  }
+}
+
+/*Ini bagian menyesuaikan lokasi gambar dari Admin ke Customer*/
+function getCustomerImage(image) {
+  var imagePath = image || "";
+  if (imagePath.indexOf("../images/") === 0) {
+    imagePath = imagePath.substring(3);
+  }
+  return imagePath;
+}
+
+/*Ini bagian menampilkan menu dari Admin*/
+function renderCustomerMenus() {
+  var menus = loadCustomerMenus();
+  var container = document.getElementById("customerMenuGrid");
+  if (!container) {
+    return;
+  }
+  container.innerHTML = "";
+  menus.forEach(function (menu) {
+    if (menu.status !== "Tersedia") {
+      return;
+    }
+    var card = document.createElement("article");
+    card.className = "menu-card";
+    card.setAttribute("data-category", menu.category.toLowerCase());
+    card.innerHTML = `
+      <div class="menu-photo">
+        <img
+          src="${getCustomerImage(menu.image)}"
+          alt="${menu.name}"
+        />
+      </div>
+      <div class="menu-body">
+        <h3>${menu.name}</h3>
+        <p>${menu.description || ""}</p>
+        <div class="menu-bottom">
+          <strong>Rp ${Number(menu.price || 0).toLocaleString("id-ID")}</strong>
+          <!--Ini tombol favorite-->
+          <button
+            class="favorite-btn"
+            type="button"
+            aria-label="Tandai menu"
+          >
+            <span class="favorite-icon">♡</span>
+            <span class="favorite-count">0</span>
+          </button>
+          <!--Ini tombol tambah-->
+          <button
+            class="circle-btn add-to-cart"
+            type="button"
+            data-id="${menu.id}"
+            data-name="${menu.name}"
+            data-price="${menu.price}"
+            aria-label="Tambah ${menu.name} ke keranjang"
+          >
+            +
+          </button>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+/*Ini bagian sinkronisasi menu*/
+window.addEventListener("storage", function (event) {
+  if (event.key === "sotoBetawiMenus") {
+    renderCustomerMenus();
+    initFavoriteButtons();
+  }
+});
