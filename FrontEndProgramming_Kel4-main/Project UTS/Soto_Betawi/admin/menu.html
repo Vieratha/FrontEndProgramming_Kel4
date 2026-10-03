@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kelola Menu - Soto Betawi Jakarta</title>
+    <!--Ini bagian CSS admin-->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!--Ini bagian sidebar admin-->
+    <aside class="admin-sidebar">
+      <!--Ini bagian nama restoran-->
+      <div class="admin-brand">
+        <h2>Soto Betawi</h2>
+        <p>Admin Panel</p>
+      </div>
+      <!--Ini bagian menu admin-->
+      <nav class="admin-nav">
+        <a href="index.html">Dashboard</a>
+        <a href="menu.html" class="active">Menu</a>
+        <a href="orders.html">Pesanan</a>
+        <a href="users.html">Users</a>
+        <a href="faq.html">FAQ</a>
+        <a href="locations.html">Lokasi</a>
+      </nav>
+      <!--Ini bagian informasi admin-->
+      <div class="admin-profile">
+        <p>Admin</p>
+        <span>Administrator</span>
+        <button id="adminLogout">Logout</button>
+      </div>
+    </aside>
+
+    <!--Ini bagian utama halaman menu-->
+    <main class="admin-main">
+      <!--Ini bagian header halaman-->
+      <header class="admin-header">
+        <div>
+          <p class="admin-greeting">Menu</p>
+          <h1>Kelola Menu</h1>
+        </div>
+        <button type="button" class="admin-primary-button" id="addMenuButton">
+          + Tambah Menu
+        </button>
+      </header>
+
+      <!--Ini bagian daftar menu-->
+      <section class="dashboard-card menu-management">
+        <!--Ini bagian search menu-->
+        <div class="menu-toolbar">
+          <input type="text" id="adminMenuSearch" placeholder="Cari menu..." />
+          <select id="adminMenuCategory">
+            <option value="Semua">Semua Kategori</option>
+            <option value="Makanan">Makanan</option>
+            <option value="Minuman">Minuman</option>
+          </select>
+        </div>
+
+        <!--Ini bagian tabel menu-->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Menu</th>
+                <th>Kategori</th>
+                <th>Harga</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="menuTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!--Ini bagian modal tambah/edit menu-->
+    <div class="admin-modal" id="menuModal">
+      <div class="admin-modal-content">
+        <!--Ini bagian header modal-->
+        <div class="modal-header">
+          <div>
+            <h2 id="modalTitle">Tambah Menu</h2>
+            <p>Masukkan informasi menu</p>
+          </div>
+          <button type="button" class="modal-close" id="closeMenuModal">
+            ×
+          </button>
+        </div>
+
+        <!--Ini bagian form menu-->
+        <form id="menuForm">
+          <input type="hidden" id="menuId" />
+          <!--Nama menu-->
+          <div class="form-group">
+            <label for="menuName"> Nama Menu </label>
+            <input
+              type="text"
+              id="menuName"
+              placeholder="Contoh: Soto Betawi Spesial"
+              required
+            />
+          </div>
+          <!--Kategori-->
+          <div class="form-group">
+            <label for="menuCategory"> Kategori </label>
+            <select id="menuCategory" required>
+              <option value="Makanan">Makanan</option>
+              <option value="Minuman">Minuman</option>
+            </select>
+          </div>
+          <!--Harga-->
+          <div class="form-group">
+            <label for="menuPrice"> Harga </label>
+            <input
+              type="number"
+              id="menuPrice"
+              placeholder="48000"
+              min="0"
+              required
+            />
+          </div>
+          <!--Status-->
+          <div class="form-group">
+            <label for="menuStatus"> Status </label>
+            <select id="menuStatus">
+              <option value="Tersedia">Tersedia</option>
+              <option value="Tidak Tersedia">Tidak Tersedia</option>
+            </select>
+          </div>
+          <!--Ini bagian gambar menu-->
+          <div class="form-group">
+            <label for="menuImage">Gambar Menu</label>
+            <input type="file" id="menuImage" accept="image/*" />
+            <img
+              id="menuImagePreview"
+              class="menu-image-preview"
+              alt="Preview gambar menu"
+              hidden
+            />
+            <p class="form-hint">Pilih gambar menu dari komputer.</p>
+          </div>
+          <!--Deskripsi-->
+          <div class="form-group">
+            <label for="menuDescription"> Deskripsi </label>
+            <textarea
+              id="menuDescription"
+              rows="4"
+              placeholder="Deskripsi menu..."
+            ></textarea>
+          </div>
+          <!--Ini bagian tombol form-->
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="admin-secondary-button"
+              id="cancelMenu"
+            >
+              Batal
+            </button>
+            <button type="submit" class="admin-primary-button">
+              Simpan Menu
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!--Ini bagian JavaScript-->
+    <script src="menu.js"></script>
+  </body>
+</html>

@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soto Betawi Jakarta</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!--Ini bagian header yang berisi nama web, tombol pesan, dan navbar-->
+    <header class="site-header">
+      <div class="container navbar">
+        <a href="#home" class="brand" aria-label="Soto Betawi Jakarta">
+          <span class="brand-mark">♨</span>
+          <span class="brand-main">SOTO BETAWI</span>
+          <span class="brand-accent">JAKARTA</span>
+        </a>
+
+        <!--Ini bagian navbarnya-->
+        <nav class="main-nav" aria-label="Navigasi utama">
+          <a class="active" href="#home">Home</a>
+          <a href="#menu">Menu</a>
+          <a href="#tentang">Tentang Kami</a>
+          <a href="#lokasi">Lokasi</a>
+        </nav>
+
+        <!--Ini bagian pesanan-->
+        <div class="nav-actions">
+          <a href="#menu" class="btn btn-primary btn-small" id="orderNow"
+            >Pesan Sekarang</a
+          >
+          <button
+            type="button"
+            class="cart-toggle"
+            id="cartToggle"
+            aria-label="Buka keranjang"
+            aria-haspopup="dialog"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
+              <path
+                d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"
+              />
+            </svg>
+            <span class="cart-count" id="cartCount" hidden>0</span>
+          </button>
+
+          <!--Ini bagian profile customer-->
+          <div class="profile-wrapper">
+            <!--Ini tombol profile-->
+            <button
+              type="button"
+              class="profile-toggle"
+              id="profileToggle"
+              aria-label="Buka profile"
+              aria-expanded="false"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path>
+              </svg>
+            </button>
+
+            <!--Ini dropdown profile-->
+            <div class="profile-dropdown" id="profileDropdown">
+              <!--Isi profile akan diatur oleh JavaScript-->
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!--Ini "hero section" yang berisi tampilan awal tentang website-->
+      <section class="hero" id="home">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">WARISAN KULINER</p>
+            <h1>
+              Rasa Asli Betawi,<br /><span>Hangat</span> di Setiap<br />Suapan
+            </h1>
+            <p class="hero-description">
+              Nikmati Soto Betawi dengan cita rasa khas Jakarta, dibuat dari
+              bahan pilihan dan resep yang diwariskan dari generasi ke generasi.
+            </p>
+
+            <!--Ini tombol shortcut untuk Lihat Menu dan Temukan Lokasi-->
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#menu"
+                >Lihat Menu <span>›</span></a
+              >
+              <a class="btn btn-outline" href="#lokasi">Temukan Lokasi</a>
+            </div>
+          </div>
+
+          <div class="hero-image-wrap">
+            <img
+              src="images/hero-soto.jpeg"
+              alt="Soto Betawi"
+              class="hero-image"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!--Ini bagian "Tentang Kami" yang berisi foto dan juga informasi terkait website dan bisnis kami-->
+      <section class="about section-cream" id="tentang">
+        <div class="container about-grid">
+          <div class="about-image-wrap decorative-frame">
+            <img
+              src="images/tentang-betawi.jpeg"
+              alt="Tradisi kuliner Betawi"
+              class="about-image"
+            />
+          </div>
+          /*Ini bagian informasi terkait website dan bisnis*/
+          <div class="about-copy">
+            <p class="eyebrow">WARISAN KULINER BETAWI</p>
+            <h2>Cita Rasa Otentik Sejak 1980</h2>
+            <p>
+              Berawal dari kedai sederhana di pinggiran Jakarta, kami
+              mendedikasikan diri untuk melestarikan keaslian cita rasa masakan
+              Betawi. Resep rahasia kaldu gurih berpadu rempah-rempah alami
+              terus kami jaga demi memanjakan lidah para penikmat kuliner
+              sejati.
+            </p>
+            <p>
+              Kami percaya bahwa makanan yang lezat lahir dari kesabaran dan
+              kecintaan. Setiap potongan daging sapi pilihan dimasak perlahan
+              hingga empuk sempurna, disajikan hangat dengan siraman kuah santan
+              dan susu yang kaya rasa, menyatukan tradisi dan kenyamanan modern.
+            </p>
+
+            <div class="about-stats">
+              <div class="stat">
+                <strong>46+</strong>
+                <span>Tahun Warisan Rasa</span>
+              </div>
+              <div class="stat">
+                <strong>20+</strong>
+                <span>Rempah Pilihan</span>
+              </div>
+              <blockquote>
+                “Melestarikan Tradisi, Menghidupkan Memori.”
+              </blockquote>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--Ini bagian utama dari MENU-->
+      <section class="menu-section" id="menu">
+        <div class="container">
+          <!--Ini bagian untuk Search dan Filter Menu-->
+          <div class="menu-controls">
+            <!--Lakukan input untuk mencari nama menu-->
+            <input type="text" id="menuSearch" placeholder="Cari menu..." />
+
+            <!--Ini tombol filter kategori yang dibedakan menjadi "Semua", "Makanan", dan "Minuman"-->
+            <div class="menu-filter">
+              <button class="filter-btn active" data-filter="all">Semua</button>
+              <button class="filter-btn" data-filter="makanan">Makanan</button>
+              <button class="filter-btn" data-filter="minuman">Minuman</button>
+            </div>
+          </div>
+
+          <!--Ini bagian menunya-->
+          <div class="section-heading centered">
+            <p class="pill-label">MENU PILIHAN</p>
+            <h2>Menu Andalan Kami</h2>
+            <p>
+              Rasakan kelezatan legendaris dari menu terbaik buatan koki ahli
+              kami yang selalu konsisten menjaga tradisi.
+            </p>
+          </div>
+          <div class="menu-grid" id="customerMenuGrid"></div>
+
+          <div class="slider-dots" aria-hidden="true">
+            <span></span><span class="active"></span><span></span>
+          </div>
+        </div>
+      </section>
+
+      <!--Ini bagian "Keunggulan" yang berisi informasi terkait keunggulan web dan bisnis kami-->
+      <section class="features section-cream">
+        <div class="container">
+          <div class="section-heading centered compact">
+            <p class="pill-label">KEUNGGULAN</p>
+            <h2>Mengapa Harus Kami?</h2>
+            <p>
+              Kami menyajikan lebih dari sekadar hidangan makanan biasa. Kami
+              menawarkan kepuasan rasa yang abadi.
+            </p>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card">
+              <div class="icon-box">▣</div>
+              <h3>Resep Turun Temurun</h3>
+              <p>
+                Kelebihan kuah legendaris kami terjaga berkat formula 15 rempah
+                rahasia sejak 4 dekade silam.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon-box">♨</div>
+              <h3>Bahan Segar Pilihan</h3>
+              <p>
+                Setiap potong daging dan sayur kami datangkan segar setiap pagi
+                dari pemasok lokal terpercaya.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon-box">⌂</div>
+              <h3>Suasana Hangat</h3>
+              <p>
+                Desain interior memadukan estetika Betawi klasik dan kenyamanan
+                modern untuk kumpul keluarga.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon-box">♙</div>
+              <h3>Halal Terjamin</h3>
+              <p>
+                Menyajikan makanan dengan integritas tinggi. Semua proses dan
+                bahan dipastikan 100% Halal.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!--Ini berisi section khusus informasi singkat terkait Suasana Restoran-->
+      <section class="restaurant-banner"></section>
+
+      <!--Ini bagian testimoni dari user-->
+      <section class="testimonials">
+        <div class="container">
+          <div class="section-heading centered">
+            <h2>Apa Kata Mereka</h2>
+            <p>
+              Kebahagiaan pengunjung adalah pencapaian terbesar kami. Berikut
+              cerita tulus dari meja makan kami.
+            </p>
+          </div>
+
+          <div class="testimonial-grid">
+            <article class="testimonial-card">
+              <div class="stars">★★★★★</div>
+              <p>
+                “Soto Betawi paling pas yang pernah saya rasakan di Jakarta.
+                Kuahnya kental gurih seimbang, tidak bikin eneg. Dagingnya
+                melimpah ruah dan sangat lembut!”
+              </p>
+              <div class="customer">
+                <img src="images/avatar-bambang.jpeg" alt="Bambang Pamungkas" />
+                <div>
+                  <strong>Bambang Pamungkas</strong
+                  ><span>Kuliner Enthusiast</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="stars">★★★★★</div>
+              <p>
+                “Kombinasi kuah susu dan santannya juara sekali. Kerak telor
+                bebeknya juga dimasak matang merata dengan serundeng wangi.
+                Sangat merekomendasikan tempat ini.”
+              </p>
+              <div class="customer">
+                <img src="images/avatar-arini.jpeg" alt="Arini Setya" />
+                <div>
+                  <strong>Arini Setya</strong><span>Keluarga Dine-In</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="testimonial-card">
+              <div class="stars">★★★★★</div>
+              <p>
+                “Saya bawa kolega bisnis asing ke sini dan mereka sangat
+                mengagumi interior modern-tradisional serta rasa makanan yang
+                kaya bumbu namun berkelas.”
+              </p>
+              <div class="customer">
+                <img src="images/avatar-david.jpeg" alt="David Wijaya" />
+                <div>
+                  <strong>David Wijaya</strong><span>Professional</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!--Ini bagian informasi lokasi restoran dan cabang-->
+      <section class="locations section-cream" id="lokasi">
+        <div class="container">
+          <div class="section-heading centered compact">
+            <p class="pill-label">RESTORAN KAMI</p>
+            <h2>Temukan Kami</h2>
+            <p>
+              Kunjungi cabang terdekat di Jakarta untuk menikmati soto hangat
+              langsung di tempat.
+            </p>
+          </div>
+
+          <div class="location-grid">
+            <article class="location-card">
+              <div class="location-map">
+                <img src="images/map-menteng.jpeg" alt="Peta lokasi Menteng" />
+              </div>
+              <div class="location-info">
+                <h3>Menteng, Jakarta Pusat</h3>
+                <p>
+                  Jl. Teuku Umar No. 12, Menteng, Kec. Menteng, Kota Jakarta
+                  Pusat, 10310
+                </p>
+                <p class="meta">◷ Buka Setiap Hari: 10:00 – 22:00</p>
+                <p class="meta">☎ +62 21 390-1234</p>
+                <a href="#" class="text-link">Lihat di Peta ↗</a>
+              </div>
+            </article>
+
+            <article class="location-card">
+              <div class="location-map">
+                <img src="images/map-kemang.jpeg" alt="Peta lokasi Kemang" />
+              </div>
+              <div class="location-info">
+                <h3>Kemang, Jakarta Selatan</h3>
+                <p>
+                  Jl. Kemang Raya No. 45B, Bangka, Mampang Prapatan, Jakarta
+                  Selatan, 12730
+                </p>
+                <p class="meta">◷ Buka Setiap Hari: 10:00 – 22:00</p>
+                <p class="meta">☎ +62 21 719-5678</p>
+                <a href="#" class="text-link">Lihat di Peta ↗</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!--Ini bagian "FAQ" yang berisi informasi terkait pertanyaan-pertanyaan yang sering ditanyakan-->
+      <section class="faq-section">
+        <div class="container">
+          <div class="section-heading centered">
+            <p class="pill-label">PERTANYAAN UMUM</p>
+            <h2>Pertanyaan yang Sering Ditanyakan</h2>
+            <p>
+              Temukan jawaban atas pertanyaan umum seputar menu, lokasi, dan
+              layanan Soto Betawi Jakarta.
+            </p>
+          </div>
+
+          <div class="faq-list">
+            <div class="faq-item">
+              <button type="button" class="faq-question">
+                <span>Apa saja menu yang tersedia?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Kami menyediakan Soto Betawi Spesial, Nasi Uduk Komplit, Kerak
+                  Telor Bebek, dan Bir Pletok Rempah.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-question">
+                <span>Apakah Soto Betawi bisa dibawa pulang?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Ya. Semua menu dapat dipesan untuk dibawa pulang melalui fitur
+                  pemesanan online di website.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-question">
+                <span>Di mana lokasi restoran?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>
+                  Saat ini Soto Betawi Jakarta memiliki cabang di Menteng,
+                  Jakarta Pusat dan Kemang, Jakarta Selatan.
+                </p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button type="button" class="faq-question">
+                <span>Jam berapa restoran buka?</span>
+                <span class="faq-icon">+</span>
+              </button>
+              <div class="faq-answer">
+                <p>Restoran buka setiap hari mulai pukul 10:00 hingga 22:00.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--Ini bagian "Contact" terkait reservasi dan pesanan-->
+      <section class="cta" id="pesan">
+        <div class="cta-shape shape-left"></div>
+        <div class="cta-shape shape-right"></div>
+        <div class="container cta-content">
+          <p class="pill-label light">RESERVASI &amp; PESANAN</p>
+          <h2>Siap Menikmati Soto Betawi Terbaik?</h2>
+          <p>
+            Pesan sekarang secara online atau langsung kunjungi restoran kami
+            untuk mendapatkan pengalaman bersantap yang nyaman.
+          </p>
+          <div class="cta-actions">
+            <a href="#keranjang" class="btn btn-green" id="ctaCart"
+              >Pesan Online <span>↗</span></a
+            >
+            <a href="tel:+62811999787" class="btn btn-outline-light"
+              >Hubungi Kami</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!--Ini footernya-->
+    <footer class="footer">
+      <div class="container footer-grid">
+        <div class="footer-about">
+          <a href="#home" class="brand brand-footer">
+            <span class="brand-mark">♨</span>
+            <span class="brand-main">SOTO BETAWI</span>
+          </a>
+          <p>
+            Warisan kuliner asli Betawi yang kami sajikan dengan resep
+            turun-temurun, bahan pilihan, dan suasana hangat.
+          </p>
+        </div>
+
+        <div class="footer-column">
+          <h3>MENU</h3>
+          <a href="#menu">Soto Betawi Spesial</a>
+          <a href="#menu">Nasi Uduk Komplit</a>
+          <a href="#menu">Kerak Telor</a>
+          <a href="#menu">Bir Pletok</a>
+        </div>
+
+        <div class="footer-column">
+          <h3>LOKASI GERAI</h3>
+          <a href="#lokasi">Menteng</a>
+          <a href="#lokasi">Kemang</a>
+        </div>
+
+        <div class="footer-column">
+          <h3>JAM OPERASIONAL</h3>
+          <p>Setiap Hari: 10:00 – 22:00</p>
+          <h3 class="footer-subtitle">HUBUNGI LAYANAN</h3>
+          <a href="tel:+62811999787">+62 811 999 787</a>
+        </div>
+
+        <div class="footer-column">
+          <h3>IKUTI KAMI</h3>
+          <div class="socials">
+            <a href="#" aria-label="Instagram">◎</a>
+            <a href="#" aria-label="TikTok">♪</a>
+            <a href="#" aria-label="Facebook">f</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="container footer-bottom">
+        <span>© 2026 Soto Betawi Jakarta.</span>
+        <div>
+          <a href="#">Kebijakan Privasi</a
+          ><a href="#">Syarat &amp; Ketentuan</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- KERANJANG -->
+    <div class="cart-overlay" id="cartOverlay" hidden></div>
+    <aside
+      class="cart-drawer"
+      id="cartDrawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cartTitle"
+      aria-hidden="true"
+    >
+      <div class="cart-head">
+        <h2 id="cartTitle">Keranjang Anda</h2>
+        <button
+          type="button"
+          class="cart-close"
+          id="cartClose"
+          aria-label="Tutup keranjang"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="cart-body" id="cartBody"></div>
+
+      <div class="cart-foot" id="cartFoot">
+        <div class="cart-total">
+          <span>Total</span><strong id="cartTotal">Rp 0</strong>
+        </div>
+        <div class="cart-field">
+          <span>Jenis Pesanan</span>
+          <div class="seg" role="radiogroup" aria-label="Jenis pesanan">
+            <label
+              ><input
+                type="radio"
+                name="orderType"
+                value="Makan di tempat"
+                checked
+              /><span>Makan di tempat</span></label
+            >
+            <label
+              ><input type="radio" name="orderType" value="Bawa pulang" /><span
+                >Bawa pulang</span
+              ></label
+            >
+          </div>
+        </div>
+        <label class="cart-field" id="tableField">
+          <span>Nomor Meja</span>
+          <input
+            type="text"
+            id="orderTable"
+            inputmode="numeric"
+            maxlength="4"
+            placeholder="Contoh: 12"
+          />
+        </label>
+        <label class="cart-field" id="nameField">
+          <span>Nama Pemesan</span>
+          <input
+            type="text"
+            id="orderName"
+            placeholder="Nama Anda"
+            autocomplete="off"
+          />
+        </label>
+        <label class="cart-field">
+          <span>Catatan (opsional)</span>
+          <textarea
+            id="orderNote"
+            rows="2"
+            placeholder="Contoh: tidak pakai jeroan, sambal dipisah"
+          ></textarea>
+        </label>
+        <button
+          type="button"
+          class="btn btn-green cart-checkout"
+          id="checkoutBtn"
+        >
+          Kirim Pesanan
+        </button>
+        <p class="cart-hint">Pembayaran dilakukan di kasir.</p>
+        <button type="button" class="cart-clear" id="clearCart">
+          Kosongkan keranjang
+        </button>
+      </div>
+
+      <div class="order-done" id="orderDone" hidden></div>
+    </aside>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!--Library jQuery-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

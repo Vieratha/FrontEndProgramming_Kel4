@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kopi Nusantara</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <!--Ini bagian dari header dan navbarnya-->
+      <header class="navbar">
+        <a href="#" class="brand">
+          <div class="brand-mark">☕</div>
+          <div class="brand-copy">
+            <div class="brand-name">Kopi Nusantara</div>
+            <div class="brand-tagline">
+              Authentic Home-Brewed Indonesian Coffee
+            </div>
+          </div>
+        </a>
+
+        <!--Ini bagian dari menu navbarnya-->
+        <nav class="nav-links">
+          <a href="#">Home</a>
+          <a href="#menu">Our Menu</a>
+          <a href="#">Story</a>
+          <a href="#">Order Now</a>
+        </nav>
+
+        <!--Ini bagian cart dan order-->
+        <div class="nav-actions">
+          <a href="#" class="cart-link">
+            <span class="cart-icon">▱</span>
+            <span>Cart (0)</span>
+          </a>
+          <a href="#" class="btn btn-dark btn-delivery">Order Delivery</a>
+        </div>
+      </header>
+
+      <!--Ini bagian utama dari websitenya: Deskripsi, foto, dan tombol explore menu dan story-->
+      <main>
+        <section class="hero">
+          <div class="hero-content">
+            <span class="eyebrow"
+              >LOCAL&nbsp;&nbsp; HOME&nbsp;&nbsp; ROASTERY</span
+            >
+
+            <h1>Freshly roasted single-origin coffee, brewed right at home.</h1>
+
+            <p class="hero-description">
+              Bringing the rich heritage of Indonesian archipelago beans—from
+              Gayo to Toraja—directly to your doorstep. Micro-roasted in small
+              batches for premium freshness.
+            </p>
+
+            <div class="hero-buttons">
+              <a href="#menu" class="btn btn-dark">Explore Coffee Menu</a>
+              <a href="#" class="btn btn-light">Our Brewing Story</a>
+            </div>
+          </div>
+
+          <div class="hero-image image-box">
+            <img
+              src="images/hero.jpg"
+              alt="Kopi Nusantara"
+              onerror="
+                this.style.display = 'none';
+                this.parentElement.classList.add('image-missing');
+              "
+            />
+          </div>
+        </section>
+
+        <!--Ini bagian menu yang bisa dipilih user-->
+        <section class="menu-section" id="menu">
+          <div class="section-heading">
+            <h2>Explore Our Signature Brews</h2>
+            <p>
+              Freshly crafted by our resident barista with local premium beans.
+            </p>
+          </div>
+
+          <!--Ini jenis-jenis productnya-->
+          <div class="product-grid">
+            <article class="product-card">
+              <div class="product-image image-box">
+                <img
+                  src="images/kopi-susu-aren.webp"
+                  alt="Es Kopi Susu Aren"
+                  onerror="
+                    this.style.display = 'none';
+                    this.parentElement.classList.add('image-missing');
+                  "
+                />
+              </div>
+              <div class="product-body">
+                <div class="product-title-row">
+                  <h3>Es Kopi Susu Aren</h3>
+                  <span class="badge">Best Seller</span>
+                </div>
+                <p class="product-description">
+                  Signature espresso blend with creamy fresh milk and organic
+                  liquid palm sugar.
+                </p>
+                <div class="product-footer">
+                  <strong>Rp 18.000</strong>
+                  <button class="add-btn">Add to Cart</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image image-box">
+                <img
+                  src="images/tubruk.webp"
+                  alt="Traditional Tubruk"
+                  onerror="
+                    this.style.display = 'none';
+                    this.parentElement.classList.add('image-missing');
+                  "
+                />
+              </div>
+              <div class="product-body">
+                <div class="product-title-row">
+                  <h3>Traditional Tubruk</h3>
+                  <span class="badge">Classic</span>
+                </div>
+                <p class="product-description">
+                  Authentic Indonesian unfiltered coarse-ground coffee with
+                  rich, full-bodied notes.
+                </p>
+                <div class="product-footer">
+                  <strong>Rp 15.000</strong>
+                  <button class="add-btn">Add to Cart</button>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-image image-box">
+                <img
+                  src="images/pandan-latte.webp"
+                  alt="Pandan Latte"
+                  onerror="
+                    this.style.display = 'none';
+                    this.parentElement.classList.add('image-missing');
+                  "
+                />
+              </div>
+              <div class="product-body">
+                <div class="product-title-row">
+                  <h3>Pandan Latte</h3>
+                  <span class="badge">Aromatic</span>
+                </div>
+                <p class="product-description">
+                  Double shot espresso infusion of fresh pandan leaf syrup with
+                  textured milk.
+                </p>
+                <div class="product-footer">
+                  <strong>Rp 20.000</strong>
+                  <button class="add-btn">Add to Cart</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <!--Footer yang berisi nama web, tombol navigation lain, dan contact-->
+      <footer class="footer">
+        <div class="footer-columns">
+          <div class="footer-brand">
+            <h4>Kopi Nusantara</h4>
+            <p>
+              Authentic Indonesian micro-roastery based at home.<br />
+              Crafting happiness in every single pour.
+            </p>
+          </div>
+
+          <div class="footer-column">
+            <h4>Navigation</h4>
+            <a href="#">Home</a>
+            <a href="#menu">Our Menu</a>
+            <a href="#">Story</a>
+            <a href="#">Order Now</a>
+          </div>
+
+          <div class="footer-column">
+            <h4>Contact Us</h4>
+            <p>Jakarta, Indonesia</p>
+            <p>order@kopinusantara.id</p>
+            <p>+62 812-3456-789</p>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          © 2026 Kopi Nusantara. All rights reserved.
+        </div>
+      </footer>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

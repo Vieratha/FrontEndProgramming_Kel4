@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar - Soto Betawi Jakarta</title>
+    <!--Ini bagian CSS website-->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body class="auth-page">
+    <!--Ini bagian kotak register-->
+    <main class="auth-container">
+      <!--Ini bagian nama restoran-->
+      <div class="auth-brand">
+        <h1>Soto Betawi</h1>
+        <p>Buat akun baru</p>
+      </div>
+      <!--Ini bagian form register-->
+      <form id="registerForm">
+        <!--Ini bagian nama-->
+        <div class="auth-group">
+          <label for="registerName">Nama</label>
+          <input
+            type="text"
+            id="registerName"
+            placeholder="Masukkan nama"
+            required
+          />
+        </div>
+
+        <!--Ini bagian email-->
+        <div class="auth-group">
+          <label for="registerEmail">Email</label>
+          <input
+            type="email"
+            id="registerEmail"
+            placeholder="Masukkan email"
+            required
+          />
+        </div>
+        <!--Ini bagian password-->
+        <div class="auth-group">
+          <label for="registerPassword">Password</label>
+          <input
+            type="password"
+            id="registerPassword"
+            placeholder="Masukkan password"
+            required
+          />
+        </div>
+        <!--Ini bagian konfirmasi password-->
+        <div class="auth-group">
+          <label for="registerConfirmPassword"> Konfirmasi Password </label>
+          <input
+            type="password"
+            id="registerConfirmPassword"
+            placeholder="Masukkan kembali password"
+            required
+          />
+        </div>
+        <!--Ini pesan register-->
+        <p id="registerMessage" class="auth-message"></p>
+        <!--Ini tombol register-->
+        <button type="submit" class="auth-button">Daftar</button>
+      </form>
+
+      <!--Ini bagian link login-->
+      <p class="auth-link">
+        Sudah punya akun?
+        <a href="login.html">Login</a>
+      </p>
+      <!--Ini bagian kembali ke website-->
+      <a href="index.html" class="back-web"> Kembali ke Website </a>
+    </main>
+    <!--Ini bagian JavaScript register-->
+    <script src="auth.js"></script>
+  </body>
+</html>

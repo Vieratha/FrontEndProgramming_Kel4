@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Soto Betawi Jakarta</title>
+    <!--Ini bagian CSS website-->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="auth-page">
+    <!--Ini bagian kotak login-->
+    <main class="auth-container">
+      <!--Ini bagian nama restoran-->
+      <div class="auth-brand">
+        <h1>Soto Betawi</h1>
+        <p>Login ke akun Anda</p>
+      </div>
+
+      <!--Ini bagian form login-->
+      <form id="loginForm">
+        <!--Ini bagian email-->
+        <div class="auth-group">
+          <label for="loginEmail">Email</label>
+          <input
+            type="email"
+            id="loginEmail"
+            placeholder="Masukkan email"
+            required
+          />
+        </div>
+        <!--Ini bagian password-->
+        <div class="auth-group">
+          <label for="loginPassword">Password</label>
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Masukkan password"
+            required
+          />
+        </div>
+        <!--Ini pesan login-->
+        <p id="loginMessage" class="auth-message"></p>
+        <!--Ini tombol login-->
+        <button type="submit" class="auth-button">Login</button>
+      </form>
+
+      <!--Ini bagian link register-->
+      <p class="auth-link">
+        Belum punya akun?
+        <a href="register.html">Daftar</a>
+      </p>
+      <!--Ini bagian kembali ke website-->
+      <a href="index.html" class="back-web"> Kembali ke Website </a>
+    </main>
+    <!--Ini bagian JavaScript login-->
+    <script src="auth.js"></script>
+  </body>
+</html>

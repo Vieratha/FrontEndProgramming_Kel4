@@ -1,0 +1,860 @@
+/*Pengaturan dasar dari web*/
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #1f1f1f;
+  color: #121a2a;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  overflow-x: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/*Ini bagian dari button, tempat mengubah visual tombol utama web*/
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+}
+
+/*Ini sendiri pembungkus utama dari web*/
+.site-shell {
+  width: 100%;
+  max-width: 1280px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #fff;
+}
+
+.btn {
+  min-height: 40px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #121a2a;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.btn-dark {
+  color: #fff;
+  background: #111827;
+}
+
+.btn-light {
+  color: #111827;
+  background: #fff;
+}
+
+.btn-delivery {
+  min-height: 34px;
+}
+
+/*Ini bagian navbar*/
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: 72px;
+  padding: 14px 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-bottom: 1px solid #dfe3e8;
+  transition: box-shadow 0.25s ease;
+}
+
+.navbar--scrolled {
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.09);
+}
+
+.brand {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border: 1px solid #c8ccd1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #664c34;
+  font-size: 13px;
+  background: #fff;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-name {
+  font-size: 14px;
+  line-height: 1.15;
+  font-weight: 800;
+  color: #111827;
+}
+
+.brand-tagline {
+  margin-top: 2px;
+  color: #7a818d;
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+.nav-actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cart-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.cart-icon {
+  font-size: 15px;
+  transform: rotate(180deg);
+  display: inline-block;
+  line-height: 1;
+}
+
+.nav-links {
+  grid-column: 1 / -1;
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 8px 0 4px;
+  font-size: 11px;
+  color: #0c1422;
+}
+
+.nav-links a {
+  padding: 7px 0;
+}
+
+.nav-links a:hover,
+.cart-link:hover {
+  opacity: 0.58;
+}
+
+/*Ini bagian mobile nav-nya, tempat menu nav untuk layar kecil*/
+.kn-burger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid #d3d7dc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.kn-burger span {
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: #111827;
+  border-radius: 2px;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.kn-burger--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.kn-burger--open span:nth-child(2) {
+  opacity: 0;
+}
+
+.kn-burger--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.nav-links--open {
+  display: flex;
+}
+
+/*Ini bagian hero section, bagian pembuka web*/
+.hero {
+  padding: 42px 20px 48px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e3e5e8;
+}
+
+.hero-content {
+  min-width: 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-bottom: 20px;
+  padding: 4px 10px;
+  border: 1px solid #d2d6dc;
+  border-radius: 14px;
+  color: #667085;
+  background: #fff;
+  font-size: 8px;
+  letter-spacing: 0.03em;
+}
+
+.hero h1 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(32px, 9vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+}
+
+.hero-description {
+  max-width: 620px;
+  margin: 22px 0 22px;
+  color: #7a818d;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.hero-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+/*Ini bagian hero juga tapi khusus image*/
+.image-box {
+  position: relative;
+  overflow: hidden;
+  background: #e3e6ea;
+  border: 1px solid #aeb5bd;
+}
+
+.image-box img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.image-box.image-missing {
+  background: #e3e6ea;
+}
+
+.hero-image {
+  width: 100%;
+  aspect-ratio: 1.395 / 1;
+}
+
+/*Ini menu section, bagian daftar menu*/
+.menu-section {
+  padding: 48px 20px 54px;
+  background: #fff;
+}
+
+/*Ini section heading, tempat judul dan deskripsi setiap sectionnya*/
+.section-heading {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.section-heading h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.section-heading p {
+  margin: 10px 0 0;
+  color: #8a909b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/*Ini product grid dan card, tempat tampilan tata letak dan kartu menu*/
+.product-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.product-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #d3d7dc;
+  border-radius: 7px;
+  background: #fff;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.product-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-bottom: 1px solid #aeb5bd;
+}
+
+.product-body {
+  padding: 16px;
+}
+
+.product-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.product-title-row h3 {
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #111827;
+  font-weight: 800;
+}
+
+.badge {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 8px;
+  background: #f0f1f2;
+  color: #737b87;
+  font-size: 7px;
+  font-weight: 600;
+}
+
+.product-description {
+  min-height: 0;
+  margin: 12px 0 16px;
+  color: #7c838e;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.product-footer strong {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.add-btn {
+  min-height: 31px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 3px;
+  color: #fff;
+  background: #111827;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/*Ini footernya, bagian informasi dasar penutup web*/
+.footer {
+  padding: 42px 20px 26px;
+  background: #f7f8f9;
+  border-top: 1px solid #e2e5e8;
+}
+
+.footer-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+.footer h4 {
+  margin: 0 0 12px;
+  color: #111827;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.footer p,
+.footer a {
+  color: #757d88;
+  font-size: 9px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.footer p {
+  margin: 0 0 5px;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer-column a {
+  margin-bottom: 5px;
+}
+
+.footer-bottom {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #dfe3e7;
+  color: #7f8792;
+  font-size: 9px;
+}
+
+/*Ini untuk animasi kemunculan elemen saat web di-scroll*/
+.kn-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease;
+}
+
+.kn-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-card:nth-child(2).kn-reveal {
+  transition-delay: 0.1s;
+}
+
+.product-card:nth-child(3).kn-reveal {
+  transition-delay: 0.2s;
+}
+
+/*Ini notifikasi toast, notif singkat setelah user melakukan suatu action*/
+.kn-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  z-index: 9999;
+  max-width: calc(100vw - 32px);
+  padding: 11px 18px;
+  transform: translateX(-50%) translateY(16px);
+  background: #111827;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.kn-toast--show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/*Bagian cart overlay dan cart drawer*/
+.kn-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.kn-overlay--show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.kn-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 201;
+  width: min(360px, 100vw);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  box-shadow: -4px 0 32px rgba(0, 0, 0, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kn-drawer--open {
+  transform: translateX(0);
+}
+
+.kn-drawer__header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.kn-drawer__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.kn-drawer__close {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border: 1px solid #d3d7dc;
+  border-radius: 50%;
+  background: none;
+  color: #555;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.kn-drawer__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.kn-cart-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #9aa0ab;
+  text-align: center;
+}
+
+.kn-cart-empty span {
+  font-size: 40px;
+  opacity: 0.5;
+}
+
+.kn-cart-empty p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.kn-cart-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.kn-cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+  background: #fafbfc;
+}
+
+.kn-cart-item__info {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.kn-cart-item__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.kn-cart-item__price {
+  font-size: 10px;
+  color: #7a818d;
+}
+
+.kn-cart-item__controls {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kn-qty-btn {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d3d7dc;
+  border-radius: 4px;
+  background: #fff;
+  color: #111827;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kn-qty-num {
+  min-width: 18px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.kn-remove-btn {
+  width: 26px;
+  height: 26px;
+  margin-left: 2px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.45;
+}
+
+.kn-drawer__footer {
+  flex-shrink: 0;
+  padding: 16px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e8eaed;
+}
+
+.kn-cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #111827;
+}
+
+.kn-cart-total span {
+  font-weight: 600;
+}
+
+.kn-total-price {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.kn-checkout-btn {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 4px;
+  background: #111827;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/*Ini bagian tablet*/
+@media (min-width: 576px) and (max-width: 992px) {
+  .navbar {
+    padding: 16px 30px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px 26px;
+    padding: 6px 0 0;
+  }
+
+  .kn-burger {
+    display: none;
+  }
+
+  .hero {
+    padding: 56px 36px 60px;
+    grid-template-columns: 1fr 1fr;
+    gap: 34px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 5vw, 46px);
+  }
+
+  .hero-buttons {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .menu-section {
+    padding: 58px 36px 64px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .footer {
+    padding: 48px 36px 28px;
+  }
+
+  .footer-columns {
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+/*Ini bagian desktop*/
+@media (min-width: 993px) {
+  .navbar {
+    min-height: 78px;
+    padding: 0 70px;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+  }
+
+  .nav-links {
+    grid-column: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 34px;
+    padding: 0;
+  }
+
+  .nav-links a {
+    padding: 0;
+  }
+
+  .kn-burger {
+    display: none;
+  }
+
+  .nav-actions {
+    gap: 18px;
+  }
+
+  .hero {
+    min-height: 482px;
+    padding: 78px 71px 66px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 73px;
+  }
+
+  .hero h1 {
+    font-size: clamp(38px, 3.05vw, 49px);
+  }
+
+  .hero-description {
+    margin: 30px 0 24px;
+  }
+
+  .hero-buttons {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .menu-section {
+    min-height: 571px;
+    padding: 75px 72px 77px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 21px;
+  }
+
+  .product-image {
+    aspect-ratio: auto;
+    height: 188px;
+  }
+
+  .footer {
+    padding: 53px 72px 29px;
+  }
+
+  .footer-columns {
+    grid-template-columns: 1.05fr 1fr 1fr;
+    gap: 72px;
+    min-height: 148px;
+  }
+}
