@@ -1,143 +1,593 @@
+
 "use client";
 
-import Image from "next/image";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
-import { defaultMenus, formatRupiah, type MenuCategory, type MenuItem, type MenuStatus } from "@/data/menus";
-import { readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+import { getMenus, saveMenus, type Menu } from "../../lib/menuStorage";
 
-const emptyForm = { name: "", category: "Makanan" as MenuCategory, price: "", status: "Tersedia" as MenuStatus, description: "", image: "" };
+type Category = "Makanan" | "Minuman";
+type MenuStatus = "Tersedia" | "Habis";
 
-function makeSlug(value: string) {
-  return value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+type MenuForm = {
+  name: string;
+  category: Category;
+  price: string;
+  status: MenuStatus;
+  image: string;
+  description: string;
+};
+
+const emptyForm: MenuForm = {
+  name: "",
+  category: "Makanan",
+  price: "",
+  status: "Tersedia",
+  image: "",
+  description: "",
+};
+
+function formatRupiah(price: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(price);
 }
 
 export default function AdminMenuPage() {
-  const router = useRouter();
+  const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ready, setReady] = useState(false);
-  const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
+
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("Semua");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [filterCategory, setFilterCategory] = useState("Semua");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [form, setForm] = useState<MenuForm>(emptyForm);
+
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [modalError, setModalError] = useState("");
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // MEMBACA DATA MENU
   useEffect(() => {
-    if (window.localStorage.getItem(STORAGE_KEYS.adminLogin) !== "true") {
-      router.replace("/admin/login");
-      return;
-    }
-    const saved = readStorage<MenuItem[]>(STORAGE_KEYS.menus, []);
-    const initialMenus = saved.length > 0 ? saved : defaultMenus;
-    setMenus(initialMenus);
-    writeStorage(STORAGE_KEYS.menus, initialMenus);
-    setReady(true);
+    setMenus(getMenus());
     setLoading(false);
-  }, [router]);
+  }, []);
 
+  // MENUTUP SCROLL HALAMAN SAAT MODAL TERBUKA
   useEffect(() => {
-    if (ready) writeStorage(STORAGE_KEYS.menus, menus);
-  }, [menus, ready]);
+    if (!isModalOpen) return;
 
-  const filteredMenus = useMemo(() => menus.filter((menu) => {
-    const matchesName = menu.name.toLowerCase().includes(search.toLowerCase().trim());
-    const matchesCategory = filter === "Semua" || menu.category === filter;
-    return matchesName && matchesCategory;
-  }), [menus, search, filter]);
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-  function resetForm() {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsModalOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isModalOpen]);
+
+  // PENCARIAN DAN FILTER KATEGORI
+  const filteredMenus = menus.filter((menu) => {
+    const matchSearch = menu.name
+      .toLowerCase()
+      .includes(search.toLowerCase().trim());
+
+    const matchCategory =
+      filterCategory === "Semua" ||
+      menu.category === filterCategory;
+
+    return matchSearch && matchCategory;
+  });
+
+  // MEMBUKA MODAL TAMBAH
+  const openAddModal = () => {
     setEditingId(null);
-    setForm(emptyForm);
-    setMessage("");
-  }
+    setForm({ ...emptyForm });
+    setModalError("");
+    setIsModalOpen(true);
+  };
 
-  function editMenu(menu: MenuItem) {
+  // MEMBUKA MODAL EDIT
+  const openEditModal = (menu: Menu) => {
     setEditingId(menu.id);
-    setForm({ name: menu.name, category: menu.category, price: String(menu.price), status: menu.status, description: menu.description, image: menu.image });
-    setMessage("");
-    document.getElementById("admin-menu-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
 
-  function chooseImage(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setMessage("File harus berupa gambar.");
-      return;
-    }
-    if (file.size > 1_000_000) {
-      setMessage("Ukuran gambar maksimal 1 MB untuk penyimpanan browser.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => setForm((current) => ({ ...current, image: String(reader.result || current.image) }));
-    reader.readAsDataURL(file);
-  }
+    setForm({
+      name: menu.name,
+      category: menu.category,
+      price: String(menu.price),
+      status: menu.status ?? "Tersedia",
+      image: menu.image,
+      description: menu.description,
+    });
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const price = Number(form.price);
-    if (!form.name.trim() || !Number.isFinite(price) || price <= 0) {
-      setMessage("Nama menu dan harga yang valid wajib diisi.");
-      return;
-    }
-    const slug = makeSlug(form.name);
-    const duplicate = menus.some((item) => item.slug === slug && item.id !== editingId);
-    if (duplicate) {
-      setMessage("Nama menu tersebut sudah digunakan. Gunakan nama yang berbeda.");
-      return;
-    }
+    setModalError("");
+    setIsModalOpen(true);
+  };
 
-    if (editingId) {
-      setMenus((current) => current.map((menu) => menu.id === editingId ? { ...menu, name: form.name.trim(), slug, category: form.category, price, status: form.status, description: form.description.trim(), image: form.image || "/images/menu-soto.jpeg" } : menu));
-      setMessage("Menu berhasil diperbarui.");
-    } else {
-      const newMenu: MenuItem = { id: `menu-${Date.now()}`, slug, name: form.name.trim(), category: form.category, price, status: form.status, description: form.description.trim(), image: form.image || "/images/menu-soto.jpeg" };
-      setMenus((current) => [...current, newMenu]);
-      setMessage("Menu berhasil ditambahkan.");
-    }
+  // MENUTUP MODAL
+  const closeModal = () => {
+    setIsModalOpen(false);
     setEditingId(null);
-    setForm(emptyForm);
-  }
+    setModalError("");
+  };
 
-  function deleteMenu(menu: MenuItem) {
-    if (!window.confirm(`Hapus menu "${menu.name}"?`)) return;
-    setMenus((current) => current.filter((item) => item.id !== menu.id));
-    if (editingId === menu.id) resetForm();
-  }
+  // MEMPERBARUI INPUT FORM
+  const updateForm = <K extends keyof MenuForm>(
+    field: K,
+    value: MenuForm[K]
+  ) => {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
 
-  if (loading) return <main className="sb-admin-loading">Memuat data menu…</main>;
+  // UPLOAD GAMBAR DARI KOMPUTER
+  const handleImageChange = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setModalError("Pilih file gambar yang valid.");
+      return;
+    }
+
+    // Batasi ukuran supaya localStorage tidak cepat penuh
+    if (file.size > 700 * 1024) {
+      setModalError(
+        "Ukuran gambar maksimal 700 KB. Kompres gambar terlebih dahulu."
+      );
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        updateForm("image", reader.result);
+        setModalError("");
+      }
+    };
+
+    reader.onerror = () => {
+      setModalError("Gagal membaca file gambar.");
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  // SIMPAN MENU BARU ATAU PERUBAHAN
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setModalError("");
+
+    const name = form.name.trim();
+    const description = form.description.trim();
+    const price = Number(form.price);
+
+    if (!name || !description) {
+      setModalError("Nama dan deskripsi menu wajib diisi.");
+      return;
+    }
+
+    if (!Number.isFinite(price) || price <= 0) {
+      setModalError("Harga harus lebih dari Rp0.");
+      return;
+    }
+
+    if (!form.image) {
+      setModalError("Silakan pilih gambar menu.");
+      return;
+    }
+
+    let updatedMenus: Menu[];
+
+    if (editingId !== null) {
+      updatedMenus = menus.map((menu) =>
+        menu.id === editingId
+          ? {
+              ...menu,
+              name,
+              description,
+              price,
+              category: form.category,
+              status: form.status,
+              image: form.image,
+            }
+          : menu
+      );
+    } else {
+      const newMenu: Menu = {
+        id: Date.now(),
+        name,
+        description,
+        price,
+        category: form.category,
+        status: form.status,
+        image: form.image,
+      };
+
+      updatedMenus = [...menus, newMenu];
+    }
+
+    const saved = saveMenus(updatedMenus);
+
+    if (!saved) {
+      setModalError(
+        "Gagal menyimpan menu. Penyimpanan browser mungkin penuh."
+      );
+      return;
+    }
+
+    setMenus(updatedMenus);
+    setMessage(
+      editingId !== null
+        ? "Menu berhasil diperbarui."
+        : "Menu baru berhasil ditambahkan."
+    );
+    setError("");
+    closeModal();
+  };
+
+  // HAPUS MENU
+  const handleDelete = (menu: Menu) => {
+    const confirmed = window.confirm(
+      `Yakin ingin menghapus menu "${menu.name}"?`
+    );
+
+    if (!confirmed) return;
+
+    const updatedMenus = menus.filter(
+      (item) => item.id !== menu.id
+    );
+
+    if (!saveMenus(updatedMenus)) {
+      setError("Gagal menghapus menu.");
+      setMessage("");
+      return;
+    }
+
+    setMenus(updatedMenus);
+    setMessage(`Menu "${menu.name}" berhasil dihapus.`);
+    setError("");
+  };
 
   return (
-    <div className="sb-admin-layout">
-      <AdminSidebar />
-      <main className="sb-admin-main">
-        <header className="sb-admin-header"><div><p className="sb-admin-greeting">ADMINISTRASI</p><h1>Kelola Menu</h1><p>Tambah, perbarui, cari, dan ubah status menu yang ditampilkan kepada pelanggan.</p></div><span className="sb-admin-count">{menus.length} menu</span></header>
-        <section className="sb-admin-panel sb-menu-management">
-          <div className="sb-admin-panel-head"><div><h2>Daftar Menu</h2><p>Menu berstatus Tersedia muncul di halaman pelanggan.</p></div></div>
-          <div className="sb-menu-toolbar"><input className="form-control" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari nama menu..." aria-label="Cari menu admin" /><select className="form-select" value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filter kategori"><option>Semua</option><option>Makanan</option><option>Minuman</option></select></div>
-          <div className="table-responsive"><table className="table align-middle sb-admin-table"><thead><tr><th>Menu</th><th>Kategori</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead><tbody>{filteredMenus.length === 0 ? <tr><td colSpan={5} className="text-center py-4">Menu tidak ditemukan.</td></tr> : filteredMenus.map((menu) => <tr key={menu.id}><td><div className="sb-admin-menu-cell"><span className="sb-admin-menu-thumb">{menu.image.startsWith("data:") ? <img src={menu.image} alt="" /> : <Image src={menu.image} alt="" fill sizes="64px" />}</span><span><strong>{menu.name}</strong><small>{menu.description}</small></span></div></td><td>{menu.category}</td><td>{formatRupiah(menu.price)}</td><td><span className={`sb-status ${menu.status === "Tersedia" ? "tersedia" : "habis"}`}>{menu.status}</span></td><td><div className="sb-menu-action"><button type="button" className="sb-admin-edit" onClick={() => editMenu(menu)}>Edit</button><button type="button" className="sb-admin-delete" onClick={() => deleteMenu(menu)}>Hapus</button></div></td></tr>)}</tbody></table></div>
-        </section>
+    <main className="am-page">
+      {/* HEADER */}
+      <header className="am-header">
+        <div>
+          <p className="am-breadcrumb">Menu</p>
+          <h1>Kelola Menu</h1>
+        </div>
 
-        <section className="sb-admin-panel sb-admin-form-panel" id="admin-menu-form">
-          <div className="sb-admin-panel-head"><div><h2>{editingId ? "Edit Menu" : "Tambah Menu"}</h2><p>Data disimpan ke localStorage browser, tanpa server database.</p></div>{editingId && <button type="button" className="btn sb-btn-outline" onClick={resetForm}>Batal Edit</button>}</div>
-          <form onSubmit={handleSubmit} className="sb-admin-menu-form">
-            <div className="row g-3">
-              <div className="col-12 col-lg-6"><label className="sb-cart-field"><span>Nama Menu</span><input className="form-control" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required placeholder="Contoh: Soto Betawi Spesial" /></label></div>
-              <div className="col-12 col-sm-6 col-lg-3"><label className="sb-cart-field"><span>Kategori</span><select className="form-select" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value as MenuCategory })}><option>Makanan</option><option>Minuman</option></select></label></div>
-              <div className="col-12 col-sm-6 col-lg-3"><label className="sb-cart-field"><span>Harga (Rp)</span><input className="form-control" type="number" min="1" step="1000" value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} required placeholder="48000" /></label></div>
-              <div className="col-12 col-sm-6"><label className="sb-cart-field"><span>Status</span><select className="form-select" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as MenuStatus })}><option>Tersedia</option><option>Habis</option></select></label></div>
-              <div className="col-12 col-sm-6"><label className="sb-cart-field"><span>Gambar Menu (opsional)</span><input className="form-control" type="file" accept="image/*" onChange={chooseImage} /><small className="sb-input-help">Maksimal 1 MB. Gambar tersimpan di browser.</small></label></div>
-              <div className="col-12"><label className="sb-cart-field"><span>Deskripsi</span><textarea className="form-control" rows={3} value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="Deskripsi singkat menu" /></label></div>
+        <button
+          type="button"
+          className="am-primary-btn"
+          onClick={openAddModal}
+        >
+          + Tambah Menu
+        </button>
+      </header>
+
+      {/* NOTIFIKASI */}
+      {message && (
+        <div className="am-alert am-alert-success">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="am-alert am-alert-error">
+          {error}
+        </div>
+      )}
+
+      {/* TABEL MENU */}
+      <section className="am-table-card">
+        <div className="am-toolbar">
+          <input
+            type="search"
+            placeholder="Cari menu..."
+            value={search}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
+            aria-label="Cari menu"
+          />
+
+          <select
+            value={filterCategory}
+            onChange={(event) =>
+              setFilterCategory(event.target.value)
+            }
+            aria-label="Filter kategori"
+          >
+            <option value="Semua">Semua Kategori</option>
+            <option value="Makanan">Makanan</option>
+            <option value="Minuman">Minuman</option>
+          </select>
+        </div>
+
+        <div className="am-table-scroll">
+          <table className="am-table">
+            <thead>
+              <tr>
+                <th>Menu</th>
+                <th>Kategori</th>
+                <th>Harga</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="am-empty">
+                    Memuat menu...
+                  </td>
+                </tr>
+              ) : filteredMenus.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="am-empty">
+                    Tidak ada menu yang ditemukan.
+                  </td>
+                </tr>
+              ) : (
+                filteredMenus.map((menu) => (
+                  <tr key={menu.id}>
+                    <td className="am-menu-name">
+                      {menu.name}
+                    </td>
+
+                    <td>{menu.category}</td>
+
+                    <td>
+                      {formatRupiah(menu.price)}
+                    </td>
+
+                    <td>
+                      <span
+                        className={
+                          (menu.status ?? "Tersedia") ===
+                          "Tersedia"
+                            ? "am-status available"
+                            : "am-status unavailable"
+                        }
+                      >
+                        {menu.status ?? "Tersedia"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <div className="am-actions">
+                        <button
+                          type="button"
+                          className="am-edit-btn"
+                          onClick={() => openEditModal(menu)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className="am-delete-btn"
+                          onClick={() => handleDelete(menu)}
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* MODAL TAMBAH / EDIT MENU */}
+      {isModalOpen && (
+        <div
+          className="am-modal-overlay"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeModal();
+            }
+          }}
+        >
+          <section
+            className="am-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="am-modal-title"
+          >
+            <div className="am-modal-header">
+              <div>
+                <h2 id="am-modal-title">
+                  {editingId !== null
+                    ? "Edit Menu"
+                    : "Tambah Menu"}
+                </h2>
+                <p>Masukkan informasi menu</p>
+              </div>
+
+              <button
+                type="button"
+                className="am-close-btn"
+                onClick={closeModal}
+                aria-label="Tutup popup"
+              >
+                ×
+              </button>
             </div>
-            {form.image && <div className="sb-admin-image-preview"><span>Pratinjau gambar</span>{form.image.startsWith("data:") ? <img src={form.image} alt="Pratinjau gambar menu" /> : <Image src={form.image} alt="Pratinjau gambar menu" width={180} height={120} />}</div>}
-            {message && <p className={message.includes("berhasil") ? "sb-form-success" : "sb-form-error"} role="status">{message}</p>}
-            <div className="sb-modal-actions"><button type="button" className="btn sb-btn-outline" onClick={resetForm}>Reset Form</button><button type="submit" className="btn sb-btn-primary">{editingId ? "Simpan Perubahan" : "Tambah Menu"}</button></div>
-          </form>
-        </section>
-      </main>
-    </div>
+
+            <form
+              onSubmit={handleSubmit}
+              className="am-modal-form"
+            >
+              <div className="am-field">
+                <label htmlFor="am-name">
+                  Nama Menu
+                </label>
+                <input
+                  id="am-name"
+                  type="text"
+                  placeholder="Contoh: Soto Betawi Spesial"
+                  value={form.name}
+                  onChange={(event) =>
+                    updateForm("name", event.target.value)
+                  }
+                  required
+                />
+              </div>
+
+              <div className="am-field">
+                <label htmlFor="am-category">
+                  Kategori
+                </label>
+                <select
+                  id="am-category"
+                  value={form.category}
+                  onChange={(event) =>
+                    updateForm(
+                      "category",
+                      event.target.value as Category
+                    )
+                  }
+                >
+                  <option value="Makanan">Makanan</option>
+                  <option value="Minuman">Minuman</option>
+                </select>
+              </div>
+
+              <div className="am-field">
+                <label htmlFor="am-price">
+                  Harga
+                </label>
+                <input
+                  id="am-price"
+                  type="number"
+                  min="1"
+                  placeholder="48000"
+                  value={form.price}
+                  onChange={(event) =>
+                    updateForm("price", event.target.value)
+                  }
+                  required
+                />
+              </div>
+
+              <div className="am-field">
+                <label htmlFor="am-status">
+                  Status
+                </label>
+                <select
+                  id="am-status"
+                  value={form.status}
+                  onChange={(event) =>
+                    updateForm(
+                      "status",
+                      event.target.value as MenuStatus
+                    )
+                  }
+                >
+                  <option value="Tersedia">Tersedia</option>
+                  <option value="Habis">Habis</option>
+                </select>
+              </div>
+
+              <div className="am-field">
+                <label htmlFor="am-image">
+                  Gambar Menu
+                </label>
+                <input
+                  ref={fileInputRef}
+                  id="am-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+
+                {form.image && (
+                  <div className="am-image-preview">
+                    <img
+                      src={form.image}
+                      alt="Preview gambar menu"
+                    />
+                  </div>
+                )}
+
+                <p className="am-field-hint">
+                  Pilih gambar dari komputer (maksimal 700 KB).
+                  Saat mengedit, gambar lama tetap digunakan
+                  jika tidak memilih gambar baru.
+                </p>
+              </div>
+
+              <div className="am-field">
+                <label htmlFor="am-description">
+                  Deskripsi
+                </label>
+                <textarea
+                  id="am-description"
+                  rows={4}
+                  placeholder="Deskripsi menu..."
+                  value={form.description}
+                  onChange={(event) =>
+                    updateForm(
+                      "description",
+                      event.target.value
+                    )
+                  }
+                  required
+                />
+              </div>
+
+              {modalError && (
+                <p className="am-modal-error">
+                  {modalError}
+                </p>
+              )}
+
+              <div className="am-modal-footer">
+                <button
+                  type="button"
+                  className="am-cancel-btn"
+                  onClick={closeModal}
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="submit"
+                  className="am-primary-btn"
+                >
+                  {editingId !== null
+                    ? "Simpan Perubahan"
+                    : "Simpan Menu"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+    </main>
   );
 }

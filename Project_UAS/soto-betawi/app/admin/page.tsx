@@ -1,60 +1,436 @@
+
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import AdminSidebar from "@/components/AdminSidebar";
-import { formatRupiah, type MenuItem } from "@/data/menus";
-import { defaultMenus } from "@/data/menus";
-import { readStorage, STORAGE_KEYS } from "@/lib/storage";
 
-type Order = { no: string; day: string; time: string; name: string; status: string; total: number; items: { name: string; qty: number }[] };
+// TIPE DATA ITEM PESANAN
+type OrderItem = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+};
 
-export default function AdminDashboardPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+// TIPE DATA PESANAN
+type Order = {
+  id: string;
+  nama: string;
+  tanggal: string;
+  total: number;
+  status: string;
+  items: OrderItem[];
+};
+
+export default function AdminDashboard() {
+  // STATE DATA PESANAN
   const [orders, setOrders] = useState<Order[]>([]);
-  const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
+  const [loading, setLoading] = useState(true);
 
+  // MEMBACA PESANAN CUSTOMER
   useEffect(() => {
-    if (window.localStorage.getItem(STORAGE_KEYS.adminLogin) !== "true") {
-      router.replace("/admin/login");
-      return;
+    const loadOrders = () => {
+      try {
+        const savedOrders = localStorage.getItem(
+          "soto-betawi-orders"
+        );
+
+        if (savedOrders) {
+          const parsedOrders = JSON.parse(savedOrders);
+
+          if (Array.isArray(parsedOrders)) {
+            setOrders(parsedOrders);
+          } else {
+            setOrders([]);
+          }
+        } else {
+          setOrders([]);
+        }
+      } catch (error) {
+        console.error(
+          "Gagal membaca data pesanan:",
+          error
+        );
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadOrders();
+
+    window.addEventListener("storage", loadOrders);
+
+    return () => {
+      window.removeEventListener(
+        "storage",
+        loadOrders
+      );
+    };
+  }, []);
+
+  // TOTAL PESANAN
+  const totalPesanan = orders.length;
+
+  // PESANAN HARI INI
+  const hariIni = new Date().toLocaleDateString("en-CA");
+
+  const pesananHariIni = orders.filter((order) => {
+    if (!order.tanggal) return false;
+
+    const tanggalPesanan = new Date(order.tanggal);
+
+    if (Number.isNaN(tanggalPesanan.getTime())) {
+      return false;
     }
-    setOrders(readStorage<Order[]>(STORAGE_KEYS.orders, []));
-    setMenus(readStorage<MenuItem[]>(STORAGE_KEYS.menus, defaultMenus));
-    setLoading(false);
-  }, [router]);
 
-  const today = new Date();
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const todayOrders = orders.filter((order) => order.day === todayKey).length;
-  const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-  const totalItems = orders.reduce((sum, order) => sum + (order.items || []).reduce((subtotal, item) => subtotal + Number(item.qty || 0), 0), 0);
-  const bestMenus = useMemo(() => {
-    const counts: Record<string, number> = {};
-    orders.forEach((order) => (order.items || []).forEach((item) => { counts[item.name] = (counts[item.name] || 0) + Number(item.qty || 0); }));
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  }, [orders]);
+    const tanggalLokal =
+      tanggalPesanan.toLocaleDateString("en-CA");
 
-  if (loading) return <main className="sb-admin-loading">Memuat dashboard admin…</main>;
+    return tanggalLokal === hariIni;
+  }).length;
+
+  // TOTAL NILAI PESANAN
+  const totalPendapatan = orders.reduce(
+    (total, order) =>
+      total + (Number(order.total) || 0),
+    0
+  );
+
+  // JUMLAH MENU TERJUAL
+  const menuTerjual = orders.reduce(
+    (total, order) => {
+      const jumlahItem = Array.isArray(order.items)
+        ? order.items.reduce(
+            (jumlah, item) =>
+              jumlah + (Number(item.quantity) || 0),
+            0
+          )
+        : 0;
+
+      return total + jumlahItem;
+    },
+    0
+  );
+
+  // FORMAT RUPIAH
+  const formatRupiah = (angka: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(angka);
+  };
+
+  
+  // FORMAT TANGGAL DAN WAKTU PESANAN
+  const formatTanggal = (tanggal: string) => {
+    if (!tanggal) return "-";
+
+    const date = new Date(tanggal);
+
+    if (Number.isNaN(date.getTime())) {
+      return "-";
+    }
+
+    return date.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
+  // MENGAMBIL 5 PESANAN TERBARU
+  const pesananTerbaru = [...orders]
+    .sort((a, b) => {
+      const waktuA = new Date(a.tanggal).getTime() || 0;
+      const waktuB = new Date(b.tanggal).getTime() || 0;
+
+      return waktuB - waktuA;
+    })
+    .slice(0, 5);
+
+    
+  // LANGKAH 17.4 - MENGHITUNG MENU TERLARIS
+
+  const jumlahPenjualan: Record<string, number> = {};
+
+  orders.forEach((order) => {
+    if (!Array.isArray(order.items)) return;
+
+    order.items.forEach((item) => {
+      const namaMenu = item.name;
+      const jumlah = Number(item.quantity) || 0;
+
+      if (!namaMenu) return;
+
+      jumlahPenjualan[namaMenu] =
+        (jumlahPenjualan[namaMenu] || 0) + jumlah;
+    });
+  });
+
+  // URUTKAN DARI YANG PALING BANYAK TERJUAL
+  const menuTerlaris = Object.entries(jumlahPenjualan)
+    .map(([name, quantity]) => ({
+      name,
+      quantity,
+    }))
+    .sort((a, b) => b.quantity - a.quantity)
+    .slice(0, 5);
+
+  // PENJUALAN TERTINGGI UNTUK PANJANG GRAFIK
+  const penjualanTertinggi =
+    menuTerlaris.length > 0
+      ? menuTerlaris[0].quantity
+      : 0;
+
 
   return (
-    <div className="sb-admin-layout">
-      <AdminSidebar />
-      <main className="sb-admin-main">
-        <header className="sb-admin-header"><div><p className="sb-admin-greeting">DASHBOARD</p><h1>Selamat Datang, Admin!</h1><p>Ringkasan aktivitas pesanan Soto Betawi Jakarta.</p></div><Link href="/" className="btn sb-btn-primary">Lihat Website ↗</Link></header>
-        <section className="row g-3 sb-admin-stats">
-          <div className="col-12 col-sm-6 col-xl-3"><article className="sb-admin-stat"><span className="sb-admin-stat-icon">🛒</span><p>Total Pesanan</p><strong>{orders.length}</strong></article></div>
-          <div className="col-12 col-sm-6 col-xl-3"><article className="sb-admin-stat"><span className="sb-admin-stat-icon">📋</span><p>Pesanan Hari Ini</p><strong>{todayOrders}</strong></article></div>
-          <div className="col-12 col-sm-6 col-xl-3"><article className="sb-admin-stat"><span className="sb-admin-stat-icon">💰</span><p>Total Nilai Pesanan</p><strong>{formatRupiah(totalRevenue)}</strong></article></div>
-          <div className="col-12 col-sm-6 col-xl-3"><article className="sb-admin-stat"><span className="sb-admin-stat-icon">🍲</span><p>Menu Terjual</p><strong>{totalItems}</strong></article></div>
-        </section>
-        <section className="row g-4 sb-admin-content">
-          <div className="col-12 col-xl-8"><article className="sb-admin-panel"><div className="sb-admin-panel-head"><div><h2>Pesanan Terbaru</h2><p>Pesanan yang tercatat dari formulir pemesanan website.</p></div></div><div className="table-responsive"><table className="table align-middle sb-admin-table"><thead><tr><th>No. Pesanan</th><th>Pelanggan</th><th>Total</th><th>Waktu</th><th>Status</th></tr></thead><tbody>{orders.length === 0 ? <tr><td colSpan={5} className="text-center py-4">Belum ada pesanan.</td></tr> : [...orders].reverse().slice(0, 8).map((order) => <tr key={order.no}><td><strong>{order.no}</strong></td><td>{order.name}</td><td>{formatRupiah(order.total)}</td><td>{new Date(order.time).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</td><td><span className={`sb-status ${order.status.toLowerCase()}`}>{order.status}</span></td></tr>)}</tbody></table></div><p className="sb-admin-footnote">Data pesanan tersimpan di localStorage browser ini.</p></article></div>
-          <div className="col-12 col-xl-4"><article className="sb-admin-panel"><div className="sb-admin-panel-head"><div><h2>Menu Terlaris</h2><p>Diurutkan berdasarkan jumlah item terjual.</p></div></div>{bestMenus.length === 0 ? <p className="sb-admin-empty">Belum ada data penjualan.</p> : bestMenus.map(([name, qty]) => <div className="sb-best-menu" key={name}><div><strong>{name}</strong><span>{qty} item</span></div><div className="sb-best-bar"><span style={{ width: `${Math.max(8, (qty / bestMenus[0][1]) * 100)}%` }} /></div></div>)}<Link href="/admin/menu" className="btn sb-btn-outline w-100 mt-3">Kelola Menu</Link></article><article className="sb-admin-panel sb-admin-menu-shortcut"><h2>Menu Saat Ini</h2><p>{menus.filter((menu) => menu.status === "Tersedia").length} menu tersedia untuk pelanggan.</p><Link href="/admin/menu">Buka pengelolaan menu →</Link></article></div>
-        </section>
-      </main>
-    </div>
+    <main className="admin-dashboard">
+
+      {/* HEADER DASHBOARD */}
+      <header className="admin-dashboard-header">
+        <div>
+          <p className="admin-breadcrumb">
+            Dashboard
+          </p>
+
+          <h1>Selamat Datang, Admin!</h1>
+        </div>
+
+        <Link
+          href="/"
+          className="admin-view-website"
+        >
+          Lihat Website
+        </Link>
+      </header>
+
+      {/* EMPAT KARTU STATISTIK */}
+      <section className="admin-dashboard-stats">
+
+        {/* TOTAL PESANAN */}
+        <div className="admin-dashboard-stat-card">
+          <div className="admin-stat-info">
+            <p>Total Pesanan</p>
+            <h2>
+              {loading ? "..." : totalPesanan}
+            </h2>
+          </div>
+
+          <span className="admin-stat-icon">
+            🛒
+          </span>
+        </div>
+
+        {/* PESANAN HARI INI */}
+        <div className="admin-dashboard-stat-card">
+          <div className="admin-stat-info">
+            <p>Pesanan Hari Ini</p>
+            <h2>
+              {loading ? "..." : pesananHariIni}
+            </h2>
+          </div>
+
+          <span className="admin-stat-icon">
+            📋
+          </span>
+        </div>
+
+        {/* TOTAL NILAI PESANAN */}
+        <div className="admin-dashboard-stat-card">
+          <div className="admin-stat-info">
+            <p>Nilai Pesanan</p>
+            <h2>
+              {loading
+                ? "..."
+                : formatRupiah(totalPendapatan)}
+            </h2>
+          </div>
+
+          <span className="admin-stat-icon">
+            💰
+          </span>
+        </div>
+
+        {/* MENU TERJUAL */}
+        <div className="admin-dashboard-stat-card">
+          <div className="admin-stat-info">
+            <p>Menu Terjual</p>
+            <h2>
+              {loading ? "..." : menuTerjual}
+            </h2>
+          </div>
+
+          <span className="admin-stat-icon">
+            🍲
+          </span>
+        </div>
+
+      </section>
+
+      {/* AREA UNTUK LANGKAH 17.3 DAN 17.4 */}
+      <section className="admin-dashboard-next">
+        <div className="admin-dashboard-placeholder">
+          
+        
+        {/* TABEL PESANAN TERBARU */}
+        <div className="admin-recent-orders">
+
+          <div className="admin-card-header">
+            <div>
+              <h2>Pesanan Terbaru</h2>
+              <p>Daftar pesanan yang masuk</p>
+            </div>
+
+            <Link
+              href="/admin/pesanan"
+              className="admin-card-link"
+            >
+              Lihat Semua
+            </Link>
+          </div>
+
+          <div className="admin-table-wrapper">
+            <table className="admin-orders-table">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Pelanggan</th>
+                  <th>Total</th>
+                  <th>Waktu</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="admin-table-empty">
+                      Memuat data pesanan...
+                    </td>
+                  </tr>
+                ) : pesananTerbaru.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="admin-table-empty">
+                      Belum ada pesanan customer.
+                    </td>
+                  </tr>
+                ) : (
+                  pesananTerbaru.map((order) => (
+                    <tr key={order.id}>
+                      <td>
+                        <span className="admin-order-id">
+                          {order.id}
+                        </span>
+                      </td>
+
+                      <td>
+                        {order.nama || "Pelanggan"}
+                      </td>
+
+                      <td>
+                        {formatRupiah(
+                          Number(order.total) || 0
+                        )}
+                      </td>
+
+                      <td>
+                        {formatTanggal(order.tanggal)}
+                      </td>
+
+                      <td>
+                        <span
+                          className={
+                            order.status === "Menunggu Konfirmasi"
+                              ? "admin-order-status pending"
+                              : "admin-order-status"
+                          }
+                        >
+                          {order.status || "Tidak diketahui"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+        </div>
+
+        
+        {/* LANGKAH 17.4 - MENU TERLARIS */}
+        <div className="admin-best-selling">
+
+          <div className="admin-card-header">
+            <div>
+              <h2>Menu Terlaris</h2>
+              <p>Menu yang paling banyak dipesan</p>
+            </div>
+
+            <Link
+              href="/admin/menu"
+              className="admin-card-link"
+            >
+              Kelola Menu
+            </Link>
+          </div>
+
+          <div className="admin-best-selling-list">
+
+            {loading ? (
+              <p className="admin-best-selling-empty">
+                Memuat data menu...
+              </p>
+            ) : menuTerlaris.length === 0 ? (
+              <p className="admin-best-selling-empty">
+                Belum ada data penjualan menu.
+              </p>
+            ) : (
+              menuTerlaris.map((menu) => {
+                const persentase =
+                  penjualanTertinggi > 0
+                    ? (menu.quantity /
+                        penjualanTertinggi) *
+                      100
+                    : 0;
+
+                return (
+                  <div
+                    key={menu.name}
+                    className="admin-best-selling-item"
+                  >
+                    <div className="admin-best-selling-info">
+                      <strong>{menu.name}</strong>
+
+                      <span>
+                        {menu.quantity} terjual
+                      </span>
+                    </div>
+
+                    <div className="admin-best-selling-track">
+                      <div
+                        className="admin-best-selling-progress"
+                        style={{
+                          width: `${persentase}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
   );
 }

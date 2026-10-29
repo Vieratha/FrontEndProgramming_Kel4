@@ -1,59 +1,156 @@
+
 "use client";
 
+import { useState } from "react";
+import type { FormEvent } from "react";
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
-import { readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
-
-type StoredUser = { id: number; name: string; email: string; password: string };
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleRegister = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setError("");
+    setSuccess("");
+
+    if (!name.trim()) {
+      setError("Nama lengkap wajib diisi.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Masukkan alamat email yang valid.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password minimal 8 karakter.");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setMessage("Konfirmasi password tidak sesuai.");
+      setError("Konfirmasi password tidak sesuai.");
       return;
     }
-    if (password.length < 6) {
-      setMessage("Password minimal terdiri dari 6 karakter.");
-      return;
-    }
-    const users = readStorage<StoredUser[]>(STORAGE_KEYS.users, []);
-    if (users.some((user) => user.email.toLowerCase() === email.trim().toLowerCase())) {
-      setMessage("Email sudah terdaftar. Silakan login.");
-      return;
-    }
-    const newUser: StoredUser = { id: Date.now(), name: name.trim(), email: email.trim(), password };
-    writeStorage(STORAGE_KEYS.users, [...users, newUser]);
-    router.push("/login");
-  }
+
+    setSuccess(
+      "Form berhasil divalidasi! Akun belum dibuat."
+    );
+  };
 
   return (
-    <main className="sb-auth-page">
-      <section className="sb-auth-card">
-        <Link href="/" className="sb-brand sb-auth-brand"><span className="sb-brand-mark" aria-hidden="true">♨</span><span><span className="sb-brand-main">SOTO BETAWI</span><span className="sb-brand-accent">JAKARTA</span></span></Link>
-        <p className="sb-pill-label">BERGABUNG DENGAN KAMI</p>
-        <h1>Buat Akun</h1>
-        <p className="sb-auth-intro">Isi informasi di bawah untuk membuat akun pelanggan.</p>
-        <form onSubmit={handleSubmit} className="sb-auth-form">
-          <label className="sb-cart-field"><span>Nama Lengkap</span><input className="form-control" required value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" placeholder="Nama Anda" /></label>
-          <label className="sb-cart-field"><span>Email</span><input className="form-control" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="nama@email.com" /></label>
-          <label className="sb-cart-field"><span>Password</span><input className="form-control" type="password" required value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" placeholder="Minimal 6 karakter" /></label>
-          <label className="sb-cart-field"><span>Konfirmasi Password</span><input className="form-control" type="password" required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" placeholder="Ulangi password" /></label>
-          {message && <p className="sb-form-error" role="alert">{message}</p>}
-          <button type="submit" className="btn sb-btn-primary w-100">Daftar</button>
+    <main className="auth-page">
+      <div className="auth-card">
+
+        <div className="auth-header">
+          <h1>Buat Akun Baru</h1>
+          <p>
+            Daftar sebagai customer Soto Betawi Jakarta
+            dan nikmati kemudahan pemesanan.
+          </p>
+        </div>
+
+        <form
+          className="auth-form"
+          onSubmit={handleRegister}
+          noValidate
+        >
+          {/* NAMA */}
+          <div className="form-group">
+            <label htmlFor="name">Nama Lengkap</label>
+            <input
+              type="text"
+              id="name"
+              placeholder="Masukkan nama lengkap"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* EMAIL */}
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Masukkan email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* PASSWORD */}
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Buat password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* KONFIRMASI PASSWORD */}
+          <div className="form-group">
+            <label htmlFor="confirmPassword">
+              Konfirmasi Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              placeholder="Ulangi password"
+              value={confirmPassword}
+              onChange={(e) =>
+                setConfirmPassword(e.target.value)
+              }
+              required
+            />
+          </div>
+
+          {/* PESAN ERROR */}
+          {error && (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          {/* PESAN BERHASIL */}
+          {success && (
+            <p className="auth-success" role="status">
+              {success}
+            </p>
+          )}
+
+          {/* TOMBOL REGISTER */}
+          <button
+            type="submit"
+            className="btn btn-primary"
+          >
+            Daftar
+          </button>
         </form>
-        <p className="sb-auth-switch">Sudah punya akun? <Link href="/login">Login</Link></p>
-        <Link href="/" className="sb-back-web">← Kembali ke website</Link>
-        <p className="sb-demo-note">Demo akademik: akun disimpan di localStorage. Jangan gunakan password asli.</p>
-      </section>
+
+        <p className="auth-footer">
+          Sudah punya akun?{" "}
+          <Link href="/login">Masuk Sekarang</Link>
+        </p>
+
+        <Link href="/" className="back-home">
+          ← Kembali ke Beranda
+        </Link>
+
+      </div>
     </main>
   );
 }
