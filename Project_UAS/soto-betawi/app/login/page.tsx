@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -11,8 +10,9 @@ export default function LoginPage() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
@@ -35,28 +35,49 @@ export default function LoginPage() {
       return;
     }
 
-    setSuccess(
-      "Form login berhasil divalidasi! Autentikasi akun belum tersedia."
-    );
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Login gagal.");
+      }
+
+      setSuccess("Login berhasil!");
+
+      window.location.href = result.user.role === "ADMIN" ? "/admin" : "/";
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat login.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main className="auth-page">
       <div className="auth-card">
-
         <div className="auth-header">
           <h1>Login Customer</h1>
-          <p>
-            Masuk ke akun Soto Betawi Jakarta
-            untuk melanjutkan pemesanan.
-          </p>
+          <p>Masuk ke akun Soto Betawi Jakarta untuk melanjutkan pemesanan.</p>
         </div>
 
-        <form
-          className="auth-form"
-          onSubmit={handleLogin}
-          noValidate
-        >
+        <form className="auth-form" onSubmit={handleLogin} noValidate>
           {/* INPUT EMAIL */}
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -96,25 +117,18 @@ export default function LoginPage() {
           )}
 
           {/* TOMBOL LOGIN */}
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Masuk
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Memproses..." : "Masuk"}
           </button>
         </form>
 
         <p className="auth-footer">
-          Belum punya akun?{" "}
-          <Link href="/register">
-            Daftar Sekarang
-          </Link>
+          Belum punya akun? <Link href="/register">Daftar Sekarang</Link>
         </p>
 
         <Link href="/" className="back-home">
           ← Kembali ke Beranda
         </Link>
-
       </div>
     </main>
   );

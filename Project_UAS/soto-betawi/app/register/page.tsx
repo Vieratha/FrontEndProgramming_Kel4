@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -14,7 +13,9 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleRegister = (e: FormEvent<HTMLFormElement>) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
@@ -40,28 +41,48 @@ export default function RegisterPage() {
       return;
     }
 
-    setSuccess(
-      "Form berhasil divalidasi! Akun belum dibuat."
-    );
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message);
+      }
+
+      setSuccess("Registrasi berhasil! Mengalihkan...");
+      window.location.href = "/";
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Registrasi gagal.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main className="auth-page">
       <div className="auth-card">
-
         <div className="auth-header">
           <h1>Buat Akun Baru</h1>
           <p>
-            Daftar sebagai customer Soto Betawi Jakarta
-            dan nikmati kemudahan pemesanan.
+            Daftar sebagai customer Soto Betawi Jakarta dan nikmati kemudahan
+            pemesanan.
           </p>
         </div>
 
-        <form
-          className="auth-form"
-          onSubmit={handleRegister}
-          noValidate
-        >
+        <form className="auth-form" onSubmit={handleRegister} noValidate>
           {/* NAMA */}
           <div className="form-group">
             <label htmlFor="name">Nama Lengkap</label>
@@ -103,17 +124,13 @@ export default function RegisterPage() {
 
           {/* KONFIRMASI PASSWORD */}
           <div className="form-group">
-            <label htmlFor="confirmPassword">
-              Konfirmasi Password
-            </label>
+            <label htmlFor="confirmPassword">Konfirmasi Password</label>
             <input
               type="password"
               id="confirmPassword"
               placeholder="Ulangi password"
               value={confirmPassword}
-              onChange={(e) =>
-                setConfirmPassword(e.target.value)
-              }
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>
@@ -133,23 +150,18 @@ export default function RegisterPage() {
           )}
 
           {/* TOMBOL REGISTER */}
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Daftar
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Mendaftarkan..." : "Daftar"}
           </button>
         </form>
 
         <p className="auth-footer">
-          Sudah punya akun?{" "}
-          <Link href="/login">Masuk Sekarang</Link>
+          Sudah punya akun? <Link href="/login">Masuk Sekarang</Link>
         </p>
 
         <Link href="/" className="back-home">
           ← Kembali ke Beranda
         </Link>
-
       </div>
     </main>
   );
