@@ -1,12 +1,8 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  getMenus,
-  type Menu,
-} from "../lib/menuStorage";
+import { getMenus, type Menu } from "../lib/menuStorage";
 
 type CartItem = Menu & {
   quantity: number;
@@ -54,24 +50,16 @@ export default function MenuSection({
     window.addEventListener("storage", updateMenus);
 
     return () => {
-      window.removeEventListener(
-        "menu-updated",
-        updateMenus
-      );
+      window.removeEventListener("menu-updated", updateMenus);
 
-      window.removeEventListener(
-        "storage",
-        updateMenus
-      );
+      window.removeEventListener("storage", updateMenus);
     };
   }, []);
 
   // MEMBACA KERANJANG DARI LOCAL STORAGE
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem(
-        "soto-betawi-cart"
-      );
+      const savedCart = localStorage.getItem("soto-betawi-cart");
 
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
@@ -87,72 +75,58 @@ export default function MenuSection({
     }
   }, []);
 
-  
-// MENYESUAIKAN KERANJANG DENGAN MENU TERBARU
-useEffect(() => {
-  if (!cartLoaded || !menusLoaded) return;
+  // MENYESUAIKAN KERANJANG DENGAN MENU TERBARU
+  useEffect(() => {
+    if (!cartLoaded || !menusLoaded) return;
 
-  setCart((prevCart) => {
-    const updatedCart = prevCart.flatMap((item) => {
-      const currentMenu = menus.find(
-        (menu) => menu.id === item.id
-      );
+    setCart((prevCart) => {
+      const updatedCart = prevCart.flatMap((item) => {
+        const currentMenu = menus.find((menu) => menu.id === item.id);
 
-      // Menu yang dihapus admin tidak lagi tersedia
-      if (!currentMenu) {
-        return [];
+        // Menu yang dihapus admin tidak lagi tersedia
+        if (!currentMenu) {
+          return [];
+        }
+
+        return [
+          {
+            ...currentMenu,
+            quantity: item.quantity,
+          },
+        ];
+      });
+
+      // Hindari pembaruan state jika tidak ada perubahan
+      if (JSON.stringify(prevCart) === JSON.stringify(updatedCart)) {
+        return prevCart;
       }
 
-      return [{
-        ...currentMenu,
-        quantity: item.quantity,
-      }];
+      return updatedCart;
     });
+  }, [menus, cartLoaded, menusLoaded]);
 
-    // Hindari pembaruan state jika tidak ada perubahan
-    if (JSON.stringify(prevCart) === JSON.stringify(updatedCart)) {
-      return prevCart;
+  // MENYIMPAN KERANJANG SETELAH MENU SIAP
+  useEffect(() => {
+    if (!cartLoaded || !menusLoaded) return;
+
+    try {
+      localStorage.setItem("soto-betawi-cart", JSON.stringify(cart));
+    } catch (error) {
+      console.error("Gagal menyimpan keranjang:", error);
     }
-
-    return updatedCart;
-  });
-}, [menus, cartLoaded, menusLoaded]);
-
-
-  
-// MENYIMPAN KERANJANG SETELAH MENU SIAP
-useEffect(() => {
-  if (!cartLoaded || !menusLoaded) return;
-
-  try {
-    localStorage.setItem(
-      "soto-betawi-cart",
-      JSON.stringify(cart)
-    );
-  } catch (error) {
-    console.error(
-      "Gagal menyimpan keranjang:",
-      error
-    );
-  }
-}, [cart, cartLoaded, menusLoaded]);
-
+  }, [cart, cartLoaded, menusLoaded]);
 
   // FAVORIT
   const toggleFavorite = (id: number) => {
     setFavorites((prev) =>
-      prev.includes(id)
-        ? prev.filter((item) => item !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
   // TAMBAH MENU KE KERANJANG
   const addToCart = (menu: Menu) => {
     setCart((prev) => {
-      const existing = prev.find(
-        (item) => item.id === menu.id
-      );
+      const existing = prev.find((item) => item.id === menu.id);
 
       if (existing) {
         return prev.map((item) =>
@@ -161,7 +135,7 @@ useEffect(() => {
                 ...item,
                 quantity: item.quantity + 1,
               }
-            : item
+            : item,
         );
       }
 
@@ -184,8 +158,8 @@ useEffect(() => {
               ...item,
               quantity: item.quantity + 1,
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -199,24 +173,19 @@ useEffect(() => {
                 ...item,
                 quantity: item.quantity - 1,
               }
-            : item
+            : item,
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0),
     );
   };
 
   // HAPUS MENU DARI KERANJANG
   const removeFromCart = (id: number) => {
-    setCart((prev) =>
-      prev.filter((item) => item.id !== id)
-    );
+    setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   // TOTAL ITEM KERANJANG
-  const totalItems = cart.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
   // MENGIRIM JUMLAH ITEM KE HOMECLIENT
   useEffect(() => {
@@ -225,9 +194,8 @@ useEffect(() => {
 
   // TOTAL HARGA
   const totalHarga = cart.reduce(
-    (total, item) =>
-      total + item.price * item.quantity,
-    0
+    (total, item) => total + item.price * item.quantity,
+    0,
   );
 
   // FORMAT RUPIAH
@@ -242,8 +210,7 @@ useEffect(() => {
       .includes(search.toLowerCase().trim());
 
     const cocokKategori =
-      filter === "all" ||
-      menu.category.toLowerCase() === filter;
+      filter === "all" || menu.category.toLowerCase() === filter;
 
     return cocokNama && cocokKategori;
   });
@@ -251,7 +218,6 @@ useEffect(() => {
   return (
     <section className="menu-section" id="menu">
       <div className="container">
-
         {/* SEARCH DAN FILTER */}
         <div className="menu-controls">
           <input
@@ -272,9 +238,7 @@ useEffect(() => {
                 key={item.value}
                 type="button"
                 className={
-                  filter === item.value
-                    ? "filter-btn active"
-                    : "filter-btn"
+                  filter === item.value ? "filter-btn active" : "filter-btn"
                 }
                 onClick={() => setFilter(item.value)}
               >
@@ -289,16 +253,13 @@ useEffect(() => {
           <p className="pill-label">MENU PILIHAN</p>
           <h2>Menu Andalan Kami</h2>
           <p>
-            Rasakan kelezatan legendaris dari menu terbaik
-            buatan koki ahli kami.
+            Rasakan kelezatan legendaris dari menu terbaik buatan koki ahli
+            kami.
           </p>
         </div>
 
         {/* DAFTAR MENU CUSTOMER */}
-        <div
-          className="menu-grid"
-          id="customerMenuGrid"
-        >
+        <div className="menu-grid" id="customerMenuGrid">
           {menuFiltered.map((menu) => (
             <article
               className="menu-card"
@@ -306,10 +267,7 @@ useEffect(() => {
               data-category={menu.category.toLowerCase()}
             >
               <div className="menu-photo">
-                <img
-                  src={menu.image}
-                  alt={menu.name}
-                />
+                <img src={menu.image} alt={menu.name} />
               </div>
 
               <div className="menu-body">
@@ -317,9 +275,7 @@ useEffect(() => {
                 <p>{menu.description}</p>
 
                 <div className="menu-bottom">
-                  <strong>
-                    {formatRupiah(menu.price)}
-                  </strong>
+                  <strong>{formatRupiah(menu.price)}</strong>
 
                   {/* FAVORIT */}
                   <button
@@ -327,20 +283,14 @@ useEffect(() => {
                     className="favorite-btn"
                     aria-label={`Favorit ${menu.name}`}
                     aria-pressed={favorites.includes(menu.id)}
-                    onClick={() =>
-                      toggleFavorite(menu.id)
-                    }
+                    onClick={() => toggleFavorite(menu.id)}
                   >
                     <span className="favorite-icon">
-                      {favorites.includes(menu.id)
-                        ? "♥"
-                        : "♡"}
+                      {favorites.includes(menu.id) ? "♥" : "♡"}
                     </span>
 
                     <span className="favorite-count">
-                      {favorites.includes(menu.id)
-                        ? 1
-                        : 0}
+                      {favorites.includes(menu.id) ? 1 : 0}
                     </span>
                   </button>
 
@@ -398,9 +348,7 @@ useEffect(() => {
             <button
               type="button"
               className="cart-close"
-              onClick={() =>
-                setIsCartOpen(false)
-              }
+              onClick={() => setIsCartOpen(false)}
               aria-label="Tutup keranjang"
             >
               ✕
@@ -409,9 +357,7 @@ useEffect(() => {
             <h3>🛒 Keranjang Belanja</h3>
 
             {cart.length === 0 ? (
-              <p style={{ marginTop: "20px" }}>
-                Keranjang masih kosong.
-              </p>
+              <p style={{ marginTop: "20px" }}>Keranjang masih kosong.</p>
             ) : (
               <>
                 {/* DAFTAR ITEM KERANJANG */}
@@ -430,9 +376,7 @@ useEffect(() => {
                   >
                     <div>
                       <h4>{item.name}</h4>
-                      <p>
-                        {formatRupiah(item.price)}
-                      </p>
+                      <p>{formatRupiah(item.price)}</p>
                     </div>
 
                     {/* KONTROL JUMLAH */}
@@ -445,23 +389,17 @@ useEffect(() => {
                     >
                       <button
                         type="button"
-                        onClick={() =>
-                          decreaseQuantity(item.id)
-                        }
+                        onClick={() => decreaseQuantity(item.id)}
                         aria-label={`Kurangi ${item.name}`}
                       >
                         −
                       </button>
 
-                      <strong>
-                        {item.quantity}
-                      </strong>
+                      <strong>{item.quantity}</strong>
 
                       <button
                         type="button"
-                        onClick={() =>
-                          increaseQuantity(item.id)
-                        }
+                        onClick={() => increaseQuantity(item.id)}
                         aria-label={`Tambah ${item.name}`}
                       >
                         +
@@ -469,9 +407,7 @@ useEffect(() => {
 
                       <button
                         type="button"
-                        onClick={() =>
-                          removeFromCart(item.id)
-                        }
+                        onClick={() => removeFromCart(item.id)}
                         aria-label={`Hapus ${item.name}`}
                         style={{ color: "red" }}
                       >
@@ -479,24 +415,15 @@ useEffect(() => {
                       </button>
                     </div>
 
-                    <strong>
-                      {formatRupiah(
-                        item.price * item.quantity
-                      )}
-                    </strong>
+                    <strong>{formatRupiah(item.price * item.quantity)}</strong>
                   </div>
                 ))}
 
                 {/* TOTAL PESANAN */}
                 <div style={{ marginTop: "20px" }}>
-                  <p>
-                    Total Item: {totalItems}
-                  </p>
+                  <p>Total Item: {totalItems}</p>
 
-                  <h3>
-                    Total Harga:{" "}
-                    {formatRupiah(totalHarga)}
-                  </h3>
+                  <h3>Total Harga: {formatRupiah(totalHarga)}</h3>
                 </div>
 
                 {/* LANJUT KE CHECKOUT */}
@@ -515,7 +442,6 @@ useEffect(() => {
             )}
           </div>
         )}
-
       </div>
     </section>
   );

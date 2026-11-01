@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Environment variables
+.env*
+!.env.example
+
+# SQLite database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Generated Prisma Client
+/generated/prisma
+
+# AI coding assistant configuration
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
