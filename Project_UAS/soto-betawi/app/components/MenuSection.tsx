@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getMenus, type Menu } from "../lib/menuStorage";
+import { type Menu } from "../lib/menuStorage";
 
 type CartItem = Menu & {
   quantity: number;
@@ -34,26 +34,27 @@ export default function MenuSection({
   const [cartLoaded, setCartLoaded] = useState(false);
   const [menusLoaded, setMenusLoaded] = useState(false);
 
-  // MENGAMBIL DATA MENU DARI LOCAL STORAGE
+  // MENGAMBIL DATA MENU DARI DATABASE MELALUI API
   useEffect(() => {
-    const updateMenus = () => {
-      setMenus(getMenus());
-      setMenusLoaded(true);
+    const fetchMenus = async () => {
+      try {
+        const response = await fetch("/api/menus");
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data menu.");
+        }
+
+        const data: Menu[] = await response.json();
+
+        setMenus(data);
+      } catch (error) {
+        console.error("Gagal mengambil menu:", error);
+      } finally {
+        setMenusLoaded(true);
+      }
     };
 
-    updateMenus();
-
-    // Update ketika admin mengubah menu
-    window.addEventListener("menu-updated", updateMenus);
-
-    // Update jika perubahan terjadi di tab lain
-    window.addEventListener("storage", updateMenus);
-
-    return () => {
-      window.removeEventListener("menu-updated", updateMenus);
-
-      window.removeEventListener("storage", updateMenus);
-    };
+    fetchMenus();
   }, []);
 
   // MEMBACA KERANJANG DARI LOCAL STORAGE
@@ -260,57 +261,67 @@ export default function MenuSection({
 
         {/* DAFTAR MENU CUSTOMER */}
         <div className="menu-grid" id="customerMenuGrid">
-          {menuFiltered.map((menu) => (
-            <article
-              className="menu-card"
-              key={menu.id}
-              data-category={menu.category.toLowerCase()}
-            >
-              <div className="menu-photo">
-                <img src={menu.image} alt={menu.name} />
-              </div>
-
-              <div className="menu-body">
-                <h3>{menu.name}</h3>
-                <p>{menu.description}</p>
-
-                <div className="menu-bottom">
-                  <strong>{formatRupiah(menu.price)}</strong>
-
-                  {/* FAVORIT */}
-                  <button
-                    type="button"
-                    className="favorite-btn"
-                    aria-label={`Favorit ${menu.name}`}
-                    aria-pressed={favorites.includes(menu.id)}
-                    onClick={() => toggleFavorite(menu.id)}
-                  >
-                    <span className="favorite-icon">
-                      {favorites.includes(menu.id) ? "♥" : "♡"}
-                    </span>
-
-                    <span className="favorite-count">
-                      {favorites.includes(menu.id) ? 1 : 0}
-                    </span>
-                  </button>
-
-                  {/* TAMBAH KE KERANJANG */}
-                  <button
-                    type="button"
-                    className="circle-btn add-to-cart"
-                    aria-label={`Tambah ${menu.name} ke keranjang`}
-                    onClick={() => addToCart(menu)}
-                  >
-                    +
-                  </button>
+          {!menusLoaded ? (
+            <p>Memuat menu...</p>
+          ) : (
+            menuFiltered.map((menu) => (
+              <article
+                className="menu-card"
+                key={menu.id}
+                data-category={menu.category.toLowerCase()}
+              >
+                <div className="menu-photo">
+                  <img src={menu.image} alt={menu.name} />
                 </div>
-              </div>
-            </article>
-          ))}
+
+                <div className="menu-body">
+                  <h3>{menu.name}</h3>
+                  {menu.status === "Habis" && (
+                    <p style={{ color: "red", fontWeight: "bold" }}>
+                      Stok habis
+                    </p>
+                  )}
+                  <p>{menu.description}</p>
+
+                  <div className="menu-bottom">
+                    <strong>{formatRupiah(menu.price)}</strong>
+
+                    {/* FAVORIT */}
+                    <button
+                      type="button"
+                      className="favorite-btn"
+                      aria-label={`Favorit ${menu.name}`}
+                      aria-pressed={favorites.includes(menu.id)}
+                      onClick={() => toggleFavorite(menu.id)}
+                    >
+                      <span className="favorite-icon">
+                        {favorites.includes(menu.id) ? "♥" : "♡"}
+                      </span>
+
+                      <span className="favorite-count">
+                        {favorites.includes(menu.id) ? 1 : 0}
+                      </span>
+                    </button>
+
+                    {/* TAMBAH KE KERANJANG */}
+                    <button
+                      type="button"
+                      className="circle-btn add-to-cart"
+                      aria-label={`Tambah ${menu.name} ke keranjang`}
+                      onClick={() => addToCart(menu)}
+                      disabled={menu.status === "Habis"}
+                    >
+                      {menu.status === "Habis" ? "×" : "+"}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
         </div>
 
         {/* MENU TIDAK DITEMUKAN */}
-        {menuFiltered.length === 0 && (
+        {menusLoaded && menuFiltered.length === 0 && (
           <p
             style={{
               textAlign: "center",

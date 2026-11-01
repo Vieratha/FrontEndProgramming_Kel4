@@ -55,7 +55,7 @@ function buildCartDrawer() {
 
         <button
          class="kn-drawer__close"
-          type="button" 
+          type="button"
           aria-label="Tutup keranjang">
           ✕
         </button>
