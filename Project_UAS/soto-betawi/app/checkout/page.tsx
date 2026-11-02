@@ -17,34 +17,44 @@ type CartItem = {
 
 export default function CheckoutPage() {
   const router = useRouter();
+
   const [nama, setNama] = useState("");
   const [telepon, setTelepon] = useState("");
   const [alamat, setAlamat] = useState("");
   const [pembayaran, setPembayaran] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartLoaded, setCartLoaded] = useState(false);
 
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  // MEMBACA KERANJANG DARI BROWSER
   useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem("soto-betawi-cart");
+    const readCart = () => {
+      try {
+        const savedCart = localStorage.getItem("soto-betawi-cart");
 
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart);
 
-        if (Array.isArray(parsedCart)) {
-          setCart(parsedCart);
+          if (Array.isArray(parsedCart)) {
+            setCart(parsedCart);
+          }
         }
+      } catch (err) {
+        console.error("Gagal membaca keranjang:", err);
+        setError("Gagal membaca keranjang belanja.");
+      } finally {
+        setCartLoaded(true);
       }
-    } catch (error) {
-      console.error("Gagal membaca keranjang:", error);
-    } finally {
-      setCartLoaded(true);
-    }
+    };
+
+    readCart();
   }, []);
 
+  // TOTAL SEMENTARA UNTUK TAMPILAN
+  // Harga final tetap dihitung ulang oleh server.
   const totalHarga = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
@@ -58,25 +68,24 @@ export default function CheckoutPage() {
     }).format(angka);
   };
 
-  const handleCheckout = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // PROSES CHECKOUT KE DATABASE
+  const handleCheckout = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
     setError("");
-    setSuccess("");
 
-    // Validasi keranjang
+    if (submitting) return;
+
     if (!cartLoaded || cart.length === 0) {
       setError("Keranjang masih kosong. Silakan pilih menu terlebih dahulu.");
       return;
     }
 
-    // Validasi nama
     if (nama.trim().length < 3) {
       setError("Nama lengkap minimal 3 karakter.");
       return;
     }
 
-    // Validasi nomor telepon
     const nomorTelepon = telepon.replace(/[\s-]/g, "");
 
     if (!/^08[0-9]{8,11}$/.test(nomorTelepon)) {
@@ -84,59 +93,59 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Validasi alamat
     if (alamat.trim().length < 10) {
       setError("Alamat pengiriman minimal 10 karakter.");
       return;
     }
 
-    // Validasi pembayaran
-    if (!pembayaran) {
-      setError("Silakan pilih metode pembayaran.");
+    if (!["COD", "Transfer Bank", "E-Wallet"].includes(pembayaran)) {
+      setError("Silakan pilih metode pembayaran yang valid.");
       return;
     }
 
-    // Jika semua data valid, pindah ke halaman konfirmasi
-
-    const pesananBaru = {
-      id: `SB-${Date.now()}`,
-      nama: nama.trim(),
-      telepon: nomorTelepon,
-      alamat: alamat.trim(),
-      pembayaran,
-      items: cart,
-      total: totalHarga,
-      status: "Menunggu Konfirmasi",
-      tanggal: new Date().toISOString(),
-    };
+    setSubmitting(true);
 
     try {
-      // Simpan pesanan terbaru
-      localStorage.setItem(
-        "soto-betawi-last-order",
-        JSON.stringify(pesananBaru),
-      );
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerName: nama.trim(),
+          phone: nomorTelepon,
+          address: alamat.trim(),
+          paymentMethod: pembayaran,
+          items: cart.map((item) => ({
+            menuId: item.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
 
-      // Simpan untuk riwayat pesanan
-      const savedHistory = localStorage.getItem("soto-betawi-orders");
+      const result = await response.json();
 
-      const parsedHistory = savedHistory ? JSON.parse(savedHistory) : [];
+      if (!response.ok) {
+        throw new Error(result.message || "Pesanan gagal diproses.");
+      }
 
-      const history = Array.isArray(parsedHistory) ? parsedHistory : [];
+      if (!result.order?.orderNumber) {
+        throw new Error("Nomor pesanan tidak ditemukan dari server.");
+      }
 
-      localStorage.setItem(
-        "soto-betawi-orders",
-        JSON.stringify([pesananBaru, ...history]),
-      );
-
-      // Kosongkan keranjang setelah pesanan tersimpan
       localStorage.removeItem("soto-betawi-cart");
 
-      // Arahkan ke halaman konfirmasi
-      router.push("/konfirmasi");
-    } catch (error) {
-      console.error("Gagal menyimpan pesanan:", error);
-      setError("Pesanan gagal disimpan. Silakan coba lagi.");
+      router.push(
+        `/konfirmasi?order=${encodeURIComponent(result.order.orderNumber)}`,
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat membuat pesanan.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -163,7 +172,8 @@ export default function CheckoutPage() {
                   type="text"
                   placeholder="Masukkan nama lengkap"
                   value={nama}
-                  onChange={(e) => setNama(e.target.value)}
+                  onChange={(event) => setNama(event.target.value)}
+                  required
                 />
               </div>
 
@@ -174,7 +184,8 @@ export default function CheckoutPage() {
                   type="tel"
                   placeholder="Contoh: 081234567890"
                   value={telepon}
-                  onChange={(e) => setTelepon(e.target.value)}
+                  onChange={(event) => setTelepon(event.target.value)}
+                  required
                 />
               </div>
 
@@ -185,7 +196,8 @@ export default function CheckoutPage() {
                   rows={4}
                   placeholder="Masukkan alamat lengkap"
                   value={alamat}
-                  onChange={(e) => setAlamat(e.target.value)}
+                  onChange={(event) => setAlamat(event.target.value)}
+                  required
                 />
               </div>
 
@@ -195,7 +207,8 @@ export default function CheckoutPage() {
                 <select
                   id="pembayaran"
                   value={pembayaran}
-                  onChange={(e) => setPembayaran(e.target.value)}
+                  onChange={(event) => setPembayaran(event.target.value)}
+                  required
                 >
                   <option value="">Pilih Metode Pembayaran</option>
                   <option value="COD">Bayar di Tempat (COD)</option>
@@ -204,25 +217,21 @@ export default function CheckoutPage() {
                 </select>
               </div>
 
-              <button type="submit" className="checkout-button">
-                Buat Pesanan
-              </button>
-
               {error && (
                 <p className="checkout-error" role="alert">
                   {error}
                 </p>
               )}
 
-              {success && (
-                <p className="checkout-success" role="status">
-                  {success}
-                </p>
-              )}
+              <button
+                type="submit"
+                className="checkout-button"
+                disabled={submitting || !cartLoaded || cart.length === 0}
+              >
+                {submitting ? "Memproses Pesanan..." : "Buat Pesanan"}
+              </button>
             </form>
           </section>
-
-          {/* RINGKASAN PESANAN */}
 
           {/* RINGKASAN PESANAN */}
           <section className="checkout-summary">
@@ -252,9 +261,13 @@ export default function CheckoutPage() {
             )}
 
             <div className="checkout-total">
-              <span>Total Pembayaran</span>
+              <span>Estimasi Pembayaran</span>
               <strong>{formatRupiah(totalHarga)}</strong>
             </div>
+
+            <p style={{ fontSize: "12px", color: "#8d837a" }}>
+              Harga akhir akan diverifikasi kembali oleh server.
+            </p>
           </section>
         </div>
 
