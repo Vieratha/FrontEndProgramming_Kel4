@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
-import { getMenus, saveMenus, type Menu } from "../../lib/menuStorage";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import type { Menu } from "../../lib/menuStorage";
 
 type Category = "Makanan" | "Minuman";
 type MenuStatus = "Tersedia" | "Habis";
@@ -25,6 +25,13 @@ const emptyForm: MenuForm = {
   description: "",
 };
 
+const menuImages = [
+  { label: "Soto Betawi", value: "/images/menu-soto.jpeg" },
+  { label: "Kerak Telor", value: "/images/menu-kerak-telor.jpeg" },
+  { label: "Nasi Uduk", value: "/images/menu-nasi-uduk.jpeg" },
+  { label: "Bir Pletok", value: "/images/menu-bir-pletok.jpeg" },
+];
+
 function formatRupiah(price: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -36,6 +43,7 @@ function formatRupiah(price: number) {
 export default function AdminMenuPage() {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("Semua");
@@ -48,13 +56,38 @@ export default function AdminMenuPage() {
   const [error, setError] = useState("");
   const [modalError, setModalError] = useState("");
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // MEMBACA DATA MENU DARI DATABASE
+  const fetchMenus = async () => {
+    try {
+      setLoading(true);
 
-  // MEMBACA DATA MENU
+      const response = await fetch("/api/menus");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Gagal mengambil data menu.");
+      }
+
+      if (!Array.isArray(data)) {
+        throw new Error("Format data menu dari server tidak valid.");
+      }
+
+      setMenus(data);
+      setError("");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat mengambil menu.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setMenus(getMenus());
-      setLoading(false);
+      void fetchMenus();
     }, 0);
 
     return () => window.clearTimeout(timer);
@@ -68,7 +101,7 @@ export default function AdminMenuPage() {
     document.body.style.overflow = "hidden";
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !saving) {
         setIsModalOpen(false);
       }
     };
@@ -79,7 +112,7 @@ export default function AdminMenuPage() {
       document.body.style.overflow = oldOverflow;
       window.removeEventListener("keydown", handleEscape);
     };
-  }, [isModalOpen]);
+  }, [isModalOpen, saving]);
 
   // PENCARIAN DAN FILTER KATEGORI
   const filteredMenus = menus.filter((menu) => {
@@ -98,6 +131,8 @@ export default function AdminMenuPage() {
     setEditingId(null);
     setForm({ ...emptyForm });
     setModalError("");
+    setMessage("");
+    setError("");
     setIsModalOpen(true);
   };
 
@@ -115,11 +150,15 @@ export default function AdminMenuPage() {
     });
 
     setModalError("");
+    setMessage("");
+    setError("");
     setIsModalOpen(true);
   };
 
   // MENUTUP MODAL
   const closeModal = () => {
+    if (saving) return;
+
     setIsModalOpen(false);
     setEditingId(null);
     setModalError("");
@@ -136,43 +175,8 @@ export default function AdminMenuPage() {
     }));
   };
 
-  // UPLOAD GAMBAR DARI KOMPUTER
-  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setModalError("Pilih file gambar yang valid.");
-      return;
-    }
-
-    // Batasi ukuran supaya localStorage tidak cepat penuh
-    if (file.size > 700 * 1024) {
-      setModalError(
-        "Ukuran gambar maksimal 700 KB. Kompres gambar terlebih dahulu.",
-      );
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        updateForm("image", reader.result);
-        setModalError("");
-      }
-    };
-
-    reader.onerror = () => {
-      setModalError("Gagal membaca file gambar.");
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  // SIMPAN MENU BARU ATAU PERUBAHAN
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  // SIMPAN MENU BARU ATAU PERUBAHAN KE DATABASE
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setModalError("");
 
@@ -185,8 +189,8 @@ export default function AdminMenuPage() {
       return;
     }
 
-    if (!Number.isFinite(price) || price <= 0) {
-      setModalError("Harga harus lebih dari Rp0.");
+    if (!Number.isSafeInteger(price) || price <= 0) {
+      setModalError("Harga harus berupa bilangan bulat lebih dari Rp0.");
       return;
     }
 
@@ -195,72 +199,93 @@ export default function AdminMenuPage() {
       return;
     }
 
-    let updatedMenus: Menu[];
+    const menuData = {
+      name,
+      description,
+      price,
+      category: form.category,
+      status: form.status,
+      image: form.image,
+    };
 
-    if (editingId !== null) {
-      updatedMenus = menus.map((menu) =>
-        menu.id === editingId
-          ? {
-              ...menu,
-              name,
-              description,
-              price,
-              category: form.category,
-              status: form.status,
-              image: form.image,
-            }
-          : menu,
+    try {
+      setSaving(true);
+
+      const isEditing = editingId !== null;
+
+      const response = await fetch("/api/menus", {
+        method: isEditing ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          isEditing ? { id: editingId, ...menuData } : menuData,
+        ),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || "Gagal menyimpan menu.");
+      }
+
+      await fetchMenus();
+
+      setMessage(
+        isEditing
+          ? "Menu berhasil diperbarui."
+          : "Menu baru berhasil ditambahkan.",
       );
-    } else {
-      const newMenu: Menu = {
-        id: Date.now(),
-        name,
-        description,
-        price,
-        category: form.category,
-        status: form.status,
-        image: form.image,
-      };
 
-      updatedMenus = [...menus, newMenu];
+      setError("");
+      setIsModalOpen(false);
+      setEditingId(null);
+    } catch (err) {
+      setModalError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat menyimpan menu.",
+      );
+    } finally {
+      setSaving(false);
     }
-
-    const saved = saveMenus(updatedMenus);
-
-    if (!saved) {
-      setModalError("Gagal menyimpan menu. Penyimpanan browser mungkin penuh.");
-      return;
-    }
-
-    setMenus(updatedMenus);
-    setMessage(
-      editingId !== null
-        ? "Menu berhasil diperbarui."
-        : "Menu baru berhasil ditambahkan.",
-    );
-    setError("");
-    closeModal();
   };
 
-  // HAPUS MENU
-  const handleDelete = (menu: Menu) => {
+  // HAPUS MENU DARI DATABASE
+  const handleDelete = async (menu: Menu) => {
     const confirmed = window.confirm(
       `Yakin ingin menghapus menu "${menu.name}"?`,
     );
 
     if (!confirmed) return;
 
-    const updatedMenus = menus.filter((item) => item.id !== menu.id);
+    try {
+      const response = await fetch("/api/menus", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: menu.id }),
+      });
 
-    if (!saveMenus(updatedMenus)) {
-      setError("Gagal menghapus menu.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || "Gagal menghapus menu.");
+      }
+
+      await fetchMenus();
+
+      setMessage(`Menu "${menu.name}" berhasil dihapus.`);
+      setError("");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat menghapus menu.",
+      );
       setMessage("");
-      return;
     }
-
-    setMenus(updatedMenus);
-    setMessage(`Menu "${menu.name}" berhasil dihapus.`);
-    setError("");
   };
 
   return (
@@ -382,7 +407,7 @@ export default function AdminMenuPage() {
         <div
           className="am-modal-overlay"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
+            if (event.target === event.currentTarget && !saving) {
               closeModal();
             }
           }}
@@ -406,6 +431,7 @@ export default function AdminMenuPage() {
                 className="am-close-btn"
                 onClick={closeModal}
                 aria-label="Tutup popup"
+                disabled={saving}
               >
                 ×
               </button>
@@ -444,6 +470,7 @@ export default function AdminMenuPage() {
                   id="am-price"
                   type="number"
                   min="1"
+                  step="1"
                   placeholder="48000"
                   value={form.price}
                   onChange={(event) => updateForm("price", event.target.value)}
@@ -467,13 +494,19 @@ export default function AdminMenuPage() {
 
               <div className="am-field">
                 <label htmlFor="am-image">Gambar Menu</label>
-                <input
-                  ref={fileInputRef}
+                <select
                   id="am-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+                  value={form.image}
+                  onChange={(event) => updateForm("image", event.target.value)}
+                  required
+                >
+                  <option value="">Pilih gambar menu</option>
+                  {menuImages.map((image) => (
+                    <option key={image.value} value={image.value}>
+                      {image.label}
+                    </option>
+                  ))}
+                </select>
 
                 {form.image && (
                   <div className="am-image-preview">
@@ -482,8 +515,7 @@ export default function AdminMenuPage() {
                 )}
 
                 <p className="am-field-hint">
-                  Pilih gambar dari komputer (maksimal 700 KB). Saat mengedit,
-                  gambar lama tetap digunakan jika tidak memilih gambar baru.
+                  Pilih salah satu gambar yang tersedia di folder public/images.
                 </p>
               </div>
 
@@ -508,12 +540,21 @@ export default function AdminMenuPage() {
                   type="button"
                   className="am-cancel-btn"
                   onClick={closeModal}
+                  disabled={saving}
                 >
                   Batal
                 </button>
 
-                <button type="submit" className="am-primary-btn">
-                  {editingId !== null ? "Simpan Perubahan" : "Simpan Menu"}
+                <button
+                  type="submit"
+                  className="am-primary-btn"
+                  disabled={saving}
+                >
+                  {saving
+                    ? "Menyimpan..."
+                    : editingId !== null
+                      ? "Simpan Perubahan"
+                      : "Simpan Menu"}
                 </button>
               </div>
             </form>
