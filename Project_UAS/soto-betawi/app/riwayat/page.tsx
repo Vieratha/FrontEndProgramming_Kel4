@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,23 +25,25 @@ export default function RiwayatPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const savedOrders = localStorage.getItem(
-        "soto-betawi-orders"
-      );
+    const timer = window.setTimeout(() => {
+      try {
+        const savedOrders = localStorage.getItem("soto-betawi-orders");
 
-      if (savedOrders) {
-        const parsedOrders = JSON.parse(savedOrders);
+        if (savedOrders) {
+          const parsedOrders = JSON.parse(savedOrders);
 
-        if (Array.isArray(parsedOrders)) {
-          setOrders(parsedOrders);
+          if (Array.isArray(parsedOrders)) {
+            setOrders(parsedOrders);
+          }
         }
+      } catch (error) {
+        console.error("Gagal membaca riwayat:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Gagal membaca riwayat:", error);
-    } finally {
-      setLoading(false);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const formatRupiah = (angka: number) => {
@@ -65,9 +66,7 @@ export default function RiwayatPage() {
       <div className="riwayat-container">
         <div className="riwayat-header">
           <h1>Riwayat Pesanan</h1>
-          <p>
-            Lihat kembali daftar pesanan Soto Betawi Jakarta.
-          </p>
+          <p>Lihat kembali daftar pesanan Soto Betawi Jakarta.</p>
         </div>
 
         {loading ? (
@@ -76,8 +75,7 @@ export default function RiwayatPage() {
           <div className="riwayat-empty">
             <h2>Belum Ada Pesanan</h2>
             <p>
-              Kamu belum memiliki riwayat pesanan.
-              Yuk pilih makanan favoritmu!
+              Kamu belum memiliki riwayat pesanan. Yuk pilih makanan favoritmu!
             </p>
 
             <Link href="/" className="riwayat-button">
@@ -94,9 +92,7 @@ export default function RiwayatPage() {
                     <p>{formatTanggal(order.tanggal)}</p>
                   </div>
 
-                  <span className="riwayat-status">
-                    {order.status}
-                  </span>
+                  <span className="riwayat-status">{order.status}</span>
                 </div>
 
                 <div className="riwayat-detail">
@@ -112,18 +108,13 @@ export default function RiwayatPage() {
                   <h3>Daftar Menu</h3>
 
                   {order.items.map((item) => (
-                    <div
-                      className="riwayat-item"
-                      key={item.id}
-                    >
+                    <div className="riwayat-item" key={item.id}>
                       <span>
                         {item.name} × {item.quantity}
                       </span>
 
                       <strong>
-                        {formatRupiah(
-                          item.price * item.quantity
-                        )}
+                        {formatRupiah(item.price * item.quantity)}
                       </strong>
                     </div>
                   ))}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -53,8 +52,12 @@ export default function AdminMenuPage() {
 
   // MEMBACA DATA MENU
   useEffect(() => {
-    setMenus(getMenus());
-    setLoading(false);
+    const timer = window.setTimeout(() => {
+      setMenus(getMenus());
+      setLoading(false);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   // MENUTUP SCROLL HALAMAN SAAT MODAL TERBUKA
@@ -85,8 +88,7 @@ export default function AdminMenuPage() {
       .includes(search.toLowerCase().trim());
 
     const matchCategory =
-      filterCategory === "Semua" ||
-      menu.category === filterCategory;
+      filterCategory === "Semua" || menu.category === filterCategory;
 
     return matchSearch && matchCategory;
   });
@@ -126,7 +128,7 @@ export default function AdminMenuPage() {
   // MEMPERBARUI INPUT FORM
   const updateForm = <K extends keyof MenuForm>(
     field: K,
-    value: MenuForm[K]
+    value: MenuForm[K],
   ) => {
     setForm((previous) => ({
       ...previous,
@@ -135,9 +137,7 @@ export default function AdminMenuPage() {
   };
 
   // UPLOAD GAMBAR DARI KOMPUTER
-  const handleImageChange = (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (!file) return;
@@ -150,7 +150,7 @@ export default function AdminMenuPage() {
     // Batasi ukuran supaya localStorage tidak cepat penuh
     if (file.size > 700 * 1024) {
       setModalError(
-        "Ukuran gambar maksimal 700 KB. Kompres gambar terlebih dahulu."
+        "Ukuran gambar maksimal 700 KB. Kompres gambar terlebih dahulu.",
       );
       return;
     }
@@ -209,7 +209,7 @@ export default function AdminMenuPage() {
               status: form.status,
               image: form.image,
             }
-          : menu
+          : menu,
       );
     } else {
       const newMenu: Menu = {
@@ -228,9 +228,7 @@ export default function AdminMenuPage() {
     const saved = saveMenus(updatedMenus);
 
     if (!saved) {
-      setModalError(
-        "Gagal menyimpan menu. Penyimpanan browser mungkin penuh."
-      );
+      setModalError("Gagal menyimpan menu. Penyimpanan browser mungkin penuh.");
       return;
     }
 
@@ -238,7 +236,7 @@ export default function AdminMenuPage() {
     setMessage(
       editingId !== null
         ? "Menu berhasil diperbarui."
-        : "Menu baru berhasil ditambahkan."
+        : "Menu baru berhasil ditambahkan.",
     );
     setError("");
     closeModal();
@@ -247,14 +245,12 @@ export default function AdminMenuPage() {
   // HAPUS MENU
   const handleDelete = (menu: Menu) => {
     const confirmed = window.confirm(
-      `Yakin ingin menghapus menu "${menu.name}"?`
+      `Yakin ingin menghapus menu "${menu.name}"?`,
     );
 
     if (!confirmed) return;
 
-    const updatedMenus = menus.filter(
-      (item) => item.id !== menu.id
-    );
+    const updatedMenus = menus.filter((item) => item.id !== menu.id);
 
     if (!saveMenus(updatedMenus)) {
       setError("Gagal menghapus menu.");
@@ -276,27 +272,15 @@ export default function AdminMenuPage() {
           <h1>Kelola Menu</h1>
         </div>
 
-        <button
-          type="button"
-          className="am-primary-btn"
-          onClick={openAddModal}
-        >
+        <button type="button" className="am-primary-btn" onClick={openAddModal}>
           + Tambah Menu
         </button>
       </header>
 
       {/* NOTIFIKASI */}
-      {message && (
-        <div className="am-alert am-alert-success">
-          {message}
-        </div>
-      )}
+      {message && <div className="am-alert am-alert-success">{message}</div>}
 
-      {error && (
-        <div className="am-alert am-alert-error">
-          {error}
-        </div>
-      )}
+      {error && <div className="am-alert am-alert-error">{error}</div>}
 
       {/* TABEL MENU */}
       <section className="am-table-card">
@@ -305,17 +289,13 @@ export default function AdminMenuPage() {
             type="search"
             placeholder="Cari menu..."
             value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
+            onChange={(event) => setSearch(event.target.value)}
             aria-label="Cari menu"
           />
 
           <select
             value={filterCategory}
-            onChange={(event) =>
-              setFilterCategory(event.target.value)
-            }
+            onChange={(event) => setFilterCategory(event.target.value)}
             aria-label="Filter kategori"
           >
             <option value="Semua">Semua Kategori</option>
@@ -352,21 +332,16 @@ export default function AdminMenuPage() {
               ) : (
                 filteredMenus.map((menu) => (
                   <tr key={menu.id}>
-                    <td className="am-menu-name">
-                      {menu.name}
-                    </td>
+                    <td className="am-menu-name">{menu.name}</td>
 
                     <td>{menu.category}</td>
 
-                    <td>
-                      {formatRupiah(menu.price)}
-                    </td>
+                    <td>{formatRupiah(menu.price)}</td>
 
                     <td>
                       <span
                         className={
-                          (menu.status ?? "Tersedia") ===
-                          "Tersedia"
+                          (menu.status ?? "Tersedia") === "Tersedia"
                             ? "am-status available"
                             : "am-status unavailable"
                         }
@@ -421,9 +396,7 @@ export default function AdminMenuPage() {
             <div className="am-modal-header">
               <div>
                 <h2 id="am-modal-title">
-                  {editingId !== null
-                    ? "Edit Menu"
-                    : "Tambah Menu"}
+                  {editingId !== null ? "Edit Menu" : "Tambah Menu"}
                 </h2>
                 <p>Masukkan informasi menu</p>
               </div>
@@ -438,38 +411,26 @@ export default function AdminMenuPage() {
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="am-modal-form"
-            >
+            <form onSubmit={handleSubmit} className="am-modal-form">
               <div className="am-field">
-                <label htmlFor="am-name">
-                  Nama Menu
-                </label>
+                <label htmlFor="am-name">Nama Menu</label>
                 <input
                   id="am-name"
                   type="text"
                   placeholder="Contoh: Soto Betawi Spesial"
                   value={form.name}
-                  onChange={(event) =>
-                    updateForm("name", event.target.value)
-                  }
+                  onChange={(event) => updateForm("name", event.target.value)}
                   required
                 />
               </div>
 
               <div className="am-field">
-                <label htmlFor="am-category">
-                  Kategori
-                </label>
+                <label htmlFor="am-category">Kategori</label>
                 <select
                   id="am-category"
                   value={form.category}
                   onChange={(event) =>
-                    updateForm(
-                      "category",
-                      event.target.value as Category
-                    )
+                    updateForm("category", event.target.value as Category)
                   }
                 >
                   <option value="Makanan">Makanan</option>
@@ -478,34 +439,25 @@ export default function AdminMenuPage() {
               </div>
 
               <div className="am-field">
-                <label htmlFor="am-price">
-                  Harga
-                </label>
+                <label htmlFor="am-price">Harga</label>
                 <input
                   id="am-price"
                   type="number"
                   min="1"
                   placeholder="48000"
                   value={form.price}
-                  onChange={(event) =>
-                    updateForm("price", event.target.value)
-                  }
+                  onChange={(event) => updateForm("price", event.target.value)}
                   required
                 />
               </div>
 
               <div className="am-field">
-                <label htmlFor="am-status">
-                  Status
-                </label>
+                <label htmlFor="am-status">Status</label>
                 <select
                   id="am-status"
                   value={form.status}
                   onChange={(event) =>
-                    updateForm(
-                      "status",
-                      event.target.value as MenuStatus
-                    )
+                    updateForm("status", event.target.value as MenuStatus)
                   }
                 >
                   <option value="Tersedia">Tersedia</option>
@@ -514,9 +466,7 @@ export default function AdminMenuPage() {
               </div>
 
               <div className="am-field">
-                <label htmlFor="am-image">
-                  Gambar Menu
-                </label>
+                <label htmlFor="am-image">Gambar Menu</label>
                 <input
                   ref={fileInputRef}
                   id="am-image"
@@ -527,44 +477,31 @@ export default function AdminMenuPage() {
 
                 {form.image && (
                   <div className="am-image-preview">
-                    <img
-                      src={form.image}
-                      alt="Preview gambar menu"
-                    />
+                    <img src={form.image} alt="Preview gambar menu" />
                   </div>
                 )}
 
                 <p className="am-field-hint">
-                  Pilih gambar dari komputer (maksimal 700 KB).
-                  Saat mengedit, gambar lama tetap digunakan
-                  jika tidak memilih gambar baru.
+                  Pilih gambar dari komputer (maksimal 700 KB). Saat mengedit,
+                  gambar lama tetap digunakan jika tidak memilih gambar baru.
                 </p>
               </div>
 
               <div className="am-field">
-                <label htmlFor="am-description">
-                  Deskripsi
-                </label>
+                <label htmlFor="am-description">Deskripsi</label>
                 <textarea
                   id="am-description"
                   rows={4}
                   placeholder="Deskripsi menu..."
                   value={form.description}
                   onChange={(event) =>
-                    updateForm(
-                      "description",
-                      event.target.value
-                    )
+                    updateForm("description", event.target.value)
                   }
                   required
                 />
               </div>
 
-              {modalError && (
-                <p className="am-modal-error">
-                  {modalError}
-                </p>
-              )}
+              {modalError && <p className="am-modal-error">{modalError}</p>}
 
               <div className="am-modal-footer">
                 <button
@@ -575,13 +512,8 @@ export default function AdminMenuPage() {
                   Batal
                 </button>
 
-                <button
-                  type="submit"
-                  className="am-primary-btn"
-                >
-                  {editingId !== null
-                    ? "Simpan Perubahan"
-                    : "Simpan Menu"}
+                <button type="submit" className="am-primary-btn">
+                  {editingId !== null ? "Simpan Perubahan" : "Simpan Menu"}
                 </button>
               </div>
             </form>

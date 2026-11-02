@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -29,20 +28,22 @@ export default function KonfirmasiPage() {
 
   // Mengambil pesanan terbaru dari localStorage
   useEffect(() => {
-    try {
-      const savedOrder = localStorage.getItem(
-        "soto-betawi-last-order"
-      );
+    const timer = window.setTimeout(() => {
+      try {
+        const savedOrder = localStorage.getItem("soto-betawi-last-order");
 
-      if (savedOrder) {
-        const parsedOrder = JSON.parse(savedOrder);
-        setPesanan(parsedOrder);
+        if (savedOrder) {
+          const parsedOrder = JSON.parse(savedOrder);
+          setPesanan(parsedOrder);
+        }
+      } catch (error) {
+        console.error("Gagal membaca pesanan:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Gagal membaca pesanan:", error);
-    } finally {
-      setLoading(false);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Format harga Rupiah
@@ -79,8 +80,8 @@ export default function KonfirmasiPage() {
           <h1>Pesanan Tidak Ditemukan</h1>
 
           <p className="konfirmasi-description">
-            Belum ada pesanan yang bisa ditampilkan.
-            Silakan pilih makanan terlebih dahulu.
+            Belum ada pesanan yang bisa ditampilkan. Silakan pilih makanan
+            terlebih dahulu.
           </p>
 
           <Link href="/" className="konfirmasi-button">
@@ -94,17 +95,13 @@ export default function KonfirmasiPage() {
   return (
     <main className="konfirmasi-page">
       <section className="konfirmasi-card">
-
         {/* ICON BERHASIL */}
-        <div className="konfirmasi-icon">
-          ✓
-        </div>
+        <div className="konfirmasi-icon">✓</div>
 
         <h1>Pesanan Berhasil Dicatat!</h1>
 
         <p className="konfirmasi-description">
-          Terima kasih, {pesanan.nama}!
-          Pesanan simulasi kamu berhasil disimpan
+          Terima kasih, {pesanan.nama}! Pesanan simulasi kamu berhasil disimpan
           di browser.
         </p>
 
@@ -119,9 +116,7 @@ export default function KonfirmasiPage() {
 
           <div className="konfirmasi-row">
             <span>Tanggal Pesanan</span>
-            <strong>
-              {formatTanggal(pesanan.tanggal)}
-            </strong>
+            <strong>{formatTanggal(pesanan.tanggal)}</strong>
           </div>
 
           <div className="konfirmasi-row">
@@ -140,26 +135,17 @@ export default function KonfirmasiPage() {
           </div>
 
           {/* DAFTAR MAKANAN */}
-          <h2 className="konfirmasi-menu-title">
-            Menu yang Dipesan
-          </h2>
+          <h2 className="konfirmasi-menu-title">Menu yang Dipesan</h2>
 
           <div className="konfirmasi-items">
             {pesanan.items.map((item) => (
-              <div
-                className="konfirmasi-item"
-                key={item.id}
-              >
+              <div className="konfirmasi-item" key={item.id}>
                 <div>
                   <h3>{item.name}</h3>
                   <p>Jumlah: {item.quantity}</p>
                 </div>
 
-                <strong>
-                  {formatRupiah(
-                    item.price * item.quantity
-                  )}
-                </strong>
+                <strong>{formatRupiah(item.price * item.quantity)}</strong>
               </div>
             ))}
           </div>
@@ -167,29 +153,20 @@ export default function KonfirmasiPage() {
           {/* TOTAL PEMBAYARAN */}
           <div className="konfirmasi-total">
             <span>Total Pembayaran</span>
-            <strong>
-              {formatRupiah(pesanan.total)}
-            </strong>
+            <strong>{formatRupiah(pesanan.total)}</strong>
           </div>
         </div>
 
         {/* TOMBOL NAVIGASI */}
         <div className="konfirmasi-actions">
-          <Link
-            href="/"
-            className="konfirmasi-button"
-          >
+          <Link href="/" className="konfirmasi-button">
             Kembali ke Beranda
           </Link>
 
-          <Link
-            href="/riwayat"
-            className="konfirmasi-secondary"
-          >
+          <Link href="/riwayat" className="konfirmasi-secondary">
             Lihat Riwayat Pesanan
           </Link>
         </div>
-
       </section>
     </main>
   );
