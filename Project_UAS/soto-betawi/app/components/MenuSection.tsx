@@ -19,8 +19,10 @@ export default function MenuSection({
   setIsCartOpen,
   onCartCountChange,
 }: MenuSectionProps) {
-  // DATA MENU DARI ADMIN
+  // DATA MENU
   const [menus, setMenus] = useState<Menu[]>([]);
+  const [menusLoaded, setMenusLoaded] = useState(false);
+  const [menuError, setMenuError] = useState("");
 
   // SEARCH DAN FILTER
   const [search, setSearch] = useState("");
@@ -32,11 +34,12 @@ export default function MenuSection({
   // KERANJANG
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartLoaded, setCartLoaded] = useState(false);
-  const [menusLoaded, setMenusLoaded] = useState(false);
 
-  // MENGAMBIL DATA MENU DARI DATABASE MELALUI API
+  // MENGAMBIL MENU DAN KERANJANG
   useEffect(() => {
-    const fetchMenus = async () => {
+    let cancelled = false;
+
+    const loadData = async () => {
       try {
         const response = await fetch("/api/menus");
 
@@ -46,76 +49,81 @@ export default function MenuSection({
 
         const data: Menu[] = await response.json();
 
+        if (cancelled) return;
+
+        // Simpan menu dari database
         setMenus(data);
+        setMenuError("");
+
+        // Baca keranjang setelah menu berhasil dimuat
+        const savedCart = localStorage.getItem("soto-betawi-cart");
+        const parsedCart: unknown = savedCart ? JSON.parse(savedCart) : [];
+
+        let updatedCart: CartItem[] = [];
+
+        if (Array.isArray(parsedCart)) {
+          updatedCart = parsedCart.flatMap((item: CartItem) => {
+            const currentMenu = data.find((menu) => menu.id === item.id);
+
+            const quantity = Number(item.quantity);
+
+            // Abaikan menu yang sudah dihapus atau habis
+            if (
+              !currentMenu ||
+              currentMenu.status === "Habis" ||
+              !Number.isInteger(quantity) ||
+              quantity <= 0
+            ) {
+              return [];
+            }
+
+            return [
+              {
+                ...currentMenu,
+                quantity,
+              },
+            ];
+          });
+        }
+
+        if (cancelled) return;
+
+        setCart(updatedCart);
+
+        localStorage.setItem("soto-betawi-cart", JSON.stringify(updatedCart));
       } catch (error) {
-        console.error("Gagal mengambil menu:", error);
+        console.error("Gagal memuat data:", error);
+
+        if (!cancelled) {
+          setMenuError(
+            "Menu belum dapat dimuat. Silakan coba muat ulang halaman.",
+          );
+        }
       } finally {
-        setMenusLoaded(true);
+        if (!cancelled) {
+          setMenusLoaded(true);
+          setCartLoaded(true);
+        }
       }
     };
 
-    fetchMenus();
+    loadData();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // MEMBACA KERANJANG DARI LOCAL STORAGE
+  // MENYIMPAN KERANJANG
   useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem("soto-betawi-cart");
-
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
-
-        if (Array.isArray(parsedCart)) {
-          setCart(parsedCart);
-        }
-      }
-    } catch (error) {
-      console.error("Gagal membaca keranjang:", error);
-    } finally {
-      setCartLoaded(true);
-    }
-  }, []);
-
-  // MENYESUAIKAN KERANJANG DENGAN MENU TERBARU
-  useEffect(() => {
-    if (!cartLoaded || !menusLoaded) return;
-
-    setCart((prevCart) => {
-      const updatedCart = prevCart.flatMap((item) => {
-        const currentMenu = menus.find((menu) => menu.id === item.id);
-
-        // Menu yang dihapus admin tidak lagi tersedia
-        if (!currentMenu) {
-          return [];
-        }
-
-        return [
-          {
-            ...currentMenu,
-            quantity: item.quantity,
-          },
-        ];
-      });
-
-      // Hindari pembaruan state jika tidak ada perubahan
-      if (JSON.stringify(prevCart) === JSON.stringify(updatedCart)) {
-        return prevCart;
-      }
-
-      return updatedCart;
-    });
-  }, [menus, cartLoaded, menusLoaded]);
-
-  // MENYIMPAN KERANJANG SETELAH MENU SIAP
-  useEffect(() => {
-    if (!cartLoaded || !menusLoaded) return;
+    if (!cartLoaded) return;
 
     try {
       localStorage.setItem("soto-betawi-cart", JSON.stringify(cart));
     } catch (error) {
       console.error("Gagal menyimpan keranjang:", error);
     }
-  }, [cart, cartLoaded, menusLoaded]);
+  }, [cart, cartLoaded]);
 
   // FAVORIT
   const toggleFavorite = (id: number) => {
@@ -126,6 +134,8 @@ export default function MenuSection({
 
   // TAMBAH MENU KE KERANJANG
   const addToCart = (menu: Menu) => {
+    if (menu.status === "Habis") return;
+
     setCart((prev) => {
       const existing = prev.find((item) => item.id === menu.id);
 
@@ -152,6 +162,12 @@ export default function MenuSection({
 
   // TAMBAH JUMLAH
   const increaseQuantity = (id: number) => {
+    const currentMenu = menus.find((menu) => menu.id === id);
+
+    if (!currentMenu || currentMenu.status === "Habis") {
+      return;
+    }
+
     setCart((prev) =>
       prev.map((item) =>
         item.id === id
@@ -188,7 +204,7 @@ export default function MenuSection({
   // TOTAL ITEM KERANJANG
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
-  // MENGIRIM JUMLAH ITEM KE HOMECLIENT
+  // KIRIM JUMLAH ITEM KE HOMECLIENT
   useEffect(() => {
     onCartCountChange(totalItems);
   }, [totalItems, onCartCountChange]);
@@ -204,7 +220,7 @@ export default function MenuSection({
     return `Rp ${harga.toLocaleString("id-ID")}`;
   };
 
-  // FILTER MENU DARI DATA ADMIN
+  // FILTER MENU
   const menuFiltered = menus.filter((menu) => {
     const cocokNama = menu.name
       .toLowerCase()
@@ -263,6 +279,8 @@ export default function MenuSection({
         <div className="menu-grid" id="customerMenuGrid">
           {!menusLoaded ? (
             <p>Memuat menu...</p>
+          ) : menuError ? (
+            <p role="alert">{menuError}</p>
           ) : (
             menuFiltered.map((menu) => (
               <article
@@ -276,11 +294,18 @@ export default function MenuSection({
 
                 <div className="menu-body">
                   <h3>{menu.name}</h3>
+
                   {menu.status === "Habis" && (
-                    <p style={{ color: "red", fontWeight: "bold" }}>
+                    <p
+                      style={{
+                        color: "red",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Stok habis
                     </p>
                   )}
+
                   <p>{menu.description}</p>
 
                   <div className="menu-bottom">
@@ -321,7 +346,7 @@ export default function MenuSection({
         </div>
 
         {/* MENU TIDAK DITEMUKAN */}
-        {menusLoaded && menuFiltered.length === 0 && (
+        {menusLoaded && !menuError && menuFiltered.length === 0 && (
           <p
             style={{
               textAlign: "center",
@@ -367,7 +392,9 @@ export default function MenuSection({
 
             <h3>🛒 Keranjang Belanja</h3>
 
-            {cart.length === 0 ? (
+            {!cartLoaded ? (
+              <p style={{ marginTop: "20px" }}>Memuat keranjang...</p>
+            ) : cart.length === 0 ? (
               <p style={{ marginTop: "20px" }}>Keranjang masih kosong.</p>
             ) : (
               <>
