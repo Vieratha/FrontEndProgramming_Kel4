@@ -3543,3 +3543,274 @@ textarea {
     width: 100%;
   }
 }
+
+/* INI BAGIAN PROFILE CUSTOMER DI NAVBAR */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  gap: 14px;
+}
+
+.customer-profile {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* INI BAGIAN TOMBOL LOGIN DAN REGISTER */
+.customer-auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.customer-login-link,
+.customer-register-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 15px;
+  border: 1px solid #85451f;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: 0.2s ease;
+}
+
+.customer-login-link {
+  background-color: transparent;
+  color: #85451f;
+}
+
+.customer-login-link:hover {
+  background-color: #f5eadf;
+  color: #603015;
+}
+
+.customer-register-link {
+  background-color: #85451f;
+  color: #ffffff;
+}
+
+.customer-register-link:hover {
+  background-color: #603015;
+  color: #ffffff;
+}
+
+/* INI BAGIAN TOMBOL PROFILE CUSTOMER */
+.customer-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 230px;
+  padding: 6px 11px 6px 6px;
+  border: 1px solid #eadfd3;
+  border-radius: 30px;
+  background-color: #ffffff;
+  color: #44332a;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.customer-profile-trigger:hover {
+  border-color: #c8956d;
+  background-color: #fff8f1;
+}
+
+/* INI BAGIAN AVATAR PROFILE */
+.customer-profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: #85451f;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* INI BAGIAN NAMA DAN ROLE CUSTOMER */
+.customer-profile-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 2px;
+}
+
+.customer-profile-summary strong {
+  overflow: hidden;
+  max-width: 125px;
+  color: #44332a;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-profile-summary small {
+  color: #927d6e;
+  font-size: 10px;
+}
+
+/* INI BAGIAN ICON DROPDOWN PROFILE */
+.customer-profile-chevron {
+  margin-left: 2px;
+  color: #85451f;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.customer-profile-chevron.opened {
+  transform: rotate(180deg);
+}
+
+/* INI BAGIAN DROPDOWN PROFILE */
+.customer-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 300;
+  width: 255px;
+  overflow: hidden;
+  border: 1px solid #eadfd3;
+  border-radius: 12px;
+  background-color: #fffdf9;
+  box-shadow: 0 12px 30px rgba(65, 37, 18, 0.15);
+}
+
+/* INI BAGIAN INFORMASI USER DI DROPDOWN */
+.customer-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 18px;
+  border-bottom: 1px solid #eee4d9;
+  background-color: #faf4ed;
+}
+
+.customer-profile-info strong {
+  color: #603015;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.customer-profile-info span {
+  color: #806b5c;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.customer-profile-info small {
+  width: fit-content;
+  margin-top: 5px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  background-color: #eadbc9;
+  color: #743c1c;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* INI BAGIAN MENU DROPDOWN */
+.customer-profile-menu {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 18px;
+  color: #44332a;
+  font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+
+.customer-profile-menu:hover {
+  background-color: #f7eee4;
+  color: #85451f;
+}
+
+.customer-profile-menu span {
+  width: 18px;
+  color: #85451f;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* INI BAGIAN TOMBOL LOGOUT PROFILE */
+.customer-profile-logout {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-top: 1px solid #eee4d9;
+  background-color: #ffffff;
+  color: #a13d2d;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.customer-profile-logout:hover {
+  background-color: #fff1ed;
+}
+
+.customer-profile-logout:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.customer-profile-logout span {
+  width: 18px;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* INI BAGIAN ERROR LOGOUT */
+.customer-profile-error {
+  margin: 0;
+  padding: 10px 18px;
+  background-color: #fff1ed;
+  color: #a13d2d;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* INI BAGIAN PROFILE UNTUK TABLET */
+@media (max-width: 992px) {
+  .nav-actions {
+    gap: 10px;
+  }
+
+  .customer-profile-trigger {
+    max-width: 210px;
+  }
+}
+
+/* INI BAGIAN PROFILE UNTUK MOBILE */
+@media (max-width: 576px) {
+  .nav-actions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .customer-profile-trigger {
+    max-width: 230px;
+  }
+
+  .customer-profile-dropdown {
+    right: 50%;
+    transform: translateX(50%);
+  }
+}

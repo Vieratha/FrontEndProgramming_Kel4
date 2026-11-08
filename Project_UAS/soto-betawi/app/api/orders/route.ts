@@ -19,9 +19,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 // INI BAGIAN MENGAMBIL DATA PESANAN
 export async function GET(request: Request) {
   try {
+    // INI BAGIAN MEMERIKSA USER YANG SEDANG LOGIN
     const user = await getCurrentUser();
-    const { searchParams } = new URL(request.url);
 
+    const { searchParams } = new URL(request.url);
     const orderNumber = searchParams.get("order")?.trim();
 
     // INI BAGIAN MENGAMBIL SATU PESANAN BERDASARKAN NOMOR
@@ -50,19 +51,37 @@ export async function GET(request: Request) {
         );
       }
 
-      // Nomor pesanan acak menjadi kode akses untuk membuka struk.
-      // Jangan membagikan nomor pesanan kepada orang yang tidak dipercaya.
+      // INI BAGIAN MEMERIKSA HAK AKSES PESANAN
+      const isAdmin = user?.role === "ADMIN";
+
+      const isOwner =
+        user !== null && user !== undefined && order.userId === user.id;
+
+      // Guest hanya dapat membuka pesanan guest
+      // selama tidak sedang menggunakan akun lain.
+      const isGuestOrder = order.userId === null && !user;
+
+      if (!isAdmin && !isOwner && !isGuestOrder) {
+        return NextResponse.json(
+          {
+            message: "Pesanan tidak ditemukan atau akses ditolak.",
+          },
+          {
+            status: 404,
+          },
+        );
+      }
 
       return NextResponse.json({
         order,
       });
     }
 
-    // INI BAGIAN MEMERIKSA LOGIN UNTUK RIWAYAT PESANAN
+    // INI BAGIAN MEMERIKSA LOGIN UNTUK RIWAYAT
     if (!user) {
       return NextResponse.json(
         {
-          message: "Silakan login untuk melihat seluruh riwayat pesanan.",
+          message: "Silakan login untuk melihat riwayat pesanan akun.",
         },
         {
           status: 401,
@@ -70,7 +89,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // INI BAGIAN MENENTUKAN PESANAN BERDASARKAN ROLE
+    // INI BAGIAN MENENTUKAN HAK AKSES BERDASARKAN ROLE
     const where =
       user.role === "ADMIN"
         ? {}
@@ -78,6 +97,7 @@ export async function GET(request: Request) {
             userId: user.id,
           };
 
+    // INI BAGIAN MENGAMBIL PESANAN DARI DATABASE
     const orders = await prisma.order.findMany({
       where,
       include: {

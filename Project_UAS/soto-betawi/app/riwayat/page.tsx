@@ -33,90 +33,48 @@ export default function RiwayatPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isGuest, setIsGuest] = useState(false);
 
   // INI BAGIAN MENGAMBIL RIWAYAT PESANAN DARI DATABASE
   useEffect(() => {
-    const controller = new AbortController();
+    let cancelled = false;
 
     const fetchOrders = async () => {
       try {
-        const orderMap = new Map<string, Order>();
-
-        // INI BAGIAN MENGAMBIL RIWAYAT AKUN CUSTOMER
         const response = await fetch("/api/orders", {
           cache: "no-store",
-          signal: controller.signal,
         });
 
-        if (response.ok) {
-          const result = await response.json();
-          const accountOrders: Order[] = result.orders ?? [];
+        // INI BAGIAN MEMERIKSA STATUS LOGIN
+        if (response.status === 401) {
+          if (!cancelled) {
+            setIsGuest(true);
+            setOrders([]);
+            setError("");
+          }
 
-          accountOrders.forEach((order) => {
-            orderMap.set(order.orderNumber, order);
-          });
-        } else if (response.status !== 401) {
+          return;
+        }
+
+        if (!response.ok) {
           const result = await response.json();
 
           throw new Error(result.message || "Gagal mengambil riwayat pesanan.");
         }
 
-        // INI BAGIAN MEMBACA REFERENSI PESANAN GUEST
-        const savedNumbers = localStorage.getItem("soto-betawi-order-numbers");
-
-        const parsedNumbers: unknown = savedNumbers
-          ? JSON.parse(savedNumbers)
+        // INI BAGIAN MENGAMBIL PESANAN AKUN DARI DATABASE
+        const result = await response.json();
+        const accountOrders: Order[] = Array.isArray(result.orders)
+          ? result.orders
           : [];
 
-        const orderNumbers: string[] = Array.isArray(parsedNumbers)
-          ? parsedNumbers
-              .filter((item): item is string => typeof item === "string")
-              .slice(-100)
-          : [];
-
-        // INI BAGIAN MENGAMBIL DETAIL PESANAN GUEST
-        const guestResults = await Promise.allSettled(
-          orderNumbers.map(async (orderNumber) => {
-            const guestResponse = await fetch(
-              `/api/orders?order=${encodeURIComponent(orderNumber)}`,
-              {
-                cache: "no-store",
-                signal: controller.signal,
-              },
-            );
-
-            if (!guestResponse.ok) {
-              return null;
-            }
-
-            const result = await guestResponse.json();
-
-            return result.order as Order;
-          }),
-        );
-
-        guestResults.forEach((result) => {
-          if (result.status === "fulfilled" && result.value) {
-            orderMap.set(result.value.orderNumber, result.value);
-          }
-        });
-
-        if (controller.signal.aborted) return;
-
-        // INI BAGIAN MENGURUTKAN PESANAN TERBARU
-        const sortedOrders = Array.from(orderMap.values()).sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        );
-
-        setOrders(sortedOrders);
-        setError("");
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") {
-          return;
+        if (!cancelled) {
+          setOrders(accountOrders);
+          setIsGuest(false);
+          setError("");
         }
-
-        if (!controller.signal.aborted) {
+      } catch (err) {
+        if (!cancelled) {
           setError(
             err instanceof Error
               ? err.message
@@ -124,7 +82,7 @@ export default function RiwayatPage() {
           );
         }
       } finally {
-        if (!controller.signal.aborted) {
+        if (!cancelled) {
           setLoading(false);
         }
       }
@@ -133,7 +91,7 @@ export default function RiwayatPage() {
     fetchOrders();
 
     return () => {
-      controller.abort();
+      cancelled = true;
     };
   }, []);
 
@@ -161,21 +119,44 @@ export default function RiwayatPage() {
         {/* INI BAGIAN HEADER RIWAYAT */}
         <div className="riwayat-header">
           <h1>Riwayat Pesanan</h1>
-          <p>Lihat kembali daftar pesanan Soto Betawi Jakarta.</p>
+          <p>Lihat kembali daftar pesanan yang pernah kamu buat.</p>
         </div>
 
         {/* INI BAGIAN LOADING */}
         {loading ? (
           <p>Memuat riwayat pesanan...</p>
         ) : error ? (
+          /* INI BAGIAN PESAN ERROR */
           <div className="riwayat-empty">
             <h2>Gagal Memuat Riwayat</h2>
             <p>{error}</p>
+          </div>
+        ) : isGuest ? (
+          /* INI BAGIAN RIWAYAT UNTUK GUEST */
+          <div className="riwayat-empty">
+            <h2>Login untuk Melihat Riwayat</h2>
+
+            <p>
+              Riwayat pesanan akun hanya tersedia setelah kamu login. Jika
+              melakukan pemesanan sebagai guest, gunakan nomor pesanan pada
+              halaman konfirmasi untuk melihat detail pesanan tersebut.
+            </p>
+
+            <div className="riwayat-actions">
+              <Link href="/login" className="riwayat-button">
+                Login
+              </Link>
+
+              <Link href="/register" className="riwayat-button">
+                Buat Akun
+              </Link>
+            </div>
           </div>
         ) : orders.length === 0 ? (
           /* INI BAGIAN KETIKA BELUM ADA PESANAN */
           <div className="riwayat-empty">
             <h2>Belum Ada Pesanan</h2>
+
             <p>
               Kamu belum memiliki riwayat pesanan. Yuk pilih makanan favoritmu!
             </p>

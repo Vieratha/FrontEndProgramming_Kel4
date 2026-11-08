@@ -1,9 +1,14 @@
-import Link from "next/link";
 import HomeClient from "./components/HomeClient";
-<HomeClient />;
-export default function Home() {
+import CustomerProfile from "./components/CustomerProfile";
+import { getCurrentUser } from "./lib/auth";
+
+export default async function Home() {
+  // INI BAGIAN MENGAMBIL DATA USER DARI SESSION PRISMA
+  const user = await getCurrentUser();
+
   return (
     <>
+      {/* INI BAGIAN HEADER DAN NAVBAR */}
       <header className="site-header">
         <div className="container navbar">
           <a href="#home" className="brand">
@@ -12,35 +17,30 @@ export default function Home() {
             <span className="brand-accent">JAKARTA</span>
           </a>
 
+          {/* INI BAGIAN NAVIGASI UTAMA */}
           <nav className="main-nav" aria-label="Navigasi utama">
             <a className="active" href="#home">
               Home
             </a>
+
             <a href="#menu">Menu</a>
             <a href="#tentang">Tentang Kami</a>
             <a href="#lokasi">Lokasi</a>
           </nav>
 
+          {/* INI BAGIAN AKSI NAVBAR */}
           <div className="nav-actions">
             <a href="#menu" className="btn btn-primary btn-small" id="orderNow">
               Pesan Sekarang
             </a>
 
-            <div className="profile-wrapper">
-              <Link
-                href="/login"
-                className="profile-toggle"
-                aria-label="Masuk akun customer"
-              >
-                ♙
-              </Link>
-            </div>
+            <CustomerProfile user={user} />
           </div>
         </div>
       </header>
 
       <main>
-        {/* HERO SECTION */}
+        {/* INI BAGIAN HERO SECTION */}
         <section className="hero" id="home">
           <div className="container hero-grid">
             <div className="hero-copy">
@@ -81,6 +81,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* INI BAGIAN TENTANG KAMI */}
         <section className="about section-cream" id="tentang">
           <div className="container about-grid">
             <div className="about-image-wrap decorative-frame">
@@ -93,6 +94,7 @@ export default function Home() {
 
             <div className="about-copy">
               <p className="eyebrow">WARISAN KULINER BETAWI</p>
+
               <h2>Cita Rasa Otentik Sejak 1980</h2>
 
               <p>
@@ -130,6 +132,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* INI BAGIAN MENU DAN KERANJANG */}
         <HomeClient />
       </main>
     </>
