@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+// INI BAGIAN TIPE DATA KERANJANG
 type CartItem = {
   id: number;
   name: string;
@@ -15,51 +16,60 @@ type CartItem = {
   quantity: number;
 };
 
+// INI BAGIAN TIPE DATA JENIS PESANAN
+type OrderType = "Makan di Tempat" | "Bawa Pulang";
+
 export default function CheckoutPage() {
   const router = useRouter();
 
+  // INI BAGIAN DATA CUSTOMER
   const [nama, setNama] = useState("");
   const [telepon, setTelepon] = useState("");
   const [alamat, setAlamat] = useState("");
-  const [pembayaran, setPembayaran] = useState("");
+  const [pembayaran, setPembayaran] = useState("Bayar di Kasir");
 
+  // INI BAGIAN JENIS PESANAN
+  const [orderType, setOrderType] = useState<OrderType>("Makan di Tempat");
+
+  const [nomorMeja, setNomorMeja] = useState("");
+  const [catatan, setCatatan] = useState("");
+
+  // INI BAGIAN KERANJANG
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartLoaded, setCartLoaded] = useState(false);
 
+  // INI BAGIAN STATUS CHECKOUT
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // MEMBACA KERANJANG DARI BROWSER
+  // INI BAGIAN MEMBACA KERANJANG DARI BROWSER
   useEffect(() => {
-    const readCart = () => {
-      try {
-        const savedCart = localStorage.getItem("soto-betawi-cart");
+    try {
+      const savedCart = localStorage.getItem("soto-betawi-cart");
 
-        if (savedCart) {
-          const parsedCart = JSON.parse(savedCart);
+      if (savedCart) {
+        const parsedCart: unknown = JSON.parse(savedCart);
 
-          if (Array.isArray(parsedCart)) {
-            setCart(parsedCart);
-          }
+        if (Array.isArray(parsedCart)) {
+          setCart(parsedCart as CartItem[]);
         }
-      } catch (err) {
-        console.error("Gagal membaca keranjang:", err);
-        setError("Gagal membaca keranjang belanja.");
-      } finally {
-        setCartLoaded(true);
       }
-    };
-
-    readCart();
+    } catch (err) {
+      console.error("Gagal membaca keranjang:", err);
+      setError("Gagal membaca keranjang belanja.");
+    } finally {
+      setCartLoaded(true);
+    }
   }, []);
 
-  // TOTAL SEMENTARA UNTUK TAMPILAN
-  // Harga final tetap dihitung ulang oleh server.
+  // INI BAGIAN MENGHITUNG TOTAL SEMENTARA
+  // Harga final tetap akan dihitung ulang oleh server.
   const totalHarga = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
   );
 
+  // INI BAGIAN FORMAT RUPIAH
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -68,7 +78,37 @@ export default function CheckoutPage() {
     }).format(angka);
   };
 
-  // PROSES CHECKOUT KE DATABASE
+  // INI BAGIAN MENYIMPAN NOMOR PESANAN DI BROWSER
+  // Browser hanya menyimpan referensi, bukan rincian pesanan.
+  const saveOrderReference = (orderNumber: string) => {
+    try {
+      const savedNumbers = localStorage.getItem("soto-betawi-order-numbers");
+
+      const parsedNumbers: unknown = savedNumbers
+        ? JSON.parse(savedNumbers)
+        : [];
+
+      const orderNumbers: string[] = Array.isArray(parsedNumbers)
+        ? parsedNumbers.filter(
+            (item): item is string => typeof item === "string",
+          )
+        : [];
+
+      const updatedNumbers = [
+        ...orderNumbers.filter((item) => item !== orderNumber),
+        orderNumber,
+      ].slice(-100);
+
+      localStorage.setItem(
+        "soto-betawi-order-numbers",
+        JSON.stringify(updatedNumbers),
+      );
+    } catch (err) {
+      console.error("Gagal menyimpan referensi pesanan:", err);
+    }
+  };
+
+  // INI BAGIAN PROSES CHECKOUT
   const handleCheckout = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -76,36 +116,50 @@ export default function CheckoutPage() {
 
     if (submitting) return;
 
+    // INI BAGIAN VALIDASI KERANJANG
     if (!cartLoaded || cart.length === 0) {
       setError("Keranjang masih kosong. Silakan pilih menu terlebih dahulu.");
       return;
     }
 
+    // INI BAGIAN VALIDASI NAMA
     if (nama.trim().length < 3) {
-      setError("Nama lengkap minimal 3 karakter.");
+      setError("Nama pemesan minimal 3 karakter.");
       return;
     }
 
+    // INI BAGIAN VALIDASI NOMOR MEJA
+    if (
+      orderType === "Makan di Tempat" &&
+      !/^[0-9]{1,4}$/.test(nomorMeja.trim())
+    ) {
+      setError("Nomor meja wajib diisi dengan 1 sampai 4 digit.");
+      return;
+    }
+
+    // INI BAGIAN VALIDASI NOMOR TELEPON OPSIONAL
     const nomorTelepon = telepon.replace(/[\s-]/g, "");
 
-    if (!/^08[0-9]{8,11}$/.test(nomorTelepon)) {
+    if (nomorTelepon && !/^08[0-9]{8,11}$/.test(nomorTelepon)) {
       setError("Nomor telepon harus diawali 08 dan berisi 10–13 digit.");
       return;
     }
 
-    if (alamat.trim().length < 10) {
-      setError("Alamat pengiriman minimal 10 karakter.");
+    // INI BAGIAN VALIDASI ALAMAT OPSIONAL
+    if (alamat.trim() && alamat.trim().length < 10) {
+      setError("Alamat harus berisi minimal 10 karakter.");
       return;
     }
 
-    if (!["COD", "Transfer Bank", "E-Wallet"].includes(pembayaran)) {
-      setError("Silakan pilih metode pembayaran yang valid.");
+    if (catatan.trim().length > 500) {
+      setError("Catatan maksimal 500 karakter.");
       return;
     }
 
     setSubmitting(true);
 
     try {
+      // INI BAGIAN MENGIRIM DATA CHECKOUT KE API
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -116,6 +170,14 @@ export default function CheckoutPage() {
           phone: nomorTelepon,
           address: alamat.trim(),
           paymentMethod: pembayaran,
+
+          orderType,
+          tableNumber: orderType === "Makan di Tempat" ? nomorMeja.trim() : "",
+
+          note: catatan.trim(),
+
+          // Kirim ID dan jumlah saja.
+          // Harga final akan diambil dari database oleh API.
           items: cart.map((item) => ({
             menuId: item.id,
             quantity: item.quantity,
@@ -129,15 +191,20 @@ export default function CheckoutPage() {
         throw new Error(result.message || "Pesanan gagal diproses.");
       }
 
-      if (!result.order?.orderNumber) {
+      const orderNumber = result.order?.orderNumber;
+
+      if (typeof orderNumber !== "string" || !orderNumber) {
         throw new Error("Nomor pesanan tidak ditemukan dari server.");
       }
 
+      // INI BAGIAN MENYIMPAN REFERENSI NOMOR PESANAN
+      saveOrderReference(orderNumber);
+
+      // INI BAGIAN MENGOSONGKAN KERANJANG
       localStorage.removeItem("soto-betawi-cart");
 
-      router.push(
-        `/konfirmasi?order=${encodeURIComponent(result.order.orderNumber)}`,
-      );
+      // INI BAGIAN MENGARAHKAN CUSTOMER KE KONFIRMASI
+      router.push(`/konfirmasi?order=${encodeURIComponent(orderNumber)}`);
     } catch (err) {
       setError(
         err instanceof Error
@@ -152,55 +219,127 @@ export default function CheckoutPage() {
   return (
     <main className="checkout-page">
       <div className="checkout-container">
+        {/* INI BAGIAN HEADER CHECKOUT */}
         <div className="checkout-header">
           <h1>Checkout Pesanan</h1>
           <p>
-            Lengkapi informasi pemesanan untuk melanjutkan pembelian makanan.
+            Lengkapi informasi pemesanan untuk melanjutkan pesanan Soto Betawi
+            Jakarta.
           </p>
         </div>
 
         <div className="checkout-content">
-          {/* FORM CUSTOMER */}
+          {/* INI BAGIAN FORM CUSTOMER */}
           <section className="checkout-form-card">
             <h2>Informasi Pemesan</h2>
 
             <form onSubmit={handleCheckout}>
+              {/* INI BAGIAN NAMA PEMESAN */}
               <div className="checkout-form-group">
-                <label htmlFor="nama">Nama Lengkap</label>
+                <label htmlFor="nama">Nama Pemesan</label>
                 <input
                   id="nama"
                   type="text"
-                  placeholder="Masukkan nama lengkap"
+                  placeholder="Masukkan nama Anda"
                   value={nama}
                   onChange={(event) => setNama(event.target.value)}
+                  minLength={3}
+                  maxLength={100}
                   required
                 />
               </div>
 
+              {/* INI BAGIAN JENIS PESANAN */}
               <div className="checkout-form-group">
-                <label htmlFor="telepon">Nomor Telepon</label>
+                <label>Jenis Pesanan</label>
+
+                <div className="checkout-order-types">
+                  <label className="checkout-order-option">
+                    <input
+                      type="radio"
+                      name="orderType"
+                      value="Makan di Tempat"
+                      checked={orderType === "Makan di Tempat"}
+                      onChange={() => {
+                        setOrderType("Makan di Tempat");
+                      }}
+                    />
+
+                    <span>Makan di Tempat</span>
+                  </label>
+
+                  <label className="checkout-order-option">
+                    <input
+                      type="radio"
+                      name="orderType"
+                      value="Bawa Pulang"
+                      checked={orderType === "Bawa Pulang"}
+                      onChange={() => {
+                        setOrderType("Bawa Pulang");
+                        setNomorMeja("");
+                      }}
+                    />
+
+                    <span>Bawa Pulang</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* INI BAGIAN NOMOR MEJA */}
+              {orderType === "Makan di Tempat" && (
+                <div className="checkout-form-group">
+                  <label htmlFor="nomorMeja">Nomor Meja</label>
+
+                  <input
+                    id="nomorMeja"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
+                    placeholder="Contoh: 12"
+                    value={nomorMeja}
+                    onChange={(event) =>
+                      setNomorMeja(
+                        event.target.value.replace(/\D/g, "").slice(0, 4),
+                      )
+                    }
+                    required
+                  />
+                </div>
+              )}
+
+              {/* INI BAGIAN NOMOR TELEPON */}
+              <div className="checkout-form-group">
+                <label htmlFor="telepon">
+                  Nomor Telepon
+                  <span> (Opsional)</span>
+                </label>
+
                 <input
                   id="telepon"
                   type="tel"
                   placeholder="Contoh: 081234567890"
                   value={telepon}
                   onChange={(event) => setTelepon(event.target.value)}
-                  required
                 />
               </div>
 
+              {/* INI BAGIAN ALAMAT */}
               <div className="checkout-form-group">
-                <label htmlFor="alamat">Alamat Pengiriman</label>
+                <label htmlFor="alamat">
+                  Alamat
+                  <span> (Opsional)</span>
+                </label>
+
                 <textarea
                   id="alamat"
-                  rows={4}
-                  placeholder="Masukkan alamat lengkap"
+                  rows={3}
+                  placeholder="Masukkan alamat jika diperlukan"
                   value={alamat}
                   onChange={(event) => setAlamat(event.target.value)}
-                  required
                 />
               </div>
 
+              {/* INI BAGIAN METODE PEMBAYARAN */}
               <div className="checkout-form-group">
                 <label htmlFor="pembayaran">Metode Pembayaran</label>
 
@@ -208,21 +347,39 @@ export default function CheckoutPage() {
                   id="pembayaran"
                   value={pembayaran}
                   onChange={(event) => setPembayaran(event.target.value)}
-                  required
                 >
-                  <option value="">Pilih Metode Pembayaran</option>
-                  <option value="COD">Bayar di Tempat (COD)</option>
+                  <option value="Bayar di Kasir">Bayar di Kasir</option>
+                  <option value="COD">Cash on Delivery (COD)</option>
                   <option value="Transfer Bank">Transfer Bank</option>
                   <option value="E-Wallet">E-Wallet</option>
                 </select>
               </div>
 
+              {/* INI BAGIAN CATATAN PESANAN */}
+              <div className="checkout-form-group">
+                <label htmlFor="catatan">
+                  Catatan
+                  <span> (Opsional)</span>
+                </label>
+
+                <textarea
+                  id="catatan"
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Contoh: tidak pakai jeroan, sambal dipisah"
+                  value={catatan}
+                  onChange={(event) => setCatatan(event.target.value)}
+                />
+              </div>
+
+              {/* INI BAGIAN PESAN ERROR */}
               {error && (
                 <p className="checkout-error" role="alert">
                   {error}
                 </p>
               )}
 
+              {/* INI TOMBOL BUAT PESANAN */}
               <button
                 type="submit"
                 className="checkout-button"
@@ -233,7 +390,7 @@ export default function CheckoutPage() {
             </form>
           </section>
 
-          {/* RINGKASAN PESANAN */}
+          {/* INI BAGIAN RINGKASAN PESANAN */}
           <section className="checkout-summary">
             <h2>Ringkasan Pesanan</h2>
 
@@ -242,6 +399,7 @@ export default function CheckoutPage() {
             ) : cart.length === 0 ? (
               <div className="checkout-empty">
                 <p>Keranjang belanja masih kosong.</p>
+
                 <Link href="/">Pilih Menu Sekarang</Link>
               </div>
             ) : (
@@ -260,17 +418,19 @@ export default function CheckoutPage() {
               </div>
             )}
 
+            {/* INI BAGIAN TOTAL PEMBAYARAN */}
             <div className="checkout-total">
               <span>Estimasi Pembayaran</span>
               <strong>{formatRupiah(totalHarga)}</strong>
             </div>
 
-            <p style={{ fontSize: "12px", color: "#8d837a" }}>
+            <p className="checkout-price-hint">
               Harga akhir akan diverifikasi kembali oleh server.
             </p>
           </section>
         </div>
 
+        {/* INI BAGIAN KEMBALI KE MENU */}
         <Link href="/" className="checkout-back">
           ← Kembali ke Menu
         </Link>

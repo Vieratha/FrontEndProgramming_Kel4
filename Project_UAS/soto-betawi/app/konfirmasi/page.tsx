@@ -3,50 +3,98 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+// INI BAGIAN TIPE DATA ITEM PESANAN
 type OrderItem = {
   id: number;
-  name: string;
+  menuId: number | null;
+  menuName: string;
   price: number;
   quantity: number;
 };
 
+// INI BAGIAN TIPE DATA PESANAN
 type Order = {
   id: string;
-  nama: string;
-  telepon: string;
-  alamat: string;
-  pembayaran: string;
+  orderNumber: string;
+  customerName: string;
+  phone: string | null;
+  address: string | null;
+  paymentMethod: string | null;
+  orderType: string;
+  tableNumber: string | null;
+  note: string | null;
   items: OrderItem[];
   total: number;
   status: string;
-  tanggal: string;
+  createdAt: string;
 };
 
 export default function KonfirmasiPage() {
   const [pesanan, setPesanan] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Mengambil pesanan terbaru dari localStorage
+  // INI BAGIAN MENGAMBIL PESANAN DARI DATABASE
   useEffect(() => {
-    const timer = window.setTimeout(() => {
+    const controller = new AbortController();
+
+    const fetchOrder = async () => {
       try {
-        const savedOrder = localStorage.getItem("soto-betawi-last-order");
+        // Ambil nomor pesanan dari URL
+        const orderNumber = new URLSearchParams(window.location.search).get(
+          "order",
+        );
 
-        if (savedOrder) {
-          const parsedOrder = JSON.parse(savedOrder);
-          setPesanan(parsedOrder);
+        if (!orderNumber) {
+          throw new Error("Nomor pesanan tidak ditemukan.");
         }
-      } catch (error) {
-        console.error("Gagal membaca pesanan:", error);
-      } finally {
-        setLoading(false);
-      }
-    }, 0);
 
-    return () => window.clearTimeout(timer);
+        // Meminta detail pesanan kepada API
+        const response = await fetch(
+          `/api/orders?order=${encodeURIComponent(orderNumber)}`,
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          },
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "Gagal mengambil data pesanan.");
+        }
+
+        if (!controller.signal.aborted) {
+          setPesanan(result.order as Order);
+          setError("");
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+
+        if (!controller.signal.aborted) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Terjadi kesalahan saat mengambil pesanan.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchOrder();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
-  // Format harga Rupiah
+  // INI BAGIAN FORMAT HARGA RUPIAH
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -55,15 +103,16 @@ export default function KonfirmasiPage() {
     }).format(angka);
   };
 
-  // Format tanggal pesanan
+  // INI BAGIAN FORMAT TANGGAL
   const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleString("id-ID", {
+      timeZone: "Asia/Jakarta",
       dateStyle: "medium",
       timeStyle: "short",
     });
   };
 
-  // Tampilan ketika data sedang dimuat
+  // INI BAGIAN TAMPILAN LOADING
   if (loading) {
     return (
       <main className="konfirmasi-page">
@@ -72,16 +121,15 @@ export default function KonfirmasiPage() {
     );
   }
 
-  // Tampilan jika belum ada pesanan
-  if (!pesanan) {
+  // INI BAGIAN TAMPILAN JIKA PESANAN TIDAK DITEMUKAN
+  if (error || !pesanan) {
     return (
       <main className="konfirmasi-page">
         <section className="konfirmasi-card">
           <h1>Pesanan Tidak Ditemukan</h1>
 
           <p className="konfirmasi-description">
-            Belum ada pesanan yang bisa ditampilkan. Silakan pilih makanan
-            terlebih dahulu.
+            {error || "Data pesanan tidak tersedia."}
           </p>
 
           <Link href="/" className="konfirmasi-button">
@@ -95,33 +143,66 @@ export default function KonfirmasiPage() {
   return (
     <main className="konfirmasi-page">
       <section className="konfirmasi-card">
-        {/* ICON BERHASIL */}
+        {/* INI BAGIAN ICON BERHASIL */}
         <div className="konfirmasi-icon">✓</div>
 
         <h1>Pesanan Berhasil Dicatat!</h1>
 
         <p className="konfirmasi-description">
-          Terima kasih, {pesanan.nama}! Pesanan simulasi kamu berhasil disimpan
-          di browser.
+          Terima kasih, {pesanan.customerName}! Pesanan kamu berhasil disimpan
+          ke database Soto Betawi Jakarta.
         </p>
 
-        {/* INFORMASI PESANAN */}
+        {/* INI BAGIAN INFORMASI PESANAN */}
         <div className="konfirmasi-info">
           <h2>Detail Pesanan</h2>
 
           <div className="konfirmasi-row">
             <span>Nomor Pesanan</span>
-            <strong>{pesanan.id}</strong>
+            <strong>{pesanan.orderNumber}</strong>
           </div>
 
           <div className="konfirmasi-row">
             <span>Tanggal Pesanan</span>
-            <strong>{formatTanggal(pesanan.tanggal)}</strong>
+            <strong>{formatTanggal(pesanan.createdAt)}</strong>
           </div>
 
           <div className="konfirmasi-row">
             <span>Nama Pemesan</span>
-            <strong>{pesanan.nama}</strong>
+            <strong>{pesanan.customerName}</strong>
+          </div>
+
+          <div className="konfirmasi-row">
+            <span>Jenis Pesanan</span>
+            <strong>{pesanan.orderType}</strong>
+          </div>
+
+          {/* INI BAGIAN NOMOR MEJA */}
+          {pesanan.orderType === "Makan di Tempat" && pesanan.tableNumber && (
+            <div className="konfirmasi-row">
+              <span>Nomor Meja</span>
+              <strong>{pesanan.tableNumber}</strong>
+            </div>
+          )}
+
+          {/* INI BAGIAN INFORMASI TAMBAHAN */}
+          {pesanan.phone && (
+            <div className="konfirmasi-row">
+              <span>Nomor Telepon</span>
+              <strong>{pesanan.phone}</strong>
+            </div>
+          )}
+
+          {pesanan.address && (
+            <div className="konfirmasi-row">
+              <span>Alamat</span>
+              <strong>{pesanan.address}</strong>
+            </div>
+          )}
+
+          <div className="konfirmasi-row">
+            <span>Metode Pembayaran</span>
+            <strong>{pesanan.paymentMethod || "Bayar di Kasir"}</strong>
           </div>
 
           <div className="konfirmasi-row">
@@ -129,19 +210,22 @@ export default function KonfirmasiPage() {
             <strong>{pesanan.status}</strong>
           </div>
 
-          <div className="konfirmasi-row">
-            <span>Metode Pembayaran</span>
-            <strong>{pesanan.pembayaran}</strong>
-          </div>
+          {/* INI BAGIAN CATATAN */}
+          {pesanan.note && (
+            <div className="konfirmasi-row">
+              <span>Catatan</span>
+              <strong>{pesanan.note}</strong>
+            </div>
+          )}
 
-          {/* DAFTAR MAKANAN */}
+          {/* INI BAGIAN DAFTAR MENU */}
           <h2 className="konfirmasi-menu-title">Menu yang Dipesan</h2>
 
           <div className="konfirmasi-items">
             {pesanan.items.map((item) => (
               <div className="konfirmasi-item" key={item.id}>
                 <div>
-                  <h3>{item.name}</h3>
+                  <h3>{item.menuName}</h3>
                   <p>Jumlah: {item.quantity}</p>
                 </div>
 
@@ -150,14 +234,14 @@ export default function KonfirmasiPage() {
             ))}
           </div>
 
-          {/* TOTAL PEMBAYARAN */}
+          {/* INI BAGIAN TOTAL PEMBAYARAN */}
           <div className="konfirmasi-total">
             <span>Total Pembayaran</span>
             <strong>{formatRupiah(pesanan.total)}</strong>
           </div>
         </div>
 
-        {/* TOMBOL NAVIGASI */}
+        {/* INI BAGIAN TOMBOL NAVIGASI */}
         <div className="konfirmasi-actions">
           <Link href="/" className="konfirmasi-button">
             Kembali ke Beranda

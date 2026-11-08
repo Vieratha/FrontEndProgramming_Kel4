@@ -3490,3 +3490,56 @@ textarea {
   color: #934718;
   font-weight: 600;
 }
+
+/* INI BAGIAN PILIHAN JENIS PESANAN CHECKOUT */
+.checkout-order-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* INI BAGIAN LABEL PILIHAN PESANAN */
+.checkout-order-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 15px;
+  border: 1px solid #ddd5c9;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* INI BAGIAN INPUT RADIO */
+.checkout-order-option input[type="radio"] {
+  width: auto;
+  margin: 0;
+  accent-color: #4d674e;
+}
+
+/* INI BAGIAN TEKS LABEL OPSIONAL */
+.checkout-form-group label span {
+  color: #8d837a;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* INI BAGIAN PETUNJUK HARGA CHECKOUT */
+.checkout-price-hint {
+  margin-top: 12px;
+  color: #8d837a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* INI BAGIAN RESPONSIVE CHECKOUT */
+@media (max-width: 576px) {
+  .checkout-order-types {
+    flex-direction: column;
+  }
+
+  .checkout-order-option {
+    width: 100%;
+  }
+}
