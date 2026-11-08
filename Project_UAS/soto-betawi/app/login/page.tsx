@@ -3,15 +3,22 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import PasswordField from "../components/PasswordField";
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  // INI BAGIAN DATA LOGIN
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // INI BAGIAN STATUS FORM
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // INI BAGIAN PROSES LOGIN
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -23,6 +30,7 @@ export default function LoginPage() {
       return;
     }
 
+    // INI BAGIAN VALIDASI EMAIL
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email.trim())) {
@@ -30,6 +38,7 @@ export default function LoginPage() {
       return;
     }
 
+    // INI BAGIAN VALIDASI PASSWORD
     if (password.length < 8) {
       setError("Password minimal 8 karakter.");
       return;
@@ -38,13 +47,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // INI BAGIAN MENGIRIM DATA LOGIN KE API
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          email: email.trim().toLowerCase(),
           password,
         }),
       });
@@ -57,7 +67,10 @@ export default function LoginPage() {
 
       setSuccess("Login berhasil!");
 
-      window.location.href = result.user.role === "ADMIN" ? "/admin" : "/";
+      // INI BAGIAN MENGARAHKAN USER BERDASARKAN ROLE
+      const destination = result.user.role === "ADMIN" ? "/admin" : "/";
+
+      router.replace(destination);
     } catch (error) {
       setError(
         error instanceof Error
@@ -72,60 +85,70 @@ export default function LoginPage() {
   return (
     <main className="auth-page">
       <div className="auth-card">
+        {/* INI BAGIAN HEADER LOGIN */}
         <div className="auth-header">
-          <h1>Login Customer</h1>
-          <p>Masuk ke akun Soto Betawi Jakarta untuk melanjutkan pemesanan.</p>
+          <h1>Masuk ke Akun</h1>
+
+          <p>
+            Masuk ke akun Soto Betawi Jakarta untuk melanjutkan pemesanan atau
+            mengelola restoran.
+          </p>
         </div>
 
+        {/* INI BAGIAN FORM LOGIN */}
         <form className="auth-form" onSubmit={handleLogin} noValidate>
-          {/* INPUT EMAIL */}
+          {/* INI BAGIAN INPUT EMAIL */}
           <div className="form-group">
             <label htmlFor="email">Email</label>
+
             <input
               type="email"
               id="email"
+              name="email"
+              autoComplete="username"
               placeholder="Masukkan email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 
-          {/* INPUT PASSWORD */}
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              placeholder="Masukkan password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          {/* INI BAGIAN INPUT PASSWORD */}
+          <PasswordField
+            id="password"
+            label="Password"
+            placeholder="Masukkan password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+          />
 
-          {/* PESAN ERROR */}
+          {/* INI BAGIAN PESAN ERROR */}
           {error && (
             <p className="auth-error" role="alert">
               {error}
             </p>
           )}
 
-          {/* PESAN BERHASIL */}
+          {/* INI BAGIAN PESAN BERHASIL */}
           {success && (
             <p className="auth-success" role="status">
               {success}
             </p>
           )}
 
-          {/* TOMBOL LOGIN */}
+          {/* INI BAGIAN TOMBOL LOGIN */}
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? "Memproses..." : "Masuk"}
           </button>
         </form>
 
+        {/* INI BAGIAN LINK REGISTER */}
         <p className="auth-footer">
           Belum punya akun? <Link href="/register">Daftar Sekarang</Link>
         </p>
 
+        {/* INI BAGIAN KEMBALI KE BERANDA */}
         <Link href="/" className="back-home">
           ← Kembali ke Beranda
         </Link>
