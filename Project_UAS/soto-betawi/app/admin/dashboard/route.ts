@@ -3,9 +3,12 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
+// INI BAGIAN MENGAMBIL STATISTIK DASHBOARD ADMIN
 export async function GET() {
   try {
+    // INI BAGIAN MEMERIKSA HAK AKSES ADMIN
     const user = await getCurrentUser();
 
     if (!user) {
@@ -22,7 +25,7 @@ export async function GET() {
       );
     }
 
-    // Awal hari berdasarkan zona waktu Jakarta
+    // INI BAGIAN MENENTUKAN TANGGAL HARI INI DI JAKARTA
     const now = new Date();
 
     const jakartaDate = new Intl.DateTimeFormat("en-CA", {
@@ -34,22 +37,25 @@ export async function GET() {
 
     const [year, month, day] = jakartaDate.split("-").map(Number);
 
-    // Konversi tengah malam Jakarta menjadi UTC
     const startOfDay = new Date(Date.UTC(year, month - 1, day, -7, 0, 0));
 
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
+    // INI BAGIAN MENGAMBIL DATA STATISTIK DARI DATABASE
     const [
       totalPesanan,
       pesananHariIni,
-      totalPendapatan,
+      pendapatan,
       totalMenu,
       menuTersedia,
       pesananTerbaru,
+      totalItemTerjual,
       penjualanMenu,
     ] = await Promise.all([
+      // INI BAGIAN MENGHITUNG SEMUA PESANAN
       prisma.order.count(),
 
+      // INI BAGIAN MENGHITUNG PESANAN HARI INI
       prisma.order.count({
         where: {
           createdAt: {
@@ -59,7 +65,7 @@ export async function GET() {
         },
       }),
 
-      // Hanya pesanan yang sudah dikonfirmasi/selesai
+      // INI BAGIAN MENGHITUNG PENDAPATAN PESANAN SELESAI
       prisma.order.aggregate({
         where: {
           status: "Selesai",
@@ -69,14 +75,17 @@ export async function GET() {
         },
       }),
 
+      // INI BAGIAN MENGHITUNG TOTAL MENU
       prisma.menu.count(),
 
+      // INI BAGIAN MENGHITUNG MENU YANG TERSEDIA
       prisma.menu.count({
         where: {
           status: "Tersedia",
         },
       }),
 
+      // INI BAGIAN MENGAMBIL LIMA PESANAN TERBARU
       prisma.order.findMany({
         orderBy: {
           createdAt: "desc",
@@ -92,8 +101,32 @@ export async function GET() {
         },
       }),
 
+      // INI BAGIAN MENGHITUNG SELURUH ITEM YANG TERJUAL
+      // Hanya item dari pesanan yang sudah selesai yang dihitung.
+      prisma.orderItem.aggregate({
+        where: {
+          order: {
+            is: {
+              status: "Selesai",
+            },
+          },
+        },
+        _sum: {
+          quantity: true,
+        },
+      }),
+
+      // INI BAGIAN MENGAMBIL LIMA MENU TERLARIS
+      // Perhitungan hanya berdasarkan pesanan yang sudah selesai.
       prisma.orderItem.groupBy({
         by: ["menuName"],
+        where: {
+          order: {
+            is: {
+              status: "Selesai",
+            },
+          },
+        },
         _sum: {
           quantity: true,
         },
@@ -106,28 +139,37 @@ export async function GET() {
       }),
     ]);
 
-    const menuTerlaris = penjualanMenu.map((item) => ({
-      name: item.menuName,
-      quantity: item._sum.quantity ?? 0,
-    }));
-
+    // INI BAGIAN MENGEMBALIKAN DATA DASHBOARD
     return NextResponse.json({
       statistics: {
         totalPesanan,
         pesananHariIni,
-        totalPendapatan: totalPendapatan._sum.total ?? 0,
+        totalPendapatan: pendapatan._sum.total ?? 0,
         totalMenu,
         menuTersedia,
+
+        // Total dihitung dari seluruh OrderItem, bukan hanya lima teratas.
+        totalMenuTerjual: totalItemTerjual._sum.quantity ?? 0,
       },
+
       pesananTerbaru,
-      menuTerlaris,
+
+      // INI BAGIAN DATA MENU TERLARIS
+      menuTerlaris: penjualanMenu.map((item) => ({
+        name: item.menuName,
+        quantity: item._sum.quantity ?? 0,
+      })),
     });
   } catch (error) {
     console.error("Dashboard API error:", error);
 
     return NextResponse.json(
-      { message: "Gagal mengambil statistik dashboard." },
-      { status: 500 },
+      {
+        message: "Gagal mengambil statistik dashboard.",
+      },
+      {
+        status: 500,
+      },
     );
   }
 }

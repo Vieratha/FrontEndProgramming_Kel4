@@ -9,6 +9,7 @@ type Statistics = {
   totalPendapatan: number;
   totalMenu: number;
   menuTersedia: number;
+  totalMenuTerjual: number;
 };
 
 type RecentOrder = {
@@ -38,6 +39,7 @@ const emptyDashboard: DashboardData = {
     totalPendapatan: 0,
     totalMenu: 0,
     menuTersedia: 0,
+    totalMenuTerjual: 0,
   },
   pesananTerbaru: [],
   menuTerlaris: [],
@@ -188,15 +190,9 @@ export default function AdminDashboard() {
         <div className="admin-dashboard-stat-card">
           <div className="admin-stat-info">
             <p>Menu Terjual</p>
-            <h2>
-              {loading
-                ? "..."
-                : dashboard.menuTerlaris.reduce(
-                    (total, item) => total + item.quantity,
-                    0,
-                  )}
-            </h2>
+            <h2>{loading ? "..." : dashboard.statistics.totalMenuTerjual}</h2>
           </div>
+
           <span className="admin-stat-icon">🍲</span>
         </div>
       </section>
