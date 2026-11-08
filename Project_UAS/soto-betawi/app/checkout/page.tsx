@@ -44,22 +44,30 @@ export default function CheckoutPage() {
 
   // INI BAGIAN MEMBACA KERANJANG DARI BROWSER
   useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem("soto-betawi-cart");
+    // Membaca localStorage setelah komponen selesai dipasang.
+    const timer = window.setTimeout(() => {
+      try {
+        const savedCart = localStorage.getItem("soto-betawi-cart");
 
-      if (savedCart) {
-        const parsedCart: unknown = JSON.parse(savedCart);
+        if (savedCart) {
+          const parsedCart: unknown = JSON.parse(savedCart);
 
-        if (Array.isArray(parsedCart)) {
-          setCart(parsedCart as CartItem[]);
+          if (Array.isArray(parsedCart)) {
+            setCart(parsedCart as CartItem[]);
+          }
         }
+      } catch (err) {
+        console.error("Gagal membaca keranjang:", err);
+        setError("Gagal membaca keranjang belanja.");
+      } finally {
+        setCartLoaded(true);
       }
-    } catch (err) {
-      console.error("Gagal membaca keranjang:", err);
-      setError("Gagal membaca keranjang belanja.");
-    } finally {
-      setCartLoaded(true);
-    }
+    }, 0);
+
+    // Membersihkan timer ketika halaman ditinggalkan.
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   // INI BAGIAN MENGHITUNG TOTAL SEMENTARA
