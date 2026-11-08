@@ -206,17 +206,15 @@ export async function POST(request: Request) {
     }
 
     // INI BAGIAN VALIDASI METODE PEMBAYARAN
-    const allowedPayments = [
-      "Bayar di Kasir",
-      "COD",
-      "Transfer Bank",
-      "E-Wallet",
-    ];
+    // Untuk tahap ini, sistem hanya mendukung pembayaran manual di kasir.
+    const selectedPaymentMethod = paymentMethod || "Bayar di Kasir";
 
-    if (paymentMethod && !allowedPayments.includes(paymentMethod)) {
+    const allowedPayments = ["Bayar di Kasir"];
+
+    if (!allowedPayments.includes(selectedPaymentMethod)) {
       return NextResponse.json(
         {
-          message: "Metode pembayaran tidak valid.",
+          message: "Saat ini pembayaran hanya tersedia melalui kasir restoran.",
         },
         {
           status: 400,
@@ -394,7 +392,11 @@ export async function POST(request: Request) {
     // INI BAGIAN MEMBUAT NOMOR PESANAN ACAK
     const orderNumber = `SB-${randomBytes(16).toString("hex").toUpperCase()}`;
 
-    // INI BAGIAN MENYIMPAN PESANAN KE DATABASE
+    // INI BAGIAN MENYIMPAN PESANAN DAN PEMBAYARAN KE DATABASE
+    // Nested write memastikan Order, OrderItem, dan Payment dibuat bersama.
+
+    const paymentReference = `KASIR-${orderNumber}`;
+
     const order = await prisma.order.create({
       data: {
         orderNumber,
@@ -405,7 +407,7 @@ export async function POST(request: Request) {
         customerName,
         phone: phone || null,
         address: address || null,
-        paymentMethod: paymentMethod || "Bayar di Kasir",
+        paymentMethod: selectedPaymentMethod,
 
         orderType,
 
@@ -416,9 +418,24 @@ export async function POST(request: Request) {
         total,
         status: "Menunggu Konfirmasi",
 
+        // INI BAGIAN STATUS PEMBAYARAN AWAL
+        paymentStatus: "BELUM_DIBAYAR",
+        paidAt: null,
+
         // INI BAGIAN MENYIMPAN RINCIAN ITEM PESANAN
         items: {
           create: orderItems,
+        },
+
+        // INI BAGIAN MEMBUAT TRANSAKSI PEMBAYARAN KASIR
+        payments: {
+          create: {
+            provider: "MANUAL",
+            method: "KASIR",
+            reference: paymentReference,
+            status: "MENUNGGU_PEMBAYARAN",
+            amount: total,
+          },
         },
       },
 
@@ -426,6 +443,12 @@ export async function POST(request: Request) {
         items: {
           orderBy: {
             id: "asc",
+          },
+        },
+
+        payments: {
+          orderBy: {
+            createdAt: "desc",
           },
         },
       },

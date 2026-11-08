@@ -24,6 +24,10 @@ type Order = {
   note: string | null;
   total: number;
   status: string;
+
+  // INI BAGIAN DATA PEMBAYARAN
+  paymentStatus: string;
+  paidAt: string | null;
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
@@ -47,7 +51,8 @@ function getNextStatus(order: Order): string | null {
 
     case "Siap Disajikan":
     case "Siap Diambil":
-      return "Selesai";
+      // Pesanan hanya dapat selesai jika pembayaran sudah Lunas.
+      return order.paymentStatus === "LUNAS" ? "Selesai" : null;
 
     default:
       return null;
@@ -57,6 +62,53 @@ function getNextStatus(order: Order): string | null {
 // INI BAGIAN MEMERIKSA PESANAN YANG DAPAT DIBATALKAN
 function canCancelOrder(status: string) {
   return status === "Menunggu Konfirmasi" || status === "Dikonfirmasi";
+}
+
+// INI BAGIAN MEMERIKSA APAKAH PEMBAYARAN DAPAT DIKONFIRMASI
+function canMarkPaid(order: Order) {
+  const paymentMethod = order.paymentMethod || "Bayar di Kasir";
+
+  return (
+    paymentMethod === "Bayar di Kasir" &&
+    order.paymentStatus !== "LUNAS" &&
+    order.status !== "Dibatalkan"
+  );
+}
+
+// INI BAGIAN MENENTUKAN WARNA STATUS PEMBAYARAN
+function getPaymentStatusClass(status: string) {
+  switch (status) {
+    case "LUNAS":
+      return "paid";
+
+    case "MENUNGGU_PEMBAYARAN":
+      return "waiting";
+
+    case "GAGAL":
+    case "DIBATALKAN":
+      return "failed";
+
+    case "KEDALUWARSA":
+      return "expired";
+
+    default:
+      return "unpaid";
+  }
+}
+
+// INI BAGIAN MENGUBAH LABEL STATUS PEMBAYARAN
+function getPaymentStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    BELUM_DIBAYAR: "Belum Dibayar",
+    MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
+    LUNAS: "Lunas",
+    GAGAL: "Gagal",
+    KEDALUWARSA: "Kedaluwarsa",
+    DIBATALKAN: "Dibatalkan",
+    DIKEMBALIKAN: "Dikembalikan",
+  };
+
+  return labels[status] || status;
 }
 
 // INI BAGIAN MENENTUKAN WARNA STATUS
@@ -280,6 +332,73 @@ export default function AdminOrdersPage() {
     }
   };
 
+  // INI BAGIAN MENGONFIRMASI PEMBAYARAN OLEH KASIR
+  const handleMarkPaid = async (order: Order) => {
+    if (updatingId) return;
+
+    if (!canMarkPaid(order)) {
+      setError("Pembayaran pesanan ini tidak dapat dikonfirmasi.");
+      return;
+    }
+
+    // INI BAGIAN KONFIRMASI PENERIMAAN UANG
+    const confirmed = window.confirm(
+      `Pastikan uang sebesar ${formatRupiah(order.total)} telah diterima oleh kasir. Tandai pembayaran ${order.orderNumber} sebagai Lunas?`,
+    );
+
+    if (!confirmed) return;
+
+    setUpdatingId(order.id);
+    setError("");
+    setSuccess("");
+
+    try {
+      // INI BAGIAN MENGIRIM KONFIRMASI PEMBAYARAN KE SERVER
+      const response = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: order.id,
+          action: "MARK_PAID",
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gagal mengonfirmasi pembayaran.");
+      }
+
+      const updatedOrder = result.order as Order;
+
+      // INI BAGIAN MEMPERBARUI DATA PESANAN DI TABEL
+      setOrders((previous) =>
+        previous.map((item) =>
+          item.id === updatedOrder.id ? updatedOrder : item,
+        ),
+      );
+
+      // INI BAGIAN MEMPERBARUI DETAIL PESANAN
+      setSelectedOrder((previous) =>
+        previous?.id === updatedOrder.id ? updatedOrder : previous,
+      );
+
+      setSuccess(
+        `Pembayaran pesanan ${updatedOrder.orderNumber} berhasil dikonfirmasi Lunas.`,
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat mengonfirmasi pembayaran.",
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
     <main className="ao-page">
       {/* INI BAGIAN HEADER HALAMAN */}
@@ -388,7 +507,8 @@ export default function AdminOrdersPage() {
                 <th>Jenis Pesanan</th>
                 <th>Total</th>
                 <th>Waktu</th>
-                <th>Status</th>
+                <th>Status Pesanan</th>
+                <th>Status Pembayaran</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -396,13 +516,13 @@ export default function AdminOrdersPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="ao-empty">
+                  <td colSpan={8} className="ao-empty">
                     Memuat data pesanan...
                   </td>
                 </tr>
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="ao-empty">
+                  <td colSpan={8} className="ao-empty">
                     Tidak ada pesanan yang ditemukan.
                   </td>
                 </tr>

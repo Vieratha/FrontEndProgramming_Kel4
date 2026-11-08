@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 // INI BAGIAN TIPE DATA REQUEST
 type UpdateOrderRequest = {
   id: string;
-  status: string;
+  status?: string;
+  action?: string;
 };
 
 // INI BAGIAN MEMERIKSA OBJECT REQUEST
@@ -17,7 +18,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 // INI BAGIAN MEMERIKSA HAK AKSES ADMIN
-async function checkAdmin() {
+async function checkAdmin(): Promise<
+  | { authorized: true; response: null }
+  | { authorized: false; response: NextResponse }
+> {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -90,6 +94,12 @@ export async function GET() {
             id: "asc",
           },
         },
+
+        payments: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -113,7 +123,7 @@ export async function GET() {
   }
 }
 
-// INI BAGIAN MEMPERBARUI STATUS PESANAN
+// INI BAGIAN MEMPERBARUI PESANAN DAN PEMBAYARAN
 export async function PATCH(request: Request) {
   try {
     // INI BAGIAN MEMERIKSA ADMIN
@@ -141,13 +151,10 @@ export async function PATCH(request: Request) {
 
     const orderId = typeof data.id === "string" ? data.id.trim() : "";
 
-    const targetStatus =
-      typeof data.status === "string" ? data.status.trim() : "";
-
-    if (!orderId || !targetStatus) {
+    if (!orderId) {
       return NextResponse.json(
         {
-          message: "ID dan status pesanan wajib diisi.",
+          message: "ID pesanan wajib diisi.",
         },
         {
           status: 400,
@@ -155,15 +162,19 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGAMBIL PESANAN YANG AKAN DIUBAH
+    // INI BAGIAN MENGAMBIL DATA PESANAN
     const existingOrder = await prisma.order.findUnique({
       where: {
         id: orderId,
       },
       select: {
         id: true,
+        orderNumber: true,
         orderType: true,
         status: true,
+        paymentMethod: true,
+        paymentStatus: true,
+        total: true,
       },
     });
 
@@ -174,6 +185,146 @@ export async function PATCH(request: Request) {
         },
         {
           status: 404,
+        },
+      );
+    }
+
+    // INI BAGIAN KONFIRMASI PEMBAYARAN MANUAL OLEH KASIR
+    if (data.action === "MARK_PAID") {
+      // Pesanan yang dibatalkan tidak dapat menerima pembayaran baru.
+      if (existingOrder.status === "Dibatalkan") {
+        return NextResponse.json(
+          {
+            message: "Pesanan yang dibatalkan tidak dapat dibayar.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      // INI BAGIAN MEMERIKSA STATUS PEMBAYARAN
+      if (existingOrder.paymentStatus === "LUNAS") {
+        return NextResponse.json(
+          {
+            message: "Pembayaran pesanan ini sudah Lunas.",
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+
+      // INI BAGIAN MEMERIKSA METODE PEMBAYARAN
+      const paymentMethod = existingOrder.paymentMethod || "Bayar di Kasir";
+
+      if (paymentMethod !== "Bayar di Kasir") {
+        return NextResponse.json(
+          {
+            message:
+              "Pembayaran manual hanya berlaku untuk metode Bayar di Kasir.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      // INI BAGIAN MENYIMPAN KONFIRMASI KASIR SECARA ATOMIK
+      const paidAt = new Date();
+      const paymentReference = `KASIR-${existingOrder.orderNumber}`;
+
+      const updatedOrder = await prisma.$transaction(async (tx) => {
+        // Pastikan status pembayaran belum berubah oleh request lain.
+        const updated = await tx.order.updateMany({
+          where: {
+            id: existingOrder.id,
+            paymentStatus: "BELUM_DIBAYAR",
+            status: {
+              not: "Dibatalkan",
+            },
+          },
+          data: {
+            paymentStatus: "LUNAS",
+            paidAt,
+          },
+        });
+
+        if (updated.count !== 1) {
+          return null;
+        }
+
+        // INI BAGIAN MENCATAT TRANSAKSI KASIR
+        // Upsert mencegah pembayaran kasir tercatat dua kali.
+        await tx.payment.upsert({
+          where: {
+            reference: paymentReference,
+          },
+          create: {
+            orderId: existingOrder.id,
+            provider: "MANUAL",
+            method: "KASIR",
+            reference: paymentReference,
+            status: "LUNAS",
+            amount: existingOrder.total,
+            paidAt,
+          },
+          update: {
+            status: "LUNAS",
+            amount: existingOrder.total,
+            paidAt,
+          },
+        });
+
+        // INI BAGIAN MENGAMBIL PESANAN TERBARU
+        return tx.order.findUnique({
+          where: {
+            id: existingOrder.id,
+          },
+          include: {
+            items: {
+              orderBy: {
+                id: "asc",
+              },
+            },
+            payments: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
+          },
+        });
+      });
+
+      if (!updatedOrder) {
+        return NextResponse.json(
+          {
+            message:
+              "Pembayaran sudah berubah. Silakan refresh daftar pesanan.",
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+
+      return NextResponse.json({
+        message: "Pembayaran berhasil ditandai Lunas.",
+        order: updatedOrder,
+      });
+    }
+
+    // INI BAGIAN MEMVALIDASI STATUS PESANAN
+    const targetStatus =
+      typeof data.status === "string" ? data.status.trim() : "";
+
+    if (!targetStatus) {
+      return NextResponse.json(
+        {
+          message: "Status pesanan wajib diisi.",
+        },
+        {
+          status: 400,
         },
       );
     }
@@ -196,12 +347,41 @@ export async function PATCH(request: Request) {
       );
     }
 
+    // INI BAGIAN MEMERIKSA PEMBAYARAN SEBELUM PESANAN SELESAI
+    if (targetStatus === "Selesai" && existingOrder.paymentStatus !== "LUNAS") {
+      return NextResponse.json(
+        {
+          message:
+            "Pesanan belum dapat diselesaikan karena pembayaran belum Lunas.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    // INI BAGIAN MENCEGAH PEMBATALAN PESANAN YANG SUDAH DIBAYAR
+    if (
+      targetStatus === "Dibatalkan" &&
+      existingOrder.paymentStatus === "LUNAS"
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "Pesanan sudah dibayar. Proses pengembalian dana perlu dilakukan terlebih dahulu.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
     // INI BAGIAN MENYIMPAN PERUBAHAN STATUS
-    // Pemeriksaan status lama mencegah perubahan bersamaan menimpa satu sama lain.
     const updated = await prisma.order.updateMany({
       where: {
         id: existingOrder.id,
         status: existingOrder.status,
+        paymentStatus: existingOrder.paymentStatus,
       },
       data: {
         status: targetStatus,
@@ -211,7 +391,7 @@ export async function PATCH(request: Request) {
     if (updated.count === 0) {
       return NextResponse.json(
         {
-          message: "Status pesanan sudah berubah. Muat ulang daftar pesanan.",
+          message: "Data pesanan sudah berubah. Muat ulang daftar pesanan.",
         },
         {
           status: 409,
@@ -230,6 +410,11 @@ export async function PATCH(request: Request) {
             id: "asc",
           },
         },
+        payments: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 
@@ -242,7 +427,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json(
       {
-        message: "Gagal memperbarui status pesanan.",
+        message: "Gagal memperbarui pesanan.",
       },
       {
         status: 500,

@@ -4504,3 +4504,24 @@ textarea {
     flex: 1;
   }
 }
+
+/* INI BAGIAN INFORMASI METODE PEMBAYARAN CHECKOUT */
+.checkout-payment-info {
+  padding: 14px 16px;
+  border: 1px solid #e5d7c9;
+  border-radius: 8px;
+  background: #faf5ef;
+}
+
+.checkout-payment-info strong {
+  display: block;
+  color: #85451f;
+  font-size: 14px;
+}
+
+.checkout-payment-info p {
+  margin: 6px 0 0;
+  color: #806f62;
+  font-size: 12px;
+  line-height: 1.6;
+}

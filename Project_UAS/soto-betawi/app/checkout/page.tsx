@@ -26,7 +26,6 @@ export default function CheckoutPage() {
   const [nama, setNama] = useState("");
   const [telepon, setTelepon] = useState("");
   const [alamat, setAlamat] = useState("");
-  const [pembayaran, setPembayaran] = useState("Bayar di Kasir");
 
   // INI BAGIAN JENIS PESANAN
   const [orderType, setOrderType] = useState<OrderType>("Makan di Tempat");
@@ -177,7 +176,7 @@ export default function CheckoutPage() {
           customerName: nama.trim(),
           phone: nomorTelepon,
           address: alamat.trim(),
-          paymentMethod: pembayaran,
+          paymentMethod: "Bayar di Kasir",
 
           orderType,
           tableNumber: orderType === "Makan di Tempat" ? nomorMeja.trim() : "",
@@ -349,18 +348,15 @@ export default function CheckoutPage() {
 
               {/* INI BAGIAN METODE PEMBAYARAN */}
               <div className="checkout-form-group">
-                <label htmlFor="pembayaran">Metode Pembayaran</label>
+                <label>Metode Pembayaran</label>
 
-                <select
-                  id="pembayaran"
-                  value={pembayaran}
-                  onChange={(event) => setPembayaran(event.target.value)}
-                >
-                  <option value="Bayar di Kasir">Bayar di Kasir</option>
-                  <option value="COD">Cash on Delivery (COD)</option>
-                  <option value="Transfer Bank">Transfer Bank</option>
-                  <option value="E-Wallet">E-Wallet</option>
-                </select>
+                <div className="checkout-payment-info">
+                  <strong>Bayar di Kasir</strong>
+                  <p>
+                    Pembayaran dilakukan langsung kepada kasir restoran setelah
+                    pesanan dikonfirmasi.
+                  </p>
+                </div>
               </div>
 
               {/* INI BAGIAN CATATAN PESANAN */}
