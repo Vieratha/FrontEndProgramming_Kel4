@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+// INI BAGIAN TIPE DATA STATISTIK DASHBOARD
 type Statistics = {
   totalPesanan: number;
   pesananHariIni: number;
@@ -10,6 +11,7 @@ type Statistics = {
   totalMenu: number;
   menuTersedia: number;
   totalMenuTerjual: number;
+  pembayaranBelumLunas: number;
 };
 
 type RecentOrder = {
@@ -40,6 +42,7 @@ const emptyDashboard: DashboardData = {
     totalMenu: 0,
     menuTersedia: 0,
     totalMenuTerjual: 0,
+    pembayaranBelumLunas: 0,
   },
   pesananTerbaru: [],
   menuTerlaris: [],
@@ -177,7 +180,7 @@ export default function AdminDashboard() {
 
         <div className="admin-dashboard-stat-card">
           <div className="admin-stat-info">
-            <p>Pendapatan Selesai</p>
+            <p>Pendapatan Diterima</p>
             <h2>
               {loading
                 ? "..."

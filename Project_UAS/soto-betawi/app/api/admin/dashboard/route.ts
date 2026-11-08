@@ -26,14 +26,12 @@ export async function GET() {
     }
 
     // INI BAGIAN MENENTUKAN TANGGAL HARI INI DI JAKARTA
-    const now = new Date();
-
     const jakartaDate = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Jakarta",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-    }).format(now);
+    }).format(new Date());
 
     const [year, month, day] = jakartaDate.split("-").map(Number);
 
@@ -51,6 +49,7 @@ export async function GET() {
       pesananTerbaru,
       totalItemTerjual,
       penjualanMenu,
+      pembayaranBelumLunas,
     ] = await Promise.all([
       // INI BAGIAN MENGHITUNG SEMUA PESANAN
       prisma.order.count(),
@@ -65,10 +64,11 @@ export async function GET() {
         },
       }),
 
-      // INI BAGIAN MENGHITUNG NILAI PESANAN SELESAI
+      // INI BAGIAN MENGHITUNG PENDAPATAN YANG SUDAH DITERIMA
+      // Pendapatan dihitung berdasarkan pembayaran yang sudah Lunas.
       prisma.order.aggregate({
         where: {
-          status: "Selesai",
+          paymentStatus: "LUNAS",
         },
         _sum: {
           total: true,
@@ -78,7 +78,7 @@ export async function GET() {
       // INI BAGIAN MENGHITUNG TOTAL MENU
       prisma.menu.count(),
 
-      // INI BAGIAN MENGHITUNG MENU TERSEDIA
+      // INI BAGIAN MENGHITUNG MENU YANG TERSEDIA
       prisma.menu.count({
         where: {
           status: "Tersedia",
@@ -97,16 +97,19 @@ export async function GET() {
           customerName: true,
           total: true,
           status: true,
+          paymentStatus: true,
           createdAt: true,
         },
       }),
 
       // INI BAGIAN MENGHITUNG SELURUH ITEM TERJUAL
+      // Item dihitung jika pesanan selesai dan pembayarannya Lunas.
       prisma.orderItem.aggregate({
         where: {
           order: {
             is: {
               status: "Selesai",
+              paymentStatus: "LUNAS",
             },
           },
         },
@@ -122,6 +125,7 @@ export async function GET() {
           order: {
             is: {
               status: "Selesai",
+              paymentStatus: "LUNAS",
             },
           },
         },
@@ -135,6 +139,16 @@ export async function GET() {
         },
         take: 5,
       }),
+
+      // INI BAGIAN MENGHITUNG PEMBAYARAN YANG BELUM LUNAS
+      prisma.order.count({
+        where: {
+          paymentStatus: "BELUM_DIBAYAR",
+          status: {
+            not: "Dibatalkan",
+          },
+        },
+      }),
     ]);
 
     // INI BAGIAN MENGEMBALIKAN DATA DASHBOARD
@@ -146,6 +160,7 @@ export async function GET() {
         totalMenu,
         menuTersedia,
         totalMenuTerjual: totalItemTerjual._sum.quantity ?? 0,
+        pembayaranBelumLunas,
       },
 
       pesananTerbaru,

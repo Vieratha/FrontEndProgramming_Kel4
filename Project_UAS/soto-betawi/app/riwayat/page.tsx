@@ -26,8 +26,25 @@ type Order = {
   items: OrderItem[];
   total: number;
   status: string;
+  paymentStatus: string;
+  paidAt: string | null;
   createdAt: string;
 };
+
+// INI BAGIAN LABEL STATUS PEMBAYARAN
+function getPaymentLabel(status: string) {
+  const labels: Record<string, string> = {
+    BELUM_DIBAYAR: "Belum Dibayar",
+    MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
+    LUNAS: "Lunas",
+    GAGAL: "Gagal",
+    KEDALUWARSA: "Kedaluwarsa",
+    DIBATALKAN: "Dibatalkan",
+    DIKEMBALIKAN: "Dikembalikan",
+  };
+
+  return labels[status] || status;
+}
 
 export default function RiwayatPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -37,17 +54,18 @@ export default function RiwayatPage() {
 
   // INI BAGIAN MENGAMBIL RIWAYAT PESANAN DARI DATABASE
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     const fetchOrders = async () => {
       try {
         const response = await fetch("/api/orders", {
           cache: "no-store",
+          signal: controller.signal,
         });
 
         // INI BAGIAN MEMERIKSA STATUS LOGIN
         if (response.status === 401) {
-          if (!cancelled) {
+          if (!controller.signal.aborted) {
             setIsGuest(true);
             setOrders([]);
             setError("");
@@ -64,17 +82,22 @@ export default function RiwayatPage() {
 
         // INI BAGIAN MENGAMBIL PESANAN AKUN DARI DATABASE
         const result = await response.json();
+
         const accountOrders: Order[] = Array.isArray(result.orders)
           ? result.orders
           : [];
 
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setOrders(accountOrders);
           setIsGuest(false);
           setError("");
         }
       } catch (err) {
-        if (!cancelled) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+
+        if (!controller.signal.aborted) {
           setError(
             err instanceof Error
               ? err.message
@@ -82,7 +105,7 @@ export default function RiwayatPage() {
           );
         }
       } finally {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
       }
@@ -91,7 +114,7 @@ export default function RiwayatPage() {
     fetchOrders();
 
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, []);
 
@@ -202,11 +225,35 @@ export default function RiwayatPage() {
                     </p>
                   )}
 
+                  {/* INI BAGIAN METODE PEMBAYARAN */}
                   <p>
-                    <strong>Pembayaran:</strong>{" "}
+                    <strong>Metode Pembayaran:</strong>{" "}
                     {order.paymentMethod || "Bayar di Kasir"}
                   </p>
 
+                  {/* INI BAGIAN STATUS PEMBAYARAN */}
+                  <p>
+                    <strong>Status Pembayaran:</strong>{" "}
+                    <span
+                      className={
+                        order.paymentStatus === "LUNAS"
+                          ? "payment-status-text paid"
+                          : "payment-status-text unpaid"
+                      }
+                    >
+                      {getPaymentLabel(order.paymentStatus)}
+                    </span>
+                  </p>
+
+                  {/* INI BAGIAN WAKTU PEMBAYARAN */}
+                  {order.paidAt && (
+                    <p>
+                      <strong>Waktu Pembayaran:</strong>{" "}
+                      {formatTanggal(order.paidAt)}
+                    </p>
+                  )}
+
+                  {/* INI BAGIAN CATATAN */}
                   {order.note && (
                     <p>
                       <strong>Catatan:</strong> {order.note}

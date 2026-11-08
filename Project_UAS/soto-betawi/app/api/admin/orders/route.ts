@@ -376,19 +376,57 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MENYIMPAN PERUBAHAN STATUS
-    const updated = await prisma.order.updateMany({
-      where: {
-        id: existingOrder.id,
-        status: existingOrder.status,
-        paymentStatus: existingOrder.paymentStatus,
-      },
-      data: {
-        status: targetStatus,
-      },
+    // INI BAGIAN MENYIMPAN PERUBAHAN STATUS SECARA ATOMIK
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      const updated = await tx.order.updateMany({
+        where: {
+          id: existingOrder.id,
+          status: existingOrder.status,
+          paymentStatus: existingOrder.paymentStatus,
+        },
+        data: {
+          status: targetStatus,
+        },
+      });
+
+      if (updated.count !== 1) {
+        return null;
+      }
+
+      // INI BAGIAN MEMBATALKAN TRANSAKSI PEMBAYARAN YANG BELUM LUNAS
+      if (targetStatus === "Dibatalkan") {
+        await tx.payment.updateMany({
+          where: {
+            orderId: existingOrder.id,
+            status: "MENUNGGU_PEMBAYARAN",
+          },
+          data: {
+            status: "DIBATALKAN",
+          },
+        });
+      }
+
+      // INI BAGIAN MENGAMBIL DATA PESANAN TERBARU
+      return tx.order.findUnique({
+        where: {
+          id: existingOrder.id,
+        },
+        include: {
+          items: {
+            orderBy: {
+              id: "asc",
+            },
+          },
+          payments: {
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+        },
+      });
     });
 
-    if (updated.count === 0) {
+    if (!updatedOrder) {
       return NextResponse.json(
         {
           message: "Data pesanan sudah berubah. Muat ulang daftar pesanan.",
@@ -399,27 +437,11 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGAMBIL DATA PESANAN TERBARU
-    const updatedOrder = await prisma.order.findUnique({
-      where: {
-        id: orderId,
-      },
-      include: {
-        items: {
-          orderBy: {
-            id: "asc",
-          },
-        },
-        payments: {
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
-      },
-    });
-
     return NextResponse.json({
-      message: "Status pesanan berhasil diperbarui.",
+      message:
+        targetStatus === "Dibatalkan"
+          ? "Pesanan dan transaksi pembayaran berhasil dibatalkan."
+          : "Status pesanan berhasil diperbarui.",
       order: updatedOrder,
     });
   } catch (error) {

@@ -4525,3 +4525,96 @@ textarea {
   font-size: 12px;
   line-height: 1.6;
 }
+
+/* INI BAGIAN BADGE STATUS PEMBAYARAN ADMIN */
+.ao-payment-status {
+  display: inline-block;
+  width: fit-content;
+  max-width: 180px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.ao-payment-status.paid {
+  background: #e5f5eb;
+  color: #337a4b;
+}
+
+.ao-payment-status.unpaid {
+  background: #fff3cd;
+  color: #a87900;
+}
+
+.ao-payment-status.waiting {
+  background: #e8f1ff;
+  color: #2864b7;
+}
+
+.ao-payment-status.failed,
+.ao-payment-status.expired {
+  background: #fcebe9;
+  color: #ba514a;
+}
+
+.ao-payment-status.refunded {
+  background: #eee8ff;
+  color: #6d4bb1;
+}
+
+/* INI BAGIAN TOMBOL KONFIRMASI PEMBAYARAN */
+.ao-payment-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 33px;
+  padding: 7px 11px;
+  border: 1px solid #337a4b;
+  border-radius: 6px;
+  background: #e5f5eb;
+  color: #337a4b;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.ao-payment-button:hover {
+  background: #d2eddc;
+}
+
+.ao-payment-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* INI BAGIAN STATUS PEMBAYARAN CUSTOMER */
+.payment-status-text {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.payment-status-text.paid {
+  color: #337a4b;
+}
+
+.payment-status-text.unpaid {
+  color: #a87900;
+}
+
+/* INI BAGIAN INFORMASI PEMBAYARAN YANG BELUM LUNAS */
+.payment-pending-info {
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1px solid #f0dfb3;
+  border-radius: 8px;
+  background: #fff8e5;
+  color: #80651d;
+  font-size: 13px;
+  line-height: 1.7;
+}

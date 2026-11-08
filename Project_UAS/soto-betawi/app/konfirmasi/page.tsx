@@ -26,8 +26,25 @@ type Order = {
   items: OrderItem[];
   total: number;
   status: string;
+  paymentStatus: string;
+  paidAt: string | null;
   createdAt: string;
 };
+
+// INI BAGIAN LABEL STATUS PEMBAYARAN
+function getPaymentLabel(status: string) {
+  const labels: Record<string, string> = {
+    BELUM_DIBAYAR: "Belum Dibayar",
+    MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
+    LUNAS: "Lunas",
+    GAGAL: "Gagal",
+    KEDALUWARSA: "Kedaluwarsa",
+    DIBATALKAN: "Dibatalkan",
+    DIKEMBALIKAN: "Dikembalikan",
+  };
+
+  return labels[status] || status;
+}
 
 export default function KonfirmasiPage() {
   const [pesanan, setPesanan] = useState<Order | null>(null);
@@ -40,7 +57,7 @@ export default function KonfirmasiPage() {
 
     const fetchOrder = async () => {
       try {
-        // Ambil nomor pesanan dari URL
+        // Ambil nomor pesanan dari URL.
         const orderNumber = new URLSearchParams(window.location.search).get(
           "order",
         );
@@ -49,7 +66,7 @@ export default function KonfirmasiPage() {
           throw new Error("Nomor pesanan tidak ditemukan.");
         }
 
-        // Meminta detail pesanan kepada API
+        // INI BAGIAN MEMINTA DETAIL PESANAN KEPADA API
         const response = await fetch(
           `/api/orders?order=${encodeURIComponent(orderNumber)}`,
           {
@@ -193,22 +210,38 @@ export default function KonfirmasiPage() {
             </div>
           )}
 
-          {pesanan.address && (
-            <div className="konfirmasi-row">
-              <span>Alamat</span>
-              <strong>{pesanan.address}</strong>
-            </div>
-          )}
-
           <div className="konfirmasi-row">
             <span>Metode Pembayaran</span>
             <strong>{pesanan.paymentMethod || "Bayar di Kasir"}</strong>
           </div>
 
+          {/* INI BAGIAN STATUS PESANAN */}
           <div className="konfirmasi-row">
             <span>Status Pesanan</span>
             <strong>{pesanan.status}</strong>
           </div>
+
+          {/* INI BAGIAN STATUS PEMBAYARAN */}
+          <div className="konfirmasi-row">
+            <span>Status Pembayaran</span>
+            <strong
+              className={
+                pesanan.paymentStatus === "LUNAS"
+                  ? "payment-status-text paid"
+                  : "payment-status-text unpaid"
+              }
+            >
+              {getPaymentLabel(pesanan.paymentStatus)}
+            </strong>
+          </div>
+
+          {/* INI BAGIAN WAKTU PEMBAYARAN */}
+          {pesanan.paidAt && (
+            <div className="konfirmasi-row">
+              <span>Waktu Pembayaran</span>
+              <strong>{formatTanggal(pesanan.paidAt)}</strong>
+            </div>
+          )}
 
           {/* INI BAGIAN CATATAN */}
           {pesanan.note && (
@@ -240,6 +273,14 @@ export default function KonfirmasiPage() {
             <strong>{formatRupiah(pesanan.total)}</strong>
           </div>
         </div>
+
+        {/* INI BAGIAN INFORMASI PEMBAYARAN */}
+        {pesanan.paymentStatus !== "LUNAS" && (
+          <p className="payment-pending-info">
+            Pembayaran dilakukan langsung kepada kasir restoran. Simpan nomor
+            pesanan ini untuk membantu proses pembayaran.
+          </p>
+        )}
 
         {/* INI BAGIAN TOMBOL NAVIGASI */}
         <div className="konfirmasi-actions">
