@@ -3,9 +3,12 @@ import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
+// INI BAGIAN MENGAMBIL STATISTIK DASHBOARD ADMIN
 export async function GET() {
   try {
+    // INI BAGIAN MEMERIKSA HAK AKSES ADMIN
     const user = await getCurrentUser();
 
     if (!user) {
@@ -22,6 +25,7 @@ export async function GET() {
       );
     }
 
+    // INI BAGIAN MENENTUKAN TANGGAL HARI INI DI JAKARTA
     const now = new Date();
 
     const jakartaDate = new Intl.DateTimeFormat("en-CA", {
@@ -37,6 +41,7 @@ export async function GET() {
 
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
+    // INI BAGIAN MENGAMBIL DATA STATISTIK DARI DATABASE
     const [
       totalPesanan,
       pesananHariIni,
@@ -44,10 +49,13 @@ export async function GET() {
       totalMenu,
       menuTersedia,
       pesananTerbaru,
+      totalItemTerjual,
       penjualanMenu,
     ] = await Promise.all([
+      // INI BAGIAN MENGHITUNG SEMUA PESANAN
       prisma.order.count(),
 
+      // INI BAGIAN MENGHITUNG PESANAN HARI INI
       prisma.order.count({
         where: {
           createdAt: {
@@ -57,6 +65,7 @@ export async function GET() {
         },
       }),
 
+      // INI BAGIAN MENGHITUNG NILAI PESANAN SELESAI
       prisma.order.aggregate({
         where: {
           status: "Selesai",
@@ -66,14 +75,17 @@ export async function GET() {
         },
       }),
 
+      // INI BAGIAN MENGHITUNG TOTAL MENU
       prisma.menu.count(),
 
+      // INI BAGIAN MENGHITUNG MENU TERSEDIA
       prisma.menu.count({
         where: {
           status: "Tersedia",
         },
       }),
 
+      // INI BAGIAN MENGAMBIL LIMA PESANAN TERBARU
       prisma.order.findMany({
         orderBy: {
           createdAt: "desc",
@@ -89,8 +101,30 @@ export async function GET() {
         },
       }),
 
+      // INI BAGIAN MENGHITUNG SELURUH ITEM TERJUAL
+      prisma.orderItem.aggregate({
+        where: {
+          order: {
+            is: {
+              status: "Selesai",
+            },
+          },
+        },
+        _sum: {
+          quantity: true,
+        },
+      }),
+
+      // INI BAGIAN MENGAMBIL LIMA MENU TERLARIS
       prisma.orderItem.groupBy({
         by: ["menuName"],
+        where: {
+          order: {
+            is: {
+              status: "Selesai",
+            },
+          },
+        },
         _sum: {
           quantity: true,
         },
@@ -103,6 +137,7 @@ export async function GET() {
       }),
     ]);
 
+    // INI BAGIAN MENGEMBALIKAN DATA DASHBOARD
     return NextResponse.json({
       statistics: {
         totalPesanan,
@@ -110,8 +145,12 @@ export async function GET() {
         totalPendapatan: pendapatan._sum.total ?? 0,
         totalMenu,
         menuTersedia,
+        totalMenuTerjual: totalItemTerjual._sum.quantity ?? 0,
       },
+
       pesananTerbaru,
+
+      // INI BAGIAN DATA MENU TERLARIS
       menuTerlaris: penjualanMenu.map((item) => ({
         name: item.menuName,
         quantity: item._sum.quantity ?? 0,
@@ -121,8 +160,12 @@ export async function GET() {
     console.error("Dashboard API error:", error);
 
     return NextResponse.json(
-      { message: "Gagal mengambil statistik dashboard." },
-      { status: 500 },
+      {
+        message: "Gagal mengambil statistik dashboard.",
+      },
+      {
+        status: 500,
+      },
     );
   }
 }
