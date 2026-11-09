@@ -483,7 +483,7 @@ export default function AdminOrdersPage() {
         </div>
 
         <div className="ao-summary-card">
-          <span>Belum Dibayar</span>
+          <span>Belum Lunas</span>
           <strong>{loading ? "..." : unpaidOrders}</strong>
         </div>
 

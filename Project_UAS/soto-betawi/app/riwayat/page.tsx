@@ -55,8 +55,9 @@ function getPaymentLabel(status: string) {
   const labels: Record<string, string> = {
     BELUM_DIBAYAR: "Belum Dibayar",
     MENUNGGU_PEMBAYARAN: "Menunggu Pembayaran",
+    MENUNGGU_VERIFIKASI: "Menunggu Verifikasi",
     LUNAS: "Lunas",
-    GAGAL: "Gagal",
+    GAGAL: "Bukti Ditolak",
     KEDALUWARSA: "Kedaluwarsa",
     DIBATALKAN: "Dibatalkan",
     DIKEMBALIKAN: "Dikembalikan",

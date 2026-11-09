@@ -22,6 +22,7 @@ const customerPaymentSelect = {
   amount: true,
   payerName: true,
   customerReference: true,
+  proofFileName: true,
   submittedAt: true,
   verifiedAt: true,
   rejectedAt: true,

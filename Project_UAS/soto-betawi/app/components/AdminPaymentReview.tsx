@@ -184,7 +184,7 @@ export default function AdminPaymentReview({
             </div>
 
             <div>
-              <span>Nominal Transaksi</span>
+              <span>Nominal Acuan Sistem</span>
               <strong>{formatRupiah(latestPayment.amount)}</strong>
             </div>
 
