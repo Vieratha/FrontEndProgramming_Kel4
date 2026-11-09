@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { PAYMENT_AVAILABILITY, PAYMENT_INFO } from "@/app/lib/payment-info";
 
 // INI BAGIAN TIPE DATA KERANJANG
 type CartItem = {
@@ -32,6 +33,9 @@ export default function CheckoutPage() {
 
   const [nomorMeja, setNomorMeja] = useState("");
   const [catatan, setCatatan] = useState("");
+
+  // INI BAGIAN METODE PEMBAYARAN
+  const [paymentMethod, setPaymentMethod] = useState("Bayar di Kasir");
 
   // INI BAGIAN KERANJANG
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -176,7 +180,7 @@ export default function CheckoutPage() {
           customerName: nama.trim(),
           phone: nomorTelepon,
           address: alamat.trim(),
-          paymentMethod: "Bayar di Kasir",
+          paymentMethod,
 
           orderType,
           tableNumber: orderType === "Makan di Tempat" ? nomorMeja.trim() : "",
@@ -348,14 +352,62 @@ export default function CheckoutPage() {
 
               {/* INI BAGIAN METODE PEMBAYARAN */}
               <div className="checkout-form-group">
-                <label>Metode Pembayaran</label>
+                <label htmlFor="paymentMethod">Metode Pembayaran</label>
 
+                <select
+                  id="paymentMethod"
+                  value={paymentMethod}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
+                  required
+                >
+                  <option value="Bayar di Kasir">Bayar di Kasir</option>
+
+                  <option value="QRIS" disabled={!PAYMENT_AVAILABILITY.qris}>
+                    QRIS
+                    {!PAYMENT_AVAILABILITY.qris ? " (Belum tersedia)" : ""}
+                  </option>
+
+                  <option
+                    value="Transfer Bank"
+                    disabled={!PAYMENT_AVAILABILITY.bankTransfer}
+                  >
+                    Transfer Bank
+                    {!PAYMENT_AVAILABILITY.bankTransfer
+                      ? " (Belum tersedia)"
+                      : ""}
+                  </option>
+                </select>
+
+                {/* INI BAGIAN INFORMASI PEMBAYARAN */}
                 <div className="checkout-payment-info">
-                  <strong>Bayar di Kasir</strong>
-                  <p>
-                    Pembayaran dilakukan langsung kepada kasir restoran setelah
-                    pesanan dikonfirmasi.
-                  </p>
+                  {paymentMethod === "Bayar di Kasir" && (
+                    <>
+                      <strong>Bayar di Kasir</strong>
+                      <p>
+                        Pembayaran dilakukan langsung kepada kasir restoran.
+                      </p>
+                    </>
+                  )}
+
+                  {paymentMethod === "QRIS" && (
+                    <>
+                      <strong>Pembayaran QRIS</strong>
+                      <p>
+                        Setelah pesanan dibuat, kamu dapat memindai QRIS resmi
+                        restoran dan mengunggah bukti pembayaran.
+                      </p>
+                    </>
+                  )}
+
+                  {paymentMethod === "Transfer Bank" && (
+                    <>
+                      <strong>Transfer Bank</strong>
+                      <p>
+                        Setelah pesanan dibuat, informasi rekening tujuan dan
+                        formulir bukti transfer akan ditampilkan.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 

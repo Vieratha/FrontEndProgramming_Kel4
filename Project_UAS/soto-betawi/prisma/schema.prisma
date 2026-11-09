@@ -126,6 +126,18 @@ model Payment {
   virtualAccountNumber  String?
   bankName              String?
 
+  payerName             String?
+  customerReference     String?
+
+  proofData             Bytes?
+  proofMimeType         String?
+  proofFileName         String?
+
+  submittedAt           DateTime?
+  verifiedAt            DateTime?
+  rejectedAt            DateTime?
+  verificationNote      String?
+
   expiresAt             DateTime?
   paidAt                DateTime?
   createdAt             DateTime @default(now())

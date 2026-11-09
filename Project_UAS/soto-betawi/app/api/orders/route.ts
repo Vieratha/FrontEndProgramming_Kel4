@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
 import { randomBytes } from "crypto";
+import { PAYMENT_AVAILABILITY } from "@/app/lib/payment-info";
 
 export const runtime = "nodejs";
 
@@ -206,15 +207,23 @@ export async function POST(request: Request) {
     }
 
     // INI BAGIAN VALIDASI METODE PEMBAYARAN
-    // Untuk tahap ini, sistem hanya mendukung pembayaran manual di kasir.
     const selectedPaymentMethod = paymentMethod || "Bayar di Kasir";
 
+    // Metode online hanya tersedia jika konfigurasi sudah lengkap.
     const allowedPayments = ["Bayar di Kasir"];
+
+    if (PAYMENT_AVAILABILITY.qris) {
+      allowedPayments.push("QRIS");
+    }
+
+    if (PAYMENT_AVAILABILITY.bankTransfer) {
+      allowedPayments.push("Transfer Bank");
+    }
 
     if (!allowedPayments.includes(selectedPaymentMethod)) {
       return NextResponse.json(
         {
-          message: "Saat ini pembayaran hanya tersedia melalui kasir restoran.",
+          message: "Metode pembayaran tidak tersedia atau belum dikonfigurasi.",
         },
         {
           status: 400,
@@ -392,16 +401,29 @@ export async function POST(request: Request) {
     // INI BAGIAN MEMBUAT NOMOR PESANAN ACAK
     const orderNumber = `SB-${randomBytes(16).toString("hex").toUpperCase()}`;
 
-    // INI BAGIAN MENYIMPAN PESANAN DAN PEMBAYARAN KE DATABASE
-    // Nested write memastikan Order, OrderItem, dan Payment dibuat bersama.
+    // INI BAGIAN MENENTUKAN STATUS AWAL PEMBAYARAN
+    const isCashierPayment = selectedPaymentMethod === "Bayar di Kasir";
 
-    const paymentReference = `KASIR-${orderNumber}`;
+    const paymentStatus = isCashierPayment
+      ? "BELUM_DIBAYAR"
+      : "MENUNGGU_PEMBAYARAN";
+
+    const paymentMethodCode =
+      selectedPaymentMethod === "Bayar di Kasir"
+        ? "KASIR"
+        : selectedPaymentMethod === "QRIS"
+          ? "QRIS"
+          : "TRANSFER_BANK";
+
+    // INI BAGIAN MEMBUAT REFERENSI PEMBAYARAN
+    const paymentReference = `${paymentMethodCode}-${orderNumber}`;
+
+    // INI BAGIAN MENYIMPAN PESANAN DAN PEMBAYARAN KE DATABASE
+    // Nested write memastikan semua data tersimpan bersama.
 
     const order = await prisma.order.create({
       data: {
         orderNumber,
-
-        // Hubungkan pesanan dengan akun jika customer sudah login.
         userId: user?.id ?? null,
 
         customerName,
@@ -419,7 +441,7 @@ export async function POST(request: Request) {
         status: "Menunggu Konfirmasi",
 
         // INI BAGIAN STATUS PEMBAYARAN AWAL
-        paymentStatus: "BELUM_DIBAYAR",
+        paymentStatus,
         paidAt: null,
 
         // INI BAGIAN MENYIMPAN RINCIAN ITEM PESANAN
@@ -427,11 +449,11 @@ export async function POST(request: Request) {
           create: orderItems,
         },
 
-        // INI BAGIAN MEMBUAT TRANSAKSI PEMBAYARAN KASIR
+        // INI BAGIAN MEMBUAT TRANSAKSI PEMBAYARAN
         payments: {
           create: {
             provider: "MANUAL",
-            method: "KASIR",
+            method: paymentMethodCode,
             reference: paymentReference,
             status: "MENUNGGU_PEMBAYARAN",
             amount: total,
@@ -443,12 +465,6 @@ export async function POST(request: Request) {
         items: {
           orderBy: {
             id: "asc",
-          },
-        },
-
-        payments: {
-          orderBy: {
-            createdAt: "desc",
           },
         },
       },

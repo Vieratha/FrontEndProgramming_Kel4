@@ -12,6 +12,28 @@ type UpdateOrderRequest = {
   action?: string;
 };
 
+// INI BAGIAN FIELD PEMBAYARAN YANG BOLEH DIKIRIM KE FRONTEND
+// proofData sengaja tidak disertakan karena diambil melalui API khusus admin.
+const paymentSelect = {
+  id: true,
+  provider: true,
+  method: true,
+  reference: true,
+  transactionId: true,
+  status: true,
+  amount: true,
+  payerName: true,
+  customerReference: true,
+  proofMimeType: true,
+  proofFileName: true,
+  submittedAt: true,
+  verifiedAt: true,
+  rejectedAt: true,
+  verificationNote: true,
+  paidAt: true,
+  createdAt: true,
+} as const;
+
 // INI BAGIAN MEMERIKSA OBJECT REQUEST
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -99,6 +121,7 @@ export async function GET() {
           orderBy: {
             createdAt: "desc",
           },
+          select: paymentSelect,
         },
       },
       orderBy: {
@@ -291,6 +314,7 @@ export async function PATCH(request: Request) {
               orderBy: {
                 createdAt: "desc",
               },
+              select: paymentSelect,
             },
           },
         });
@@ -421,6 +445,7 @@ export async function PATCH(request: Request) {
             orderBy: {
               createdAt: "desc",
             },
+            select: paymentSelect,
           },
         },
       });
