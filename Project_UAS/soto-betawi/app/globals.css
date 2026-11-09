@@ -4618,3 +4618,550 @@ textarea {
   font-size: 13px;
   line-height: 1.7;
 }
+
+/* INI BAGIAN KARTU INFORMASI PEMBAYARAN CUSTOMER */
+.payment-proof-card {
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid #e8ded3;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #49372c;
+}
+
+.payment-proof-header h2 {
+  margin: 0;
+  color: #603015;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.payment-proof-header p {
+  margin: 7px 0 0;
+  color: #8d7c6f;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* INI BAGIAN TOTAL DAN STATUS PEMBAYARAN */
+.payment-proof-total,
+.payment-proof-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 16px;
+  padding: 13px 15px;
+  border-radius: 8px;
+  background: #faf5ef;
+}
+
+.payment-proof-total span,
+.payment-proof-status span {
+  color: #806f62;
+  font-size: 13px;
+}
+
+.payment-proof-total strong {
+  color: #85451f;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* INI BAGIAN PETUNJUK PEMBAYARAN */
+.payment-proof-instruction {
+  margin-top: 20px;
+  padding: 17px;
+  border: 1px solid #e8ded3;
+  border-radius: 9px;
+  background: #fffdf9;
+}
+
+.payment-proof-instruction h3 {
+  margin: 0 0 15px;
+  color: #603015;
+  font-size: 15px;
+}
+
+.payment-proof-instruction p {
+  margin: 12px 0 0;
+  color: #806f62;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* INI BAGIAN GAMBAR QRIS */
+.payment-qris-image {
+  display: block;
+  width: min(280px, 100%);
+  height: auto;
+  max-height: 320px;
+  margin: 0 auto;
+  object-fit: contain;
+  border: 1px solid #eee4d9;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+/* INI BAGIAN INFORMASI REKENING BANK */
+.payment-bank-detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee6de;
+}
+
+.payment-bank-detail:last-of-type {
+  border-bottom: none;
+}
+
+.payment-bank-detail span {
+  color: #8d7c6f;
+  font-size: 12px;
+}
+
+.payment-bank-detail strong {
+  color: #603015;
+  font-size: 13px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* INI BAGIAN PERINGATAN PEMBAYARAN */
+.payment-proof-warning {
+  margin-top: 17px;
+  padding: 13px 15px;
+  border: 1px solid #f0dfb3;
+  border-radius: 8px;
+  background: #fff8e5;
+  color: #80651d;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* INI BAGIAN MENUNGGU VERIFIKASI */
+.payment-proof-pending {
+  margin-top: 17px;
+  padding: 15px;
+  border: 1px solid #d5e4fb;
+  border-radius: 8px;
+  background: #f1f6ff;
+  color: #315d94;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.payment-proof-pending p {
+  margin: 7px 0;
+}
+
+.payment-proof-pending small {
+  font-size: 11px;
+}
+
+/* INI BAGIAN PEMBAYARAN BERHASIL DAN PENOLAKAN */
+.payment-proof-success {
+  margin-top: 16px;
+  padding: 13px 15px;
+  border: 1px solid #cce8d5;
+  border-radius: 8px;
+  background: #e7f5ec;
+  color: #337a4b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.payment-proof-rejected {
+  margin-top: 17px;
+  padding: 15px;
+  border: 1px solid #f0d2ce;
+  border-radius: 8px;
+  background: #fff1ef;
+  color: #a13d2d;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.payment-proof-rejected p {
+  margin: 7px 0;
+}
+
+.payment-proof-rejected small {
+  font-size: 11px;
+}
+
+/* INI BAGIAN FORM UPLOAD BUKTI */
+.payment-proof-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid #eee4d9;
+}
+
+.payment-proof-form h3 {
+  margin: 0;
+  color: #603015;
+  font-size: 16px;
+}
+
+.payment-proof-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.payment-proof-field label {
+  color: #49372c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.payment-proof-field label span {
+  color: #9c8a7d;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.payment-proof-field input {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 1px solid #e6ded7;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #49372c;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.payment-proof-field input:focus {
+  border-color: #85451f;
+  box-shadow: 0 0 0 3px rgba(133, 69, 31, 0.08);
+}
+
+.payment-proof-field input[type="file"] {
+  padding: 8px;
+}
+
+.payment-proof-field small {
+  color: #8d7c6f;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.payment-proof-file-name {
+  color: #337a4b;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.payment-proof-error {
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 7px;
+  background: #fff0ef;
+  color: #b83c36;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.payment-proof-submit {
+  min-height: 45px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #85451f;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.payment-proof-submit:hover {
+  background: #603015;
+}
+
+.payment-proof-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* INI BAGIAN ALASAN PENOLAKAN DI RIWAYAT CUSTOMER */
+.payment-rejection-reason {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #fff1ef;
+  color: #a13d2d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* INI BAGIAN KARTU VERIFIKASI PEMBAYARAN ADMIN */
+.apr-card {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #e8ded3;
+  border-radius: 10px;
+  background: #fffdf9;
+}
+
+.apr-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.apr-header h3 {
+  margin: 0;
+  color: #603015;
+  font-size: 15px;
+}
+
+.apr-header p {
+  margin: 7px 0 0;
+  color: #8d7c6f;
+  font-size: 12px;
+}
+
+.apr-status {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.apr-status.paid {
+  background: #e5f5eb;
+  color: #337a4b;
+}
+
+.apr-status.pending {
+  background: #e8f1ff;
+  color: #2864b7;
+}
+
+.apr-status.unpaid {
+  background: #fff3cd;
+  color: #a87900;
+}
+
+/* INI BAGIAN INFORMASI PEMBAYARAN ADMIN */
+.apr-information {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  margin-top: 17px;
+}
+
+.apr-information > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.apr-information span {
+  color: #8d7c6f;
+  font-size: 11px;
+}
+
+.apr-information strong {
+  color: #49372c;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+/* INI BAGIAN PREVIEW BUKTI ADMIN */
+.apr-proof {
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #eee4d9;
+}
+
+.apr-proof h4 {
+  margin: 0 0 9px;
+  color: #603015;
+  font-size: 14px;
+}
+
+.apr-proof-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #85451f;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.apr-proof-image {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  max-height: 360px;
+  margin: 0 auto;
+  object-fit: contain;
+  border: 1px solid #e8ded3;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+/* INI BAGIAN CATATAN PENOLAKAN ADMIN */
+.apr-rejection-note {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff1ef;
+  color: #a13d2d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.apr-rejection-note p {
+  margin: 6px 0 0;
+}
+
+/* INI BAGIAN FORM REVIEW ADMIN */
+.apr-review {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eee4d9;
+}
+
+.apr-review > p {
+  color: #806f62;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.apr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.apr-field label {
+  color: #49372c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.apr-field textarea {
+  width: 100%;
+  min-height: 75px;
+  padding: 10px 12px;
+  border: 1px solid #e6ded7;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #49372c;
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.apr-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.apr-verify-button,
+.apr-reject-button {
+  min-height: 38px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.apr-verify-button {
+  background: #337a4b;
+  color: #ffffff;
+}
+
+.apr-verify-button:hover {
+  background: #28623b;
+}
+
+.apr-reject-button {
+  border-color: #efccc7;
+  background: #fff0ef;
+  color: #b83c36;
+}
+
+.apr-reject-button:hover {
+  background: #f9dfdc;
+}
+
+.apr-verify-button:disabled,
+.apr-reject-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.apr-error {
+  color: #b83c36;
+  font-size: 12px;
+}
+
+.apr-success {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 7px;
+  background: #e7f5ec;
+  color: #337a4b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.apr-empty {
+  color: #8d7c6f;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* INI BAGIAN RESPONSIVE PEMBAYARAN */
+@media (max-width: 576px) {
+  .payment-proof-card {
+    padding: 16px;
+  }
+
+  .payment-proof-total,
+  .payment-proof-status,
+  .payment-bank-detail {
+    align-items: flex-start;
+  }
+
+  .payment-bank-detail {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .payment-bank-detail strong {
+    text-align: left;
+  }
+
+  .apr-information {
+    grid-template-columns: 1fr;
+  }
+
+  .apr-header {
+    flex-direction: column;
+  }
+
+  .apr-actions > button {
+    flex: 1;
+  }
+}

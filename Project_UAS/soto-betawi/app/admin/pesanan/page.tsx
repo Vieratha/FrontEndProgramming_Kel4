@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AdminPaymentReview from "@/app/components/AdminPaymentReview";
 
 // INI BAGIAN TIPE DATA ITEM PESANAN
 type OrderItem = {
@@ -17,8 +18,17 @@ type PaymentRecord = {
   provider: string;
   method: string;
   reference: string | null;
+  transactionId?: string | null;
   status: string;
   amount: number;
+  payerName: string | null;
+  customerReference: string | null;
+  proofMimeType: string | null;
+  proofFileName: string | null;
+  submittedAt: string | null;
+  verifiedAt: string | null;
+  rejectedAt: string | null;
+  verificationNote: string | null;
   paidAt: string | null;
   createdAt: string;
 };
@@ -131,6 +141,9 @@ function getPaymentStatusClass(status: string) {
     case "DIKEMBALIKAN":
       return "refunded";
 
+    case "MENUNGGU_VERIFIKASI":
+      return "waiting";
+
     default:
       return "unpaid";
   }
@@ -146,6 +159,7 @@ function getPaymentStatusLabel(status: string) {
     KEDALUWARSA: "Kedaluwarsa",
     DIBATALKAN: "Dibatalkan",
     DIKEMBALIKAN: "Dikembalikan",
+    MENUNGGU_VERIFIKASI: "Menunggu Verifikasi",
   };
 
   return labels[status] || status;
@@ -265,9 +279,12 @@ export default function AdminOrdersPage() {
     (order) => order.status === "Diproses",
   ).length;
 
+  // INI BAGIAN MENGHITUNG PESANAN YANG BELUM LUNAS
   const unpaidOrders = orders.filter(
     (order) =>
-      order.paymentStatus === "BELUM_DIBAYAR" && order.status !== "Dibatalkan",
+      order.paymentStatus !== "LUNAS" &&
+      order.paymentStatus !== "DIBATALKAN" &&
+      order.status !== "Dibatalkan",
   ).length;
 
   const completedOrders = orders.filter(
@@ -510,6 +527,7 @@ export default function AdminOrdersPage() {
             <option value="Semua">Semua Pembayaran</option>
             <option value="BELUM_DIBAYAR">Belum Dibayar</option>
             <option value="MENUNGGU_PEMBAYARAN">Menunggu Pembayaran</option>
+            <option value="MENUNGGU_VERIFIKASI">Menunggu Verifikasi</option>
             <option value="LUNAS">Lunas</option>
             <option value="GAGAL">Gagal</option>
             <option value="KEDALUWARSA">Kedaluwarsa</option>
@@ -838,6 +856,20 @@ export default function AdminOrdersPage() {
                 </div>
               </div>
             )}
+
+            {/* INI BAGIAN VERIFIKASI BUKTI PEMBAYARAN ONLINE */}
+            <AdminPaymentReview
+              orderId={selectedOrder.id}
+              orderNumber={selectedOrder.orderNumber}
+              total={selectedOrder.total}
+              paymentMethod={selectedOrder.paymentMethod}
+              paymentStatus={selectedOrder.paymentStatus}
+              payments={selectedOrder.payments}
+              onUpdated={() => {
+                setSelectedOrder(null);
+                handleRefresh();
+              }}
+            />
 
             {/* INI BAGIAN AKSI STATUS DAN PEMBAYARAN */}
             <div className="ao-modal-actions">

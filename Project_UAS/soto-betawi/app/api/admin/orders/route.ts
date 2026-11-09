@@ -5,11 +5,13 @@ import { getCurrentUser } from "@/app/lib/auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// INI BAGIAN TIPE DATA REQUEST
+// INI BAGIAN TIPE DATA REQUEST ADMIN
 type UpdateOrderRequest = {
   id: string;
   status?: string;
   action?: string;
+  paymentId?: string;
+  note?: string;
 };
 
 // INI BAGIAN FIELD PEMBAYARAN YANG BOLEH DIKIRIM KE FRONTEND
@@ -338,6 +340,246 @@ export async function PATCH(request: Request) {
       });
     }
 
+    // INI BAGIAN VERIFIKASI DAN PENOLAKAN PEMBAYARAN ONLINE
+    if (data.action === "VERIFY_PAYMENT" || data.action === "REJECT_PAYMENT") {
+      // INI BAGIAN MEMERIKSA ID PEMBAYARAN
+      const paymentId =
+        typeof data.paymentId === "string" ? data.paymentId.trim() : "";
+
+      if (!paymentId) {
+        return NextResponse.json(
+          { message: "ID pembayaran wajib diisi." },
+          { status: 400 },
+        );
+      }
+
+      // INI BAGIAN MEMERIKSA CATATAN ADMIN
+      const verificationNote =
+        typeof data.note === "string" ? data.note.trim() : "";
+
+      if (
+        data.action === "REJECT_PAYMENT" &&
+        (verificationNote.length < 3 || verificationNote.length > 500)
+      ) {
+        return NextResponse.json(
+          {
+            message: "Alasan penolakan harus berisi 3 sampai 500 karakter.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      // INI BAGIAN MEMERIKSA STATUS ORDER
+      if (
+        existingOrder.paymentStatus !== "MENUNGGU_VERIFIKASI" ||
+        existingOrder.status === "Dibatalkan" ||
+        existingOrder.status === "Selesai"
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "Pesanan tidak berada dalam kondisi yang dapat diverifikasi.",
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+
+      // INI BAGIAN MENGAMBIL TRANSAKSI PEMBAYARAN
+      const payment = await prisma.payment.findFirst({
+        where: {
+          id: paymentId,
+          orderId: existingOrder.id,
+        },
+        select: {
+          id: true,
+          method: true,
+          status: true,
+          amount: true,
+          proofData: true,
+        },
+      });
+
+      if (!payment || !payment.proofData) {
+        return NextResponse.json(
+          {
+            message: "Bukti pembayaran tidak ditemukan.",
+          },
+          {
+            status: 404,
+          },
+        );
+      }
+
+      // INI BAGIAN MEMERIKSA STATUS TRANSAKSI
+      if (
+        payment.status !== "MENUNGGU_VERIFIKASI" ||
+        !["QRIS", "TRANSFER_BANK"].includes(payment.method)
+      ) {
+        return NextResponse.json(
+          {
+            message: "Transaksi ini tidak dapat diverifikasi.",
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+
+      // INI BAGIAN MEMERIKSA KECocOKAN NOMINAL
+      if (payment.amount !== existingOrder.total) {
+        return NextResponse.json(
+          {
+            message: "Nominal pembayaran tidak sesuai dengan total pesanan.",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      // INI BAGIAN MENENTUKAN WAKTU KEPUTUSAN ADMIN
+      const reviewedAt = new Date();
+
+      try {
+        // INI BAGIAN MENYIMPAN KEPUTUSAN SECARA ATOMIK
+        // Order dan Payment harus berubah bersama-sama.
+        const updatedOrder = await prisma.$transaction(async (tx) => {
+          if (data.action === "VERIFY_PAYMENT") {
+            // INI BAGIAN MENGUBAH STATUS ORDER MENJADI LUNAS
+            const orderUpdated = await tx.order.updateMany({
+              where: {
+                id: existingOrder.id,
+                paymentStatus: "MENUNGGU_VERIFIKASI",
+                status: {
+                  notIn: ["Dibatalkan", "Selesai"],
+                },
+              },
+              data: {
+                paymentStatus: "LUNAS",
+                paidAt: reviewedAt,
+              },
+            });
+
+            if (orderUpdated.count !== 1) {
+              throw new Error("PAYMENT_REVIEW_CONFLICT");
+            }
+
+            // INI BAGIAN MENGUBAH STATUS PAYMENT MENJADI LUNAS
+            const paymentUpdated = await tx.payment.updateMany({
+              where: {
+                id: payment.id,
+                orderId: existingOrder.id,
+                status: "MENUNGGU_VERIFIKASI",
+              },
+              data: {
+                status: "LUNAS",
+                verifiedAt: reviewedAt,
+                paidAt: reviewedAt,
+                verificationNote: null,
+              },
+            });
+
+            if (paymentUpdated.count !== 1) {
+              throw new Error("PAYMENT_REVIEW_CONFLICT");
+            }
+          } else {
+            // INI BAGIAN MENGUBAH STATUS PAYMENT MENJADI GAGAL
+            const paymentUpdated = await tx.payment.updateMany({
+              where: {
+                id: payment.id,
+                orderId: existingOrder.id,
+                status: "MENUNGGU_VERIFIKASI",
+              },
+              data: {
+                status: "GAGAL",
+                rejectedAt: reviewedAt,
+                verificationNote,
+              },
+            });
+
+            if (paymentUpdated.count !== 1) {
+              throw new Error("PAYMENT_REVIEW_CONFLICT");
+            }
+
+            // INI BAGIAN MENGUBAH STATUS ORDER MENJADI GAGAL
+            const orderUpdated = await tx.order.updateMany({
+              where: {
+                id: existingOrder.id,
+                paymentStatus: "MENUNGGU_VERIFIKASI",
+                status: {
+                  notIn: ["Dibatalkan", "Selesai"],
+                },
+              },
+              data: {
+                paymentStatus: "GAGAL",
+                paidAt: null,
+              },
+            });
+
+            if (orderUpdated.count !== 1) {
+              throw new Error("PAYMENT_REVIEW_CONFLICT");
+            }
+          }
+
+          // INI BAGIAN MENGAMBIL PESANAN TERBARU
+          return tx.order.findUnique({
+            where: {
+              id: existingOrder.id,
+            },
+            include: {
+              items: {
+                orderBy: {
+                  id: "asc",
+                },
+              },
+              payments: {
+                orderBy: {
+                  createdAt: "desc",
+                },
+                select: paymentSelect,
+              },
+            },
+          });
+        });
+
+        if (!updatedOrder) {
+          return NextResponse.json(
+            { message: "Pesanan tidak ditemukan." },
+            { status: 404 },
+          );
+        }
+
+        return NextResponse.json({
+          message:
+            data.action === "VERIFY_PAYMENT"
+              ? "Pembayaran berhasil diverifikasi dan ditandai Lunas."
+              : "Bukti pembayaran ditolak. Customer dapat mengirim bukti baru.",
+          order: updatedOrder,
+        });
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "PAYMENT_REVIEW_CONFLICT"
+        ) {
+          return NextResponse.json(
+            {
+              message:
+                "Pembayaran sudah berubah. Muat ulang data sebelum mencoba lagi.",
+            },
+            {
+              status: 409,
+            },
+          );
+        }
+
+        throw error;
+      }
+    }
+
     // INI BAGIAN MEMVALIDASI STATUS PESANAN
     const targetStatus =
       typeof data.status === "string" ? data.status.trim() : "";
@@ -408,9 +650,15 @@ export async function PATCH(request: Request) {
           status: existingOrder.status,
           paymentStatus: existingOrder.paymentStatus,
         },
-        data: {
-          status: targetStatus,
-        },
+        data:
+          targetStatus === "Dibatalkan"
+            ? {
+                status: targetStatus,
+                paymentStatus: "DIBATALKAN",
+              }
+            : {
+                status: targetStatus,
+              },
       });
 
       if (updated.count !== 1) {
@@ -422,7 +670,9 @@ export async function PATCH(request: Request) {
         await tx.payment.updateMany({
           where: {
             orderId: existingOrder.id,
-            status: "MENUNGGU_PEMBAYARAN",
+            status: {
+              in: ["MENUNGGU_PEMBAYARAN", "MENUNGGU_VERIFIKASI"],
+            },
           },
           data: {
             status: "DIBATALKAN",

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PAYMENT_AVAILABILITY, PAYMENT_INFO } from "@/app/lib/payment-info";
+import { PAYMENT_AVAILABILITY } from "@/app/lib/payment-info";
 
 // INI BAGIAN TIPE DATA KERANJANG
 type CartItem = {

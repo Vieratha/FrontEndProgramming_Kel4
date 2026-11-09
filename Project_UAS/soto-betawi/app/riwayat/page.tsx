@@ -12,6 +12,24 @@ type OrderItem = {
   quantity: number;
 };
 
+// INI BAGIAN TIPE DATA RINGKASAN PEMBAYARAN
+type PaymentSummary = {
+  id: string;
+  method: string;
+  reference: string | null;
+  status: string;
+  amount: number;
+  payerName: string | null;
+  customerReference: string | null;
+  proofFileName: string | null;
+  submittedAt: string | null;
+  verifiedAt: string | null;
+  rejectedAt: string | null;
+  verificationNote: string | null;
+  paidAt: string | null;
+  createdAt: string;
+};
+
 // INI BAGIAN TIPE DATA PESANAN
 type Order = {
   id: string;
@@ -29,6 +47,7 @@ type Order = {
   paymentStatus: string;
   paidAt: string | null;
   createdAt: string;
+  payments: PaymentSummary[];
 };
 
 // INI BAGIAN LABEL STATUS PEMBAYARAN
@@ -244,6 +263,15 @@ export default function RiwayatPage() {
                       {getPaymentLabel(order.paymentStatus)}
                     </span>
                   </p>
+
+                  {/* INI BAGIAN INFORMASI PENOLAKAN PEMBAYARAN */}
+                  {order.paymentStatus === "GAGAL" &&
+                    order.payments?.[0]?.verificationNote && (
+                      <p className="payment-rejection-reason">
+                        <strong>Alasan Penolakan:</strong>{" "}
+                        {order.payments[0].verificationNote}
+                      </p>
+                    )}
 
                   {/* INI BAGIAN WAKTU PEMBAYARAN */}
                   {order.paidAt && (

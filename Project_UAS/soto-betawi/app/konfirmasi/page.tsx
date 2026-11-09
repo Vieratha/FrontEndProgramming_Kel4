@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import PaymentProofForm from "@/app/components/PaymentProofForm";
 
 // INI BAGIAN TIPE DATA ITEM PESANAN
 type OrderItem = {
@@ -10,6 +11,24 @@ type OrderItem = {
   menuName: string;
   price: number;
   quantity: number;
+};
+
+// INI BAGIAN TIPE DATA RINGKASAN PEMBAYARAN
+type PaymentSummary = {
+  id: string;
+  method: string;
+  reference: string | null;
+  status: string;
+  amount: number;
+  payerName: string | null;
+  customerReference: string | null;
+  proofFileName: string | null;
+  submittedAt: string | null;
+  verifiedAt: string | null;
+  rejectedAt: string | null;
+  verificationNote: string | null;
+  paidAt: string | null;
+  createdAt: string;
 };
 
 // INI BAGIAN TIPE DATA PESANAN
@@ -29,6 +48,7 @@ type Order = {
   paymentStatus: string;
   paidAt: string | null;
   createdAt: string;
+  payments: PaymentSummary[];
 };
 
 // INI BAGIAN LABEL STATUS PEMBAYARAN
@@ -274,13 +294,15 @@ export default function KonfirmasiPage() {
           </div>
         </div>
 
-        {/* INI BAGIAN INFORMASI PEMBAYARAN */}
-        {pesanan.paymentStatus !== "LUNAS" && (
-          <p className="payment-pending-info">
-            Pembayaran dilakukan langsung kepada kasir restoran. Simpan nomor
-            pesanan ini untuk membantu proses pembayaran.
-          </p>
-        )}
+        {/* INI BAGIAN FORM DAN INFORMASI PEMBAYARAN */}
+        <PaymentProofForm
+          orderNumber={pesanan.orderNumber}
+          orderStatus={pesanan.status}
+          paymentMethod={pesanan.paymentMethod}
+          paymentStatus={pesanan.paymentStatus}
+          total={pesanan.total}
+          payments={pesanan.payments ?? []}
+        />
 
         {/* INI BAGIAN TOMBOL NAVIGASI */}
         <div className="konfirmasi-actions">

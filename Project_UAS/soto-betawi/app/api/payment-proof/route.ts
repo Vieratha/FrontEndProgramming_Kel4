@@ -320,10 +320,36 @@ export async function POST(request: Request) {
       );
     }
 
+    // INI BAGIAN MENGAMBIL TRANSAKSI TERBARU SETELAH UPLOAD
+    const latestPayment = await prisma.payment.findFirst({
+      where: {
+        orderId: order.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        method: true,
+        reference: true,
+        status: true,
+        amount: true,
+        payerName: true,
+        customerReference: true,
+        proofFileName: true,
+        submittedAt: true,
+        rejectedAt: true,
+        verificationNote: true,
+        createdAt: true,
+      },
+    });
+
+    // INI BAGIAN MENGIRIM HASIL UPLOAD KE CUSTOMER
     return NextResponse.json(
       {
         message:
           "Bukti pembayaran berhasil dikirim dan sedang menunggu verifikasi admin.",
+        payment: latestPayment,
       },
       {
         status: 201,

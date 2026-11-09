@@ -7,14 +7,14 @@ export const PAYMENT_INFO = {
   // INI BAGIAN INFORMASI QRIS
   qris: {
     merchantName: "Soto Betawi Jakarta",
-    imagePath: "",
+    imagePath: "/images/qris-soto-betawi.jpeg",
   },
 
   // INI BAGIAN INFORMASI TRANSFER BANK
   bankTransfer: {
-    bankName: "",
-    accountNumber: "",
-    accountName: "",
+    bankName: "BCA",
+    accountNumber: "49519991863",
+    accountName: "Soto Betawi Jakarta",
   },
 };
 

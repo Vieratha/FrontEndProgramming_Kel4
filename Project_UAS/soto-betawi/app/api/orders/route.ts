@@ -12,6 +12,24 @@ type CheckoutItem = {
   quantity: number;
 };
 
+// INI BAGIAN FIELD PEMBAYARAN YANG BOLEH DILIHAT CUSTOMER
+// Isi file bukti tidak dikirim melalui API detail atau riwayat pesanan.
+const customerPaymentSelect = {
+  id: true,
+  method: true,
+  reference: true,
+  status: true,
+  amount: true,
+  payerName: true,
+  customerReference: true,
+  submittedAt: true,
+  verifiedAt: true,
+  rejectedAt: true,
+  verificationNote: true,
+  paidAt: true,
+  createdAt: true,
+} as const;
+
 // INI BAGIAN MEMERIKSA OBJECT REQUEST
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -37,6 +55,12 @@ export async function GET(request: Request) {
             orderBy: {
               id: "asc",
             },
+          },
+          payments: {
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: customerPaymentSelect,
           },
         },
       });
@@ -106,6 +130,12 @@ export async function GET(request: Request) {
           orderBy: {
             id: "asc",
           },
+        },
+        payments: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          select: customerPaymentSelect,
         },
       },
       orderBy: {
