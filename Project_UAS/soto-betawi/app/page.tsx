@@ -1,6 +1,7 @@
 import HomeClient from "./components/HomeClient";
 import CustomerProfile from "./components/CustomerProfile";
 import { getCurrentUser } from "./lib/auth";
+import FAQ from "./components/FAQ";
 
 export default async function Home() {
   // INI BAGIAN MENGAMBIL DATA USER DARI SESSION PRISMA
@@ -134,6 +135,9 @@ export default async function Home() {
 
         {/* INI BAGIAN MENU DAN KERANJANG */}
         <HomeClient />
+
+        {/* INI BAGIAN FAQ */}
+        <FAQ />
       </main>
     </>
   );
