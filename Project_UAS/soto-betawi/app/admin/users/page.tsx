@@ -19,14 +19,12 @@ type UserItem = {
 type UserForm = {
   name: string;
   email: string;
-  password: string;
   role: UserRole;
 };
 
 const emptyForm: UserForm = {
   name: "",
   email: "",
-  password: "",
   role: "CUSTOMER",
 };
 
@@ -53,7 +51,6 @@ export default function AdminUsersPage() {
   const [error, setError] = useState("");
   const [modalError, setModalError] = useState("");
 
-  // MEMBACA DATA USER DARI DATABASE
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -61,16 +58,17 @@ export default function AdminUsersPage() {
       const response = await fetch("/api/admin/users", {
         cache: "no-store",
       });
+
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || "Gagal mengambil data pengguna.");
       }
 
-      const userList = Array.isArray(data)
-        ? data
-        : Array.isArray(data.users)
-          ? data.users
+      const userList = Array.isArray(data.users)
+        ? data.users
+        : Array.isArray(data)
+          ? data
           : null;
 
       if (!userList) {
@@ -90,6 +88,7 @@ export default function AdminUsersPage() {
     }
   };
 
+  // INI BAGIAN MEMUAT DATA PERTAMA KALI
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void fetchUsers();
@@ -98,7 +97,6 @@ export default function AdminUsersPage() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // MENUTUP SCROLL HALAMAN SAAT MODAL TERBUKA
   useEffect(() => {
     if (!isModalOpen) return;
 
@@ -119,9 +117,10 @@ export default function AdminUsersPage() {
     };
   }, [isModalOpen, saving]);
 
-  // PENCARIAN DAN FILTER ROLE
+  // INI BAGIAN PENCARIAN DAN FILTER ROLE
   const filteredUsers = users.filter((user) => {
     const keyword = search.toLowerCase().trim();
+
     const matchSearch =
       user.name.toLowerCase().includes(keyword) ||
       user.email.toLowerCase().includes(keyword);
@@ -131,38 +130,27 @@ export default function AdminUsersPage() {
     return matchSearch && matchRole;
   });
 
-  // RINGKASAN STATISTIK PENGGUNA
+  // INI BAGIAN MENGHITUNG STATISTIK PENGGUNA
   const totalUsers = users.length;
+
   const totalAdmins = users.filter((user) => user.role === "ADMIN").length;
+
   const totalCustomers = users.filter(
     (user) => user.role === "CUSTOMER",
   ).length;
 
-  // REFRESH DATA
   const handleRefresh = () => {
     setError("");
     setSuccess("");
     void fetchUsers();
   };
 
-  // MEMBUKA MODAL TAMBAH
-  const openAddModal = () => {
-    setEditingId(null);
-    setForm({ ...emptyForm });
-    setModalError("");
-    setSuccess("");
-    setError("");
-    setIsModalOpen(true);
-  };
-
-  // MEMBUKA MODAL EDIT
   const openEditModal = (user: UserItem) => {
     setEditingId(user.id);
 
     setForm({
       name: user.name,
       email: user.email,
-      password: "",
       role: user.role,
     });
 
@@ -172,16 +160,15 @@ export default function AdminUsersPage() {
     setIsModalOpen(true);
   };
 
-  // MENUTUP MODAL
   const closeModal = () => {
     if (saving) return;
 
     setIsModalOpen(false);
     setEditingId(null);
+    setForm({ ...emptyForm });
     setModalError("");
   };
 
-  // MEMPERBARUI INPUT FORM
   const updateForm = <K extends keyof UserForm>(
     field: K,
     value: UserForm[K],
@@ -192,81 +179,93 @@ export default function AdminUsersPage() {
     }));
   };
 
-  // SIMPAN USER BARU ATAU PERUBAHAN KE DATABASE
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setModalError("");
 
+    if (editingId === null) {
+      setModalError("Data pengguna tidak valid.");
+      return;
+    }
+
     const name = form.name.trim();
-    const email = form.email.trim();
-    const password = form.password;
-    const isEditing = editingId !== null;
+    const email = form.email.trim().toLowerCase();
 
-    if (!name || !email) {
-      setModalError("Nama dan email wajib diisi.");
+    if (!name || name.length > 100) {
+      setModalError("Nama wajib diisi dan maksimal 100 karakter.");
       return;
     }
 
-    if (!isEditing && password.length < 8) {
-      setModalError("Password minimal 8 karakter.");
+    if (!email || !email.includes("@")) {
+      setModalError("Format email tidak valid.");
       return;
     }
 
-    if (isEditing && password && password.length < 8) {
-      setModalError("Password baru minimal 8 karakter.");
-      return;
-    }
+    const selectedUser = users.find((user) => user.id === editingId);
 
-    const payload = {
-      name,
-      email,
-      role: form.role,
-      ...(password ? { password } : {}),
-    };
+    if (
+      selectedUser &&
+      selectedUser.role !== form.role &&
+      form.role === "ADMIN"
+    ) {
+      const confirmed = window.confirm(
+        `Ubah role ${selectedUser.name} menjadi ADMIN? Pengguna ini akan memperoleh akses administrator.`,
+      );
+
+      if (!confirmed) return;
+    }
 
     try {
       setSaving(true);
 
       const response = await fetch("/api/admin/users", {
-        method: isEditing ? "PATCH" : "POST",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(
-          isEditing ? { id: editingId, ...payload } : payload,
-        ),
+        body: JSON.stringify({
+          id: editingId,
+          name,
+          email,
+          role: form.role,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Gagal menyimpan data pengguna.");
+        throw new Error(data.message || "Gagal memperbarui data pengguna.");
       }
 
       await fetchUsers();
 
-      setSuccess(
-        isEditing
-          ? "Data pengguna berhasil diperbarui."
-          : "Pengguna baru berhasil ditambahkan.",
-      );
-
+      setSuccess("Data pengguna berhasil diperbarui.");
       setError("");
       setIsModalOpen(false);
       setEditingId(null);
+      setForm({ ...emptyForm });
     } catch (err) {
       setModalError(
         err instanceof Error
           ? err.message
-          : "Terjadi kesalahan saat menyimpan data pengguna.",
+          : "Terjadi kesalahan saat memperbarui data pengguna.",
       );
     } finally {
       setSaving(false);
     }
   };
 
-  // HAPUS USER DARI DATABASE
+  // INI BAGIAN MENGHAPUS USER DARI DATABASE
   const handleDelete = async (user: UserItem) => {
+    // Pengguna yang memiliki pesanan tidak dapat dihapus.
+    if ((user._count?.orders ?? 0) > 0) {
+      setError(
+        "Pengguna tidak dapat dihapus karena masih memiliki riwayat pesanan.",
+      );
+      setSuccess("");
+      return;
+    }
+
     const confirmed = window.confirm(
       `Yakin ingin menghapus pengguna "${user.name}" (${user.email})?`,
     );
@@ -279,7 +278,9 @@ export default function AdminUsersPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id: user.id }),
+        body: JSON.stringify({
+          id: user.id,
+        }),
       });
 
       const data = await response.json();
@@ -298,16 +299,17 @@ export default function AdminUsersPage() {
           ? err.message
           : "Terjadi kesalahan saat menghapus pengguna.",
       );
+
       setSuccess("");
     }
   };
 
   return (
     <main className="ao-page">
-      {/* HEADER HALAMAN */}
       <header className="ao-header">
         <div>
           <p className="ao-breadcrumb">Users</p>
+
           <h1>Kelola Users</h1>
 
           <p className="ao-description">
@@ -324,18 +326,9 @@ export default function AdminUsersPage() {
           >
             ↻ {loading ? "Memuat..." : "Refresh"}
           </button>
-
-          <button
-            type="button"
-            className="ao-process-button"
-            onClick={openAddModal}
-          >
-            + Tambah User
-          </button>
         </div>
       </header>
 
-      {/* NOTIFIKASI */}
       {success && (
         <div className="ao-alert ao-alert-success" role="status">
           {success}
@@ -348,7 +341,6 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* RINGKASAN STATISTIK USER */}
       <section className="ao-summary">
         <div className="ao-summary-card">
           <span>Total Users</span>
@@ -366,7 +358,6 @@ export default function AdminUsersPage() {
         </div>
       </section>
 
-      {/* PENCARIAN, FILTER & TABEL USER */}
       <section className="ao-table-card">
         <div className="ao-toolbar">
           <input
@@ -451,6 +442,12 @@ export default function AdminUsersPage() {
                           type="button"
                           className="ao-cancel-button"
                           onClick={() => handleDelete(user)}
+                          disabled={(user._count?.orders ?? 0) > 0}
+                          title={
+                            (user._count?.orders ?? 0) > 0
+                              ? "Pengguna masih memiliki riwayat pesanan."
+                              : "Hapus pengguna"
+                          }
                         >
                           Hapus
                         </button>
@@ -470,7 +467,6 @@ export default function AdminUsersPage() {
         )}
       </section>
 
-      {/* MODAL TAMBAH / EDIT USER */}
       {isModalOpen && (
         <div
           className="ao-modal-overlay"
@@ -489,9 +485,7 @@ export default function AdminUsersPage() {
             <div className="ao-modal-header">
               <div>
                 <p>Manajemen Akun</p>
-                <h2 id="ao-user-modal-title">
-                  {editingId !== null ? "Edit Pengguna" : "Tambah Pengguna"}
-                </h2>
+                <h2 id="ao-user-modal-title">Edit Pengguna</h2>
               </div>
 
               <button
@@ -523,11 +517,13 @@ export default function AdminUsersPage() {
                   }}
                 >
                   <span>Nama Lengkap</span>
+
                   <input
                     type="text"
                     placeholder="Contoh: Budi Santoso"
                     value={form.name}
                     onChange={(event) => updateForm("name", event.target.value)}
+                    maxLength={100}
                     required
                     style={{
                       padding: "10px 12px",
@@ -548,6 +544,7 @@ export default function AdminUsersPage() {
                   }}
                 >
                   <span>Email</span>
+
                   <input
                     type="email"
                     placeholder="budi@example.com"
@@ -575,6 +572,7 @@ export default function AdminUsersPage() {
                   }}
                 >
                   <span>Role</span>
+
                   <select
                     value={form.role}
                     onChange={(event) =>
@@ -593,42 +591,27 @@ export default function AdminUsersPage() {
                   </select>
                 </label>
 
-                <label
+                <p
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    fontSize: "0.9rem",
-                    fontWeight: 600,
+                    margin: 0,
+                    color: "#806f62",
+                    fontSize: "0.78rem",
+                    lineHeight: 1.6,
                   }}
                 >
-                  <span>
-                    {editingId !== null
-                      ? "Password Baru (Kosongkan jika tidak diubah)"
-                      : "Password"}
-                  </span>
-                  <input
-                    type="password"
-                    placeholder="Minimal 8 karakter"
-                    value={form.password}
-                    onChange={(event) =>
-                      updateForm("password", event.target.value)
-                    }
-                    required={editingId === null}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid #d8cfc4",
-                      fontSize: "0.95rem",
-                    }}
-                  />
-                </label>
+                  Mengubah role menjadi ADMIN akan memberikan akses ke seluruh
+                  fitur administrator.
+                </p>
               </div>
 
               {modalError && (
                 <div
                   className="ao-alert ao-alert-error"
-                  style={{ marginTop: "12px", marginBottom: 0 }}
+                  style={{
+                    marginTop: "12px",
+                    marginBottom: 0,
+                  }}
+                  role="alert"
                 >
                   {modalError}
                 </div>
@@ -649,11 +632,7 @@ export default function AdminUsersPage() {
                   className="ao-process-button"
                   disabled={saving}
                 >
-                  {saving
-                    ? "Menyimpan..."
-                    : editingId !== null
-                      ? "Simpan Perubahan"
-                      : "Simpan Pengguna"}
+                  {saving ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>
