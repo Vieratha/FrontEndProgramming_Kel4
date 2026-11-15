@@ -149,7 +149,6 @@ model Payment {
   @@index([status])
 }
 
-
 model Faq {
   id        Int      @id @default(autoincrement())
   question  String   @db.VarChar(200)
@@ -158,6 +157,23 @@ model Faq {
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model Location {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(100)
+  address      String   @db.VarChar(500)
+  city         String   @db.VarChar(100)
+  phone        String?  @db.VarChar(30)
+  openingHours String   @db.VarChar(200)
+  imagePath    String   @db.VarChar(255)
+  mapUrl       String?  @db.VarChar(1000)
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([isActive, sortOrder])
 }

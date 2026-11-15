@@ -5832,3 +5832,123 @@ textarea {
     padding: 0 17px 17px;
   }
 }
+
+/* ================= LOKASI RESTORAN ================= */
+
+/* INI BAGIAN SECTION LOKASI */
+.location-section {
+  background-color: #f2ebde;
+  padding: 90px 0 120px;
+  scroll-margin-top: 80px;
+}
+
+/* INI BAGIAN HEADER LOKASI */
+.location-heading {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.location-heading h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 48px;
+  color: #302019;
+  margin: 12px 0 16px;
+  font-weight: 700;
+}
+
+.location-description {
+  font-size: 15px;
+  color: #78685e;
+  line-height: 1.7;
+}
+
+/* INI BAGIAN GRID CABANG RESTORAN */
+.location-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* INI BAGIAN CARD LOKASI */
+.location-card {
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  min-height: 235px;
+  box-shadow: 0 8px 25px rgba(60, 40, 20, 0.06);
+}
+
+/* INI BAGIAN GAMBAR PETA */
+.location-map {
+  width: 44%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* INI BAGIAN INFORMASI CABANG */
+.location-info {
+  padding: 28px 24px;
+  flex: 1;
+}
+
+.location-info h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  color: #302019;
+  margin: 0 0 12px;
+}
+
+.location-info p {
+  font-size: 12px;
+  color: #78685e;
+  line-height: 1.7;
+  margin: 0 0 5px;
+}
+
+/* INI BAGIAN DETAIL LOKASI */
+.location-details {
+  margin: 12px 0 16px;
+}
+
+/* INI BAGIAN TAUTAN GOOGLE MAPS */
+.location-link {
+  color: #8b2929;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.location-link:hover {
+  text-decoration: underline;
+}
+
+/* INI BAGIAN RESPONSIVE LOKASI TABLET */
+@media (max-width: 900px) {
+  .location-grid {
+    grid-template-columns: 1fr;
+    max-width: 650px;
+  }
+}
+
+/* INI BAGIAN RESPONSIVE LOKASI MOBILE */
+@media (max-width: 480px) {
+  .location-card {
+    flex-direction: column;
+  }
+
+  .location-map {
+    width: 100%;
+    height: 220px;
+  }
+
+  .location-heading h2 {
+    font-size: 36px;
+  }
+
+  .location-info {
+    padding: 24px;
+  }
+}
