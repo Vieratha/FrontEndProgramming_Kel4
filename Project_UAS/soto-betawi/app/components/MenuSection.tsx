@@ -52,7 +52,7 @@ export default function MenuSection({
           throw new Error("Gagal mengambil data menu.");
         }
 
-        const data: Menu[] = await response.json();
+        const data: MenuWithFavorite[] = await response.json();
 
         if (cancelled) return;
 
@@ -151,13 +151,6 @@ export default function MenuSection({
 
     return () => window.clearInterval(interval);
   }, []);
-
-  // FAVORIT
-  const toggleFavorite = (id: number) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
 
   // TAMBAH MENU KE KERANJANG
   const addToCart = (menu: Menu) => {
