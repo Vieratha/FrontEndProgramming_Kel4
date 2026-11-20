@@ -26,13 +26,6 @@ const emptyForm: MenuForm = {
   description: "",
 };
 
-const menuImages = [
-  { label: "Soto Betawi", value: "/images/menu-soto.jpeg" },
-  { label: "Kerak Telor", value: "/images/menu-kerak-telor.jpeg" },
-  { label: "Nasi Uduk", value: "/images/menu-nasi-uduk.jpeg" },
-  { label: "Bir Pletok", value: "/images/menu-bir-pletok.jpeg" },
-];
-
 function formatRupiah(price: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -551,34 +544,8 @@ export default function AdminMenuPage() {
                 </select>
               </div>
 
-              {/* INI BAGIAN GAMBAR MENU */}
               <div className="am-field">
-                <label htmlFor="am-image">Gambar Menu</label>
-
-                {/* INI BAGIAN MEMILIH GAMBAR LAMA */}
-                <select
-                  id="am-image"
-                  value={
-                    menuImages.some((image) => image.value === form.image)
-                      ? form.image
-                      : ""
-                  }
-                  onChange={(event) => updateForm("image", event.target.value)}
-                  disabled={saving || uploadingImage}
-                >
-                  <option value="">Pilih gambar yang tersedia</option>
-
-                  {menuImages.map((image) => (
-                    <option key={image.value} value={image.value}>
-                      {image.label}
-                    </option>
-                  ))}
-                </select>
-
-                {/* INI BAGIAN UPLOAD GAMBAR BARU */}
-                <label htmlFor="am-image-upload">
-                  Atau tambahkan gambar dari komputer
-                </label>
+                <label htmlFor="am-image-upload">Unggah Gambar Menu</label>
 
                 <input
                   id="am-image-upload"
@@ -589,15 +556,14 @@ export default function AdminMenuPage() {
                 />
 
                 <p className="am-field-hint">
-                  Format JPG, PNG, atau WEBP. Ukuran maksimal 2 MB.
+                  Pilih gambar dari perangkat Anda. Format JPG, PNG, atau WEBP.
+                  Ukuran maksimal 2 MB.
                 </p>
 
-                {/* INI BAGIAN STATUS UPLOAD */}
                 {uploadingImage && (
                   <p className="am-field-hint">Sedang mengunggah gambar...</p>
                 )}
 
-                {/* INI BAGIAN PREVIEW GAMBAR */}
                 {form.image && (
                   <div className="am-image-preview">
                     <Image
