@@ -200,7 +200,7 @@ export default function MenuSection({
       const data = await response.json();
 
       if (response.status === 401) {
-        window.location.href = "/login";
+        window.location.assign("/login");
         return;
       }
 
