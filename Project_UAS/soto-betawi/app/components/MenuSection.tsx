@@ -163,29 +163,30 @@ export default function MenuSection({
       }
     };
 
-    // MENUTUP DRAWER DENGAN TOMBOL ESCAPE
-useEffect(() => {
-  if (!isCartOpen) return;
-
-  const handleEscape = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
-      setIsCartOpen(false);
-    }
-  };
-
-  document.body.style.overflow = "hidden";
-  window.addEventListener("keydown", handleEscape);
-
-  return () => {
-    document.body.style.overflow = "";
-    window.removeEventListener("keydown", handleEscape);
-  };
-}, [isCartOpen, setIsCartOpen]);
-
     const interval = window.setInterval(refreshMenus, 10000);
 
     return () => window.clearInterval(interval);
   }, []);
+
+  // MENUTUP DRAWER DENGAN TOMBOL ESCAPE
+  useEffect(() => {
+    if (!isCartOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsCartOpen(false);
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isCartOpen, setIsCartOpen]);
 
   // TAMBAH MENU KE KERANJANG
   const addToCart = (menu: Menu) => {
@@ -500,174 +501,195 @@ useEffect(() => {
           </p>
         )}
 
-        
-{/* NOTIFIKASI KERANJANG */}
-{cartFeedback && (
-  <div className="cart-toast" role="status" aria-live="polite">
-    <span className="cart-toast-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="19" height="19" fill="none"
-        stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-        strokeLinejoin="round">
-        <path d="m5 12 4 4L19 6" />
-      </svg>
-    </span>
+        {/* NOTIFIKASI KERANJANG */}
+        {cartFeedback && (
+          <div className="cart-toast" role="status" aria-live="polite">
+            <span className="cart-toast-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </span>
 
-    <span>
-      <strong>Berhasil ditambahkan</strong>
-      <small>{cartFeedback.name} masuk ke keranjang.</small>
-    </span>
-  </div>
-)}
+            <span>
+              <strong>Berhasil ditambahkan</strong>
+              <small>{cartFeedback.name} masuk ke keranjang.</small>
+            </span>
+          </div>
+        )}
 
-{/* TOMBOL LIHAT KERANJANG */}
-<button
-  type="button"
-  className="btn btn-primary cart-page-button"
-  onClick={() => setIsCartOpen(true)}
->
-  Lihat Keranjang ({totalItems})
-</button>
-
-{/* DRAWER KERANJANG */}
-{isCartOpen && (
-  <div className="cart-overlay">
-    <button
-      type="button"
-      className="cart-backdrop"
-      onClick={() => setIsCartOpen(false)}
-      aria-label="Tutup keranjang"
-    />
-
-    <aside
-      className="cart-drawer"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cart-drawer-title"
-    >
-      {/* HEADER */}
-      <div className="cart-drawer-header">
-        <div>
-          <p className="cart-drawer-eyebrow">PESANAN ANDA</p>
-          <h2 id="cart-drawer-title">Keranjang Belanja</h2>
-          <p>{totalItems} item dalam keranjang</p>
-        </div>
-
+        {/* TOMBOL LIHAT KERANJANG */}
         <button
           type="button"
-          className="cart-drawer-close"
-          onClick={() => setIsCartOpen(false)}
-          aria-label="Tutup keranjang"
+          className="btn btn-primary cart-page-button"
+          onClick={() => setIsCartOpen(true)}
         >
-          <svg viewBox="0 0 24 24" width="21" height="21"
-            fill="none" stroke="currentColor" strokeWidth="1.8"
-            strokeLinecap="round">
-            <path d="m18 6-12 12M6 6l12 12" />
-          </svg>
+          Lihat Keranjang ({totalItems})
         </button>
-      </div>
 
-      {/* ISI KERANJANG */}
-      <div className="cart-drawer-content">
-        {!cartLoaded ? (
-          <p className="cart-empty">Memuat keranjang...</p>
-        ) : cart.length === 0 ? (
-          <div className="cart-empty">
-            <svg viewBox="0 0 24 24" width="45" height="45"
-              fill="none" stroke="currentColor" strokeWidth="1.4"
-              strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 3h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L22 8H6" />
-              <circle cx="10" cy="20" r="1" />
-              <circle cx="18" cy="20" r="1" />
-            </svg>
-            <strong>Keranjang masih kosong</strong>
-            <p>Silakan pilih menu yang ingin Anda pesan.</p>
+        {/* DRAWER KERANJANG */}
+        {isCartOpen && (
+          <div className="cart-overlay">
             <button
               type="button"
+              className="cart-backdrop"
               onClick={() => setIsCartOpen(false)}
+              aria-label="Tutup keranjang"
+            />
+
+            <aside
+              className="cart-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cart-drawer-title"
             >
-              Kembali memilih menu
-            </button>
-          </div>
-        ) : (
-          <div className="cart-item-list">
-            {cart.map((item) => (
-              <article className="cart-item" key={item.id}>
-                <div className="cart-item-info">
-                  <h3>{item.name}</h3>
-                  <p>{formatRupiah(item.price)} / item</p>
-                  <strong>
-                    {formatRupiah(item.price * item.quantity)}
-                  </strong>
+              {/* HEADER */}
+              <div className="cart-drawer-header">
+                <div>
+                  <p className="cart-drawer-eyebrow">PESANAN ANDA</p>
+                  <h2 id="cart-drawer-title">Keranjang Belanja</h2>
+                  <p>{totalItems} item dalam keranjang</p>
                 </div>
 
-                <div className="cart-item-actions">
-                  <div className="cart-quantity">
-                    <button
-                      type="button"
-                      onClick={() => decreaseQuantity(item.id)}
-                      aria-label={`Kurangi ${item.name}`}
-                    >
-                      −
-                    </button>
+                <button
+                  type="button"
+                  className="cart-drawer-close"
+                  onClick={() => setIsCartOpen(false)}
+                  aria-label="Tutup keranjang"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="21"
+                    height="21"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  >
+                    <path d="m18 6-12 12M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
-                    <span>{item.quantity}</span>
-
-                    <button
-                      type="button"
-                      onClick={() => increaseQuantity(item.id)}
-                      aria-label={`Tambah ${item.name}`}
+              {/* ISI KERANJANG */}
+              <div className="cart-drawer-content">
+                {!cartLoaded ? (
+                  <p className="cart-empty">Memuat keranjang...</p>
+                ) : cart.length === 0 ? (
+                  <div className="cart-empty">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="45"
+                      height="45"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     >
-                      +
+                      <path d="M3 3h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L22 8H6" />
+                      <circle cx="10" cy="20" r="1" />
+                      <circle cx="18" cy="20" r="1" />
+                    </svg>
+                    <strong>Keranjang masih kosong</strong>
+                    <p>Silakan pilih menu yang ingin Anda pesan.</p>
+                    <button type="button" onClick={() => setIsCartOpen(false)}>
+                      Kembali memilih menu
                     </button>
                   </div>
+                ) : (
+                  <div className="cart-item-list">
+                    {cart.map((item) => (
+                      <article className="cart-item" key={item.id}>
+                        <div className="cart-item-info">
+                          <h3>{item.name}</h3>
+                          <p>{formatRupiah(item.price)} / item</p>
+                          <strong>
+                            {formatRupiah(item.price * item.quantity)}
+                          </strong>
+                        </div>
 
-                  <button
-                    type="button"
-                    className="cart-item-remove"
-                    onClick={() => removeFromCart(item.id)}
-                  >
-                    Hapus
-                  </button>
+                        <div className="cart-item-actions">
+                          <div className="cart-quantity">
+                            <button
+                              type="button"
+                              onClick={() => decreaseQuantity(item.id)}
+                              aria-label={`Kurangi ${item.name}`}
+                            >
+                              −
+                            </button>
+
+                            <span>{item.quantity}</span>
+
+                            <button
+                              type="button"
+                              onClick={() => increaseQuantity(item.id)}
+                              aria-label={`Tambah ${item.name}`}
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="cart-item-remove"
+                            onClick={() => removeFromCart(item.id)}
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* FOOTER TOTAL DAN CHECKOUT */}
+              {cart.length > 0 && (
+                <div className="cart-drawer-footer">
+                  <div className="cart-total-row">
+                    <span>Total item</span>
+                    <strong>{totalItems} item</strong>
+                  </div>
+
+                  <div className="cart-total-row cart-grand-total">
+                    <span>Total harga</span>
+                    <strong>{formatRupiah(totalHarga)}</strong>
+                  </div>
+
+                  <Link href="/checkout" className="cart-checkout-button">
+                    Lanjut ke Checkout
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="19"
+                      height="19"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </Link>
+
+                  <p className="cart-footer-note">
+                    Periksa kembali pesanan sebelum melanjutkan.
+                  </p>
                 </div>
-              </article>
-            ))}
+              )}
+            </aside>
           </div>
         )}
       </div>
-
-      {/* FOOTER TOTAL DAN CHECKOUT */}
-      {cart.length > 0 && (
-        <div className="cart-drawer-footer">
-          <div className="cart-total-row">
-            <span>Total item</span>
-            <strong>{totalItems} item</strong>
-          </div>
-
-          <div className="cart-total-row cart-grand-total">
-            <span>Total harga</span>
-            <strong>{formatRupiah(totalHarga)}</strong>
-          </div>
-
-          <Link
-            href="/checkout"
-            className="cart-checkout-button"
-          >
-            Lanjut ke Checkout
-            <svg viewBox="0 0 24 24" width="19" height="19"
-              fill="none" stroke="currentColor" strokeWidth="2"
-              strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
-          </Link>
-
-          <p className="cart-footer-note">
-            Periksa kembali pesanan sebelum melanjutkan.
-          </p>
-        </div>
-      )}
-    </aside>
-  </div>
-)}
     </section>
   );
 }
