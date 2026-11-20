@@ -6625,3 +6625,35 @@ textarea {
     font-size: 20px;
   }
 }
+
+/* ===== INPUT UPLOAD GAMBAR ADMIN ===== */
+
+.am-field input[type="file"],
+.loc-admin-field input[type="file"] {
+  width: 100%;
+  padding: 11px;
+  border: 1px dashed #cbb8a5;
+  border-radius: 8px;
+  background: #fffaf5;
+  color: #5c483a;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.am-field input[type="file"]:disabled,
+.loc-admin-field input[type="file"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.am-field input[type="file"]::file-selector-button,
+.loc-admin-field input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: #85451f;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}

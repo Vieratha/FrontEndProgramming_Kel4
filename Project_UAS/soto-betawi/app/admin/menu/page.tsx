@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import type { Menu } from "../../lib/menuStorage";
 
 type Category = "Makanan" | "Minuman";
@@ -44,6 +45,7 @@ export default function AdminMenuPage() {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("Semua");
@@ -101,7 +103,7 @@ export default function AdminMenuPage() {
     document.body.style.overflow = "hidden";
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !saving) {
+      if (event.key === "Escape" && !saving && !uploadingImage) {
         setIsModalOpen(false);
       }
     };
@@ -112,7 +114,7 @@ export default function AdminMenuPage() {
       document.body.style.overflow = oldOverflow;
       window.removeEventListener("keydown", handleEscape);
     };
-  }, [isModalOpen, saving]);
+  }, [isModalOpen, saving, uploadingImage]);
 
   // PENCARIAN DAN FILTER KATEGORI
   const filteredMenus = menus.filter((menu) => {
@@ -157,7 +159,7 @@ export default function AdminMenuPage() {
 
   // MENUTUP MODAL
   const closeModal = () => {
-    if (saving) return;
+    if (saving || uploadingImage) return;
 
     setIsModalOpen(false);
     setEditingId(null);
@@ -173,6 +175,63 @@ export default function AdminMenuPage() {
       ...previous,
       [field]: value,
     }));
+  };
+
+  // INI BAGIAN MENGUNGGAH GAMBAR MENU BARU
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // INI BAGIAN MEMERIKSA FORMAT FILE
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setModalError("Format gambar harus JPG, PNG, atau WEBP.");
+      input.value = "";
+      return;
+    }
+
+    // INI BAGIAN MEMERIKSA UKURAN FILE
+    if (file.size > 2 * 1024 * 1024) {
+      setModalError("Ukuran gambar maksimal 2 MB.");
+      input.value = "";
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setModalError("");
+
+      // INI BAGIAN MEMASUKKAN FILE KE FORM DATA
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // INI BAGIAN MENGIRIM GAMBAR KE API
+      const response = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || typeof data.imageUrl !== "string") {
+        throw new Error(data.message || "Gagal mengunggah gambar menu.");
+      }
+
+      // INI BAGIAN MEMASUKKAN URL GAMBAR KE FORM
+      updateForm("image", data.imageUrl);
+    } catch (err) {
+      setModalError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat mengunggah gambar.",
+      );
+    } finally {
+      setUploadingImage(false);
+      input.value = "";
+    }
   };
 
   // SIMPAN MENU BARU ATAU PERUBAHAN KE DATABASE
@@ -492,15 +551,23 @@ export default function AdminMenuPage() {
                 </select>
               </div>
 
+              {/* INI BAGIAN GAMBAR MENU */}
               <div className="am-field">
                 <label htmlFor="am-image">Gambar Menu</label>
+
+                {/* INI BAGIAN MEMILIH GAMBAR LAMA */}
                 <select
                   id="am-image"
-                  value={form.image}
+                  value={
+                    menuImages.some((image) => image.value === form.image)
+                      ? form.image
+                      : ""
+                  }
                   onChange={(event) => updateForm("image", event.target.value)}
-                  required
+                  disabled={saving || uploadingImage}
                 >
-                  <option value="">Pilih gambar menu</option>
+                  <option value="">Pilih gambar yang tersedia</option>
+
                   {menuImages.map((image) => (
                     <option key={image.value} value={image.value}>
                       {image.label}
@@ -508,15 +575,40 @@ export default function AdminMenuPage() {
                   ))}
                 </select>
 
-                {form.image && (
-                  <div className="am-image-preview">
-                    <img src={form.image} alt="Preview gambar menu" />
-                  </div>
-                )}
+                {/* INI BAGIAN UPLOAD GAMBAR BARU */}
+                <label htmlFor="am-image-upload">
+                  Atau tambahkan gambar dari komputer
+                </label>
+
+                <input
+                  id="am-image-upload"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageUpload}
+                  disabled={saving || uploadingImage}
+                />
 
                 <p className="am-field-hint">
-                  Pilih salah satu gambar yang tersedia di folder public/images.
+                  Format JPG, PNG, atau WEBP. Ukuran maksimal 2 MB.
                 </p>
+
+                {/* INI BAGIAN STATUS UPLOAD */}
+                {uploadingImage && (
+                  <p className="am-field-hint">Sedang mengunggah gambar...</p>
+                )}
+
+                {/* INI BAGIAN PREVIEW GAMBAR */}
+                {form.image && (
+                  <div className="am-image-preview">
+                    <Image
+                      src={form.image}
+                      alt="Preview gambar menu"
+                      width={500}
+                      height={300}
+                      unoptimized
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="am-field">
@@ -548,7 +640,7 @@ export default function AdminMenuPage() {
                 <button
                   type="submit"
                   className="am-primary-btn"
-                  disabled={saving}
+                  disabled={saving || uploadingImage}
                 >
                   {saving
                     ? "Menyimpan..."

@@ -177,3 +177,11 @@ model Location {
 
   @@index([isActive, sortOrder])
 }
+
+model UploadedImage {
+  id        Int      @id @default(autoincrement())
+  data      Bytes
+  mimeType  String   @db.VarChar(50)
+  fileName  String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+}

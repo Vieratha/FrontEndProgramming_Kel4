@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { FormEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 
 // INI BAGIAN TIPE DATA LOKASI
@@ -71,6 +71,7 @@ export default function AdminLocationsPage() {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
 
   // INI BAGIAN PENCARIAN DAN FILTER LOKASI
@@ -172,6 +173,66 @@ export default function AdminLocationsPage() {
     }));
   };
 
+  // INI BAGIAN MENGUNGGAH GAMBAR LOKASI BARU
+  const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // INI BAGIAN MEMERIKSA FORMAT FILE
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format gambar harus JPG, PNG, atau WEBP.");
+      input.value = "";
+      return;
+    }
+
+    // INI BAGIAN MEMERIKSA UKURAN FILE
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Ukuran gambar maksimal 2 MB.");
+      input.value = "";
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setError("");
+      setSuccess("");
+
+      // INI BAGIAN MEMASUKKAN FILE KE FORM DATA
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // INI BAGIAN MENGIRIM GAMBAR KE API
+      const response = await fetch("/api/admin/uploads", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || typeof data.imageUrl !== "string") {
+        throw new Error(data.message || "Gagal mengunggah gambar lokasi.");
+      }
+
+      // INI BAGIAN MEMASUKKAN URL GAMBAR KE FORM
+      updateForm("imagePath", data.imageUrl);
+
+      setSuccess("Gambar lokasi berhasil diunggah.");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat mengunggah gambar.",
+      );
+    } finally {
+      setUploadingImage(false);
+      input.value = "";
+    }
+  };
+
   // INI BAGIAN MEMBUKA FORM EDIT LOKASI
   const handleEdit = (location: LocationItem) => {
     setEditingId(location.id);
@@ -200,6 +261,11 @@ export default function AdminLocationsPage() {
   // INI BAGIAN MENYIMPAN LOKASI BARU ATAU PERUBAHAN LOKASI
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (uploadingImage) {
+      setError("Tunggu sampai upload gambar selesai.");
+      return;
+    }
 
     setSuccess("");
     setError("");
@@ -547,17 +613,25 @@ export default function AdminLocationsPage() {
               />
             </div>
 
-            {/* INI BAGIAN PILIH GAMBAR LOKASI */}
+            {/* INI BAGIAN GAMBAR LOKASI */}
             <div className="loc-admin-field">
               <label htmlFor="location-image">Gambar Peta</label>
 
+              {/* INI BAGIAN MEMILIH GAMBAR LAMA */}
               <select
                 id="location-image"
-                value={form.imagePath}
+                value={
+                  imageOptions.some((image) => image.path === form.imagePath)
+                    ? form.imagePath
+                    : ""
+                }
                 onChange={(event) =>
                   updateForm("imagePath", event.target.value)
                 }
+                disabled={saving || uploadingImage}
               >
+                <option value="">Pilih gambar yang tersedia</option>
+
                 {imageOptions.map((image) => (
                   <option key={image.path} value={image.path}>
                     {image.label}
@@ -565,17 +639,36 @@ export default function AdminLocationsPage() {
                 ))}
               </select>
 
-              <div className="loc-admin-image-preview">
-                <Image
-                  src={form.imagePath}
-                  alt="Preview gambar peta lokasi"
-                  width={800}
-                  height={400}
-                  unoptimized
-                />
-              </div>
+              {/* INI BAGIAN UPLOAD GAMBAR BARU */}
+              <label htmlFor="location-image-upload">
+                Atau tambahkan gambar dari komputer
+              </label>
 
-              <small>Gambar dipilih dari folder public/images.</small>
+              <input
+                id="location-image-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleImageUpload}
+                disabled={saving || uploadingImage}
+              />
+
+              <small>Format JPG, PNG, atau WEBP. Ukuran maksimal 2 MB.</small>
+
+              {/* INI BAGIAN STATUS UPLOAD */}
+              {uploadingImage && <small>Sedang mengunggah gambar...</small>}
+
+              {/* INI BAGIAN PREVIEW GAMBAR */}
+              {form.imagePath && (
+                <div className="loc-admin-image-preview">
+                  <Image
+                    src={form.imagePath}
+                    alt="Preview gambar peta lokasi"
+                    width={800}
+                    height={400}
+                    unoptimized
+                  />
+                </div>
+              )}
             </div>
 
             {/* INI BAGIAN LINK GOOGLE MAPS */}
@@ -650,7 +743,7 @@ export default function AdminLocationsPage() {
                   type="button"
                   className="loc-admin-cancel"
                   onClick={resetForm}
-                  disabled={saving}
+                  disabled={saving || uploadingImage}
                 >
                   Batal Edit
                 </button>

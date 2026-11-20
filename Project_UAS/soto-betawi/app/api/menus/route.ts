@@ -65,16 +65,18 @@ function validateMenu(body: Record<string, unknown>) {
     return { error: "Status menu tidak valid." };
   }
 
-  // Untuk sementara hanya menerima path gambar lokal di public/images
-  if (
-    !image.startsWith("/images/") ||
-    image.startsWith("//") ||
-    image.includes("..") ||
-    image.startsWith("data:")
-  ) {
+  // INI BAGIAN VALIDASI GAMBAR MENU
+  const isPublicImage =
+    image.startsWith("/images/") &&
+    !image.startsWith("//") &&
+    !image.includes("..") &&
+    !image.startsWith("data:");
+
+  const isUploadedImage = /^\/api\/uploads\/[1-9]\d*$/.test(image);
+
+  if (!isPublicImage && !isUploadedImage) {
     return {
-      error:
-        "Gambar harus menggunakan path lokal, contohnya /images/menu-soto.jpeg.",
+      error: "Pilih gambar yang tersedia atau unggah gambar baru.",
     };
   }
 
@@ -88,6 +90,27 @@ function validateMenu(body: Record<string, unknown>) {
       status,
     },
   };
+}
+
+// INI BAGIAN MEMERIKSA GAMBAR UPLOAD DI DATABASE
+async function uploadedImageExists(image: string) {
+  const match = image.match(/^\/api\/uploads\/([1-9]\d*)$/);
+
+  // Gambar lokal tidak perlu diperiksa ke database.
+  if (!match) {
+    return true;
+  }
+
+  const uploadedImage = await prisma.uploadedImage.findUnique({
+    where: {
+      id: Number(match[1]),
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return Boolean(uploadedImage);
 }
 
 // GET: mengambil seluruh menu (publik)
@@ -132,6 +155,14 @@ export async function POST(request: Request) {
 
     if (validated.error) {
       return NextResponse.json({ message: validated.error }, { status: 400 });
+    }
+
+    // INI BAGIAN MEMERIKSA GAMBAR MENU
+    if (!(await uploadedImageExists(validated.data!.image))) {
+      return NextResponse.json(
+        { message: "Gambar yang dipilih tidak ditemukan." },
+        { status: 400 },
+      );
     }
 
     const menu = await prisma.menu.create({
@@ -187,6 +218,14 @@ export async function PATCH(request: Request) {
 
     if (validated.error) {
       return NextResponse.json({ message: validated.error }, { status: 400 });
+    }
+
+    // INI BAGIAN MEMERIKSA GAMBAR MENU
+    if (!(await uploadedImageExists(validated.data!.image))) {
+      return NextResponse.json(
+        { message: "Gambar yang dipilih tidak ditemukan." },
+        { status: 400 },
+      );
     }
 
     const existingMenu = await prisma.menu.findUnique({

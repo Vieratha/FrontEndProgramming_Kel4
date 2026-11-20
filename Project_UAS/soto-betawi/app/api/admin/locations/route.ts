@@ -146,10 +146,14 @@ function validateLocation(body: Record<string, unknown>) {
     };
   }
 
-  // INI BAGIAN VALIDASI GAMBAR
-  if (!ALLOWED_IMAGES.includes(imagePath)) {
+  // INI BAGIAN VALIDASI GAMBAR LOKASI
+  const isAllowedImage = ALLOWED_IMAGES.includes(imagePath);
+
+  const isUploadedImage = /^\/api\/uploads\/[1-9]\d*$/.test(imagePath);
+
+  if (!isAllowedImage && !isUploadedImage) {
     return {
-      error: "Pilih gambar lokasi yang tersedia.",
+      error: "Pilih gambar lokasi yang tersedia atau unggah gambar baru.",
     };
   }
 
@@ -182,6 +186,27 @@ function validateLocation(body: Record<string, unknown>) {
       sortOrder,
     },
   };
+}
+
+// INI BAGIAN MEMERIKSA GAMBAR UPLOAD DI DATABASE
+async function uploadedImageExists(imagePath: string) {
+  const match = imagePath.match(/^\/api\/uploads\/([1-9]\d*)$/);
+
+  // Gambar lama dari public/images tidak perlu diperiksa.
+  if (!match) {
+    return true;
+  }
+
+  const uploadedImage = await prisma.uploadedImage.findUnique({
+    where: {
+      id: Number(match[1]),
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return Boolean(uploadedImage);
 }
 
 // INI BAGIAN MENGAMBIL SELURUH LOKASI UNTUK ADMIN
@@ -230,6 +255,14 @@ export async function POST(request: Request) {
 
     if (validated.error) {
       return NextResponse.json({ message: validated.error }, { status: 400 });
+    }
+
+    // INI BAGIAN MEMERIKSA GAMBAR LOKASI
+    if (!(await uploadedImageExists(validated.data!.imagePath))) {
+      return NextResponse.json(
+        { message: "Gambar yang dipilih tidak ditemukan." },
+        { status: 400 },
+      );
     }
 
     // INI BAGIAN MENYIMPAN LOKASI KE DATABASE
@@ -286,6 +319,14 @@ export async function PATCH(request: Request) {
 
     if (validated.error) {
       return NextResponse.json({ message: validated.error }, { status: 400 });
+    }
+
+    // INI BAGIAN MEMERIKSA GAMBAR LOKASI
+    if (!(await uploadedImageExists(validated.data!.imagePath))) {
+      return NextResponse.json(
+        { message: "Gambar yang dipilih tidak ditemukan." },
+        { status: 400 },
+      );
     }
 
     // INI BAGIAN MEMERIKSA LOKASI
