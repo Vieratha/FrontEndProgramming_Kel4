@@ -40,8 +40,6 @@ CREATE INDEX "Payment_status_idx" ON "Payment"("status");
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- INI BAGIAN MIGRASI DATA PESANAN LAMA
--- Pesanan yang sudah berstatus Selesai dianggap telah dibayar,
--- sesuai alur konfirmasi kasir pada versi sebelumnya.
 UPDATE "Order"
 SET
   "paymentStatus" = 'LUNAS',
@@ -49,8 +47,6 @@ SET
 WHERE "status" = 'Selesai';
 
 -- INI BAGIAN MENCATAT PEMBAYARAN PESANAN LAMA
--- Waktu paidAt menggunakan updatedAt sebagai perkiraan waktu pembayaran.
--- Detail transaksi gateway untuk pesanan lama memang belum tersedia.
 INSERT INTO "Payment" (
   "id",
   "orderId",
