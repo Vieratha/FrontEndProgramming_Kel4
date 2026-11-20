@@ -39,14 +39,12 @@ CREATE INDEX "Payment_status_idx" ON "Payment"("status");
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- INI BAGIAN MIGRASI DATA PESANAN LAMA
 UPDATE "Order"
 SET
   "paymentStatus" = 'LUNAS',
   "paidAt" = "updatedAt"
 WHERE "status" = 'Selesai';
 
--- INI BAGIAN MENCATAT PEMBAYARAN PESANAN LAMA
 INSERT INTO "Payment" (
   "id",
   "orderId",
