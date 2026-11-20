@@ -19,6 +19,7 @@ model User {
   cart     Cart?
   orders   Order[]
   sessions Session[]
+  favorites Favorite[]
 }
 
 model Session {
@@ -44,6 +45,19 @@ model Menu {
 
   cartItems  CartItem[]
   orderItems OrderItem[]
+  favorites Favorite[]
+}
+
+model Favorite {
+  userId    Int
+  menuId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menu Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@id([userId, menuId])
+  @@index([menuId])
 }
 
 model Cart {

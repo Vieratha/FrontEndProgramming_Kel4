@@ -8,6 +8,11 @@ type CartItem = Menu & {
   quantity: number;
 };
 
+type MenuWithFavorite = Menu & {
+  favoriteCount: number;
+  isFavorited: boolean;
+};
+
 type MenuSectionProps = {
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
@@ -20,7 +25,7 @@ export default function MenuSection({
   onCartCountChange,
 }: MenuSectionProps) {
   // DATA MENU
-  const [menus, setMenus] = useState<Menu[]>([]);
+  const [menus, setMenus] = useState<MenuWithFavorite[]>([]);
   const [menusLoaded, setMenusLoaded] = useState(false);
   const [menuError, setMenuError] = useState("");
 
@@ -29,7 +34,7 @@ export default function MenuSection({
   const [filter, setFilter] = useState("all");
 
   // FAVORIT
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favoriteBusyIds, setFavoriteBusyIds] = useState<number[]>([]);
 
   // KERANJANG
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -158,6 +163,57 @@ export default function MenuSection({
         },
       ];
     });
+  };
+
+  // INI BAGIAN MENGUBAH STATUS FAVORIT
+  const toggleFavorite = async (menu: MenuWithFavorite) => {
+    if (favoriteBusyIds.includes(menu.id)) return;
+
+    setFavoriteBusyIds((previous) => [...previous, menu.id]);
+
+    try {
+      const response = await fetch("/api/favorites", {
+        method: menu.isFavorited ? "DELETE" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          menuId: menu.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Gagal mengubah favorit.");
+      }
+
+      setMenus((previous) =>
+        previous.map((item) =>
+          item.id === menu.id
+            ? {
+                ...item,
+                favoriteCount: data.favoriteCount,
+                isFavorited: data.isFavorited,
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error("Gagal mengubah favorit:", error);
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat mengubah favorit.",
+      );
+    } finally {
+      setFavoriteBusyIds((previous) => previous.filter((id) => id !== menu.id));
+    }
   };
 
   // TAMBAH JUMLAH
@@ -314,17 +370,35 @@ export default function MenuSection({
                     {/* FAVORIT */}
                     <button
                       type="button"
-                      className="favorite-btn"
-                      aria-label={`Favorit ${menu.name}`}
-                      aria-pressed={favorites.includes(menu.id)}
-                      onClick={() => toggleFavorite(menu.id)}
+                      className={`favorite-btn ${
+                        menu.isFavorited ? "active" : ""
+                      }`}
+                      aria-label={
+                        menu.isFavorited
+                          ? `Hapus ${menu.name} dari favorit`
+                          : `Tambahkan ${menu.name} ke favorit`
+                      }
+                      aria-pressed={menu.isFavorited}
+                      onClick={() => void toggleFavorite(menu)}
+                      disabled={favoriteBusyIds.includes(menu.id)}
                     >
-                      <span className="favorite-icon">
-                        {favorites.includes(menu.id) ? "♥" : "♡"}
-                      </span>
+                      <svg
+                        className="favorite-icon"
+                        viewBox="0 0 24 24"
+                        width="20"
+                        height="20"
+                        fill={menu.isFavorited ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+                      </svg>
 
                       <span className="favorite-count">
-                        {favorites.includes(menu.id) ? 1 : 0}
+                        {menu.favoriteCount}
                       </span>
                     </button>
 

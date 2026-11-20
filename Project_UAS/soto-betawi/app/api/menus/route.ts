@@ -114,17 +114,54 @@ async function uploadedImageExists(image: string) {
 }
 
 // GET: mengambil seluruh menu (publik)
+
 export async function GET() {
   try {
+    const user = await getCurrentUser();
+
     const menus = await prisma.menu.findMany({
       orderBy: {
         id: "asc",
       },
+      include: {
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json(menus);
+    let favoriteIds = new Set<number>();
+
+    if (user?.role === "CUSTOMER") {
+      const userFavorites = await prisma.favorite.findMany({
+        where: {
+          userId: user.id,
+        },
+        select: {
+          menuId: true,
+        },
+      });
+
+      favoriteIds = new Set(userFavorites.map((favorite) => favorite.menuId));
+    }
+
+    const result = menus.map((menu) => ({
+      id: menu.id,
+      name: menu.name,
+      description: menu.description,
+      price: menu.price,
+      category: menu.category,
+      image: menu.image,
+      status: menu.status,
+      favoriteCount: menu._count.favorites,
+      isFavorited: favoriteIds.has(menu.id),
+    }));
+
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("Gagal mengambil menu:", error);
+    console.error("Gagal mengambil data menu:", error);
 
     return NextResponse.json(
       { message: "Gagal mengambil data menu." },
