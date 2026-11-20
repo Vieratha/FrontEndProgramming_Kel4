@@ -2237,27 +2237,61 @@ textarea {
 }
 
 /* TOMBOL FAVORIT */
-
 .favorite-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 7px 11px;
-  background: #fff1ef;
-  border: 1px solid #f1d9d5;
-  border-radius: 25px;
-  color: #c83b49;
+  gap: 6px;
+  min-width: 54px;
+  padding: 8px 11px;
+  background: #fffaf7;
+  border: 1px solid #eadbd0;
+  border-radius: 24px;
+  color: #8b5e48;
   cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.favorite-btn:hover:not(:disabled) {
+  background: #f9eee8;
+  border-color: #d9b9a7;
+  transform: translateY(-1px);
+}
+
+.favorite-btn.active {
+  background: #fff0ef;
+  border-color: #e9b8b8;
+  color: #c33f4b;
+}
+
+.favorite-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.favorite-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .favorite-icon {
-  font-size: 22px;
-  line-height: 1;
+  display: block;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.favorite-btn.active .favorite-icon {
+  transform: scale(1.08);
 }
 
 .favorite-count {
   font-size: 12px;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 /* TOMBOL TAMBAH KERANJANG */

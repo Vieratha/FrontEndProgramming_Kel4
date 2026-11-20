@@ -130,6 +130,28 @@ export default function MenuSection({
     }
   }, [cart, cartLoaded]);
 
+  // MEMPERBARUI JUMLAH FAVORIT SECARA BERKALA
+  useEffect(() => {
+    const refreshMenus = async () => {
+      try {
+        const response = await fetch("/api/menus", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) return;
+
+        const data: MenuWithFavorite[] = await response.json();
+        setMenus(data);
+      } catch (error) {
+        console.error("Gagal memperbarui jumlah favorit:", error);
+      }
+    };
+
+    const interval = window.setInterval(refreshMenus, 10000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   // FAVORIT
   const toggleFavorite = (id: number) => {
     setFavorites((prev) =>
