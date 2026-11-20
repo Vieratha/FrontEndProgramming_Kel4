@@ -16,17 +16,29 @@ export default function HomeClient() {
         onCartCountChange={setTotalItems}
       />
 
-      {/* TOMBOL KERANJANG MENGAMBANG */}
       <button
         type="button"
         className="floating-cart"
         onClick={() => setIsCartOpen(true)}
         aria-label={`Buka keranjang, ${totalItems} item`}
       >
-        🛒
-        <span className="floating-cart-count">
-          {totalItems}
-        </span>
+        <svg
+          viewBox="0 0 24 24"
+          width="25"
+          height="25"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 3h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 2-1.6L22 8H6" />
+          <circle cx="10" cy="20" r="1" />
+          <circle cx="18" cy="20" r="1" />
+        </svg>
+
+        <span className="floating-cart-count">{totalItems}</span>
       </button>
     </>
   );

@@ -6691,3 +6691,449 @@ textarea {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* =========================================
+   T2B - FEEDBACK TAMBAH KE KERANJANG
+========================================= */
+
+.add-to-cart {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.add-to-cart:hover:not(:disabled) {
+  background: #603015;
+  transform: translateY(-2px);
+}
+
+.add-to-cart:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.add-to-cart:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.cart-toast {
+  position: fixed;
+  right: 25px;
+  bottom: 105px;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(340px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 1px solid #d9e8dc;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 35px rgba(48, 32, 25, 0.14);
+  animation: cart-toast-enter 0.25s ease both;
+}
+
+.cart-toast-icon {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e8f4eb;
+  color: #337a4b;
+}
+
+.cart-toast > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cart-toast strong {
+  color: #38271e;
+  font-size: 13px;
+}
+
+.cart-toast small {
+  color: #84756a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@keyframes cart-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   T2B - CART DRAWER
+========================================= */
+
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cart-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: rgba(32, 24, 19, 0.48);
+  cursor: default;
+  animation: cart-backdrop-enter 0.2s ease both;
+}
+
+.cart-drawer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(460px, 100%);
+  height: 100%;
+  height: 100dvh;
+  background: #ffffff;
+  box-shadow: -12px 0 40px rgba(32, 24, 19, 0.16);
+  animation: cart-drawer-enter 0.28s ease both;
+}
+
+@keyframes cart-backdrop-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cart-drawer-enter {
+  from {
+    transform: translateX(35px);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* HEADER DRAWER */
+
+.cart-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 27px 25px 22px;
+  border-bottom: 1px solid #eee5de;
+}
+
+.cart-drawer-eyebrow {
+  margin-bottom: 7px;
+  color: #a06b48;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.cart-drawer-header h2 {
+  color: #38271e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  line-height: 1.3;
+}
+
+.cart-drawer-header > div > p:last-child {
+  margin-top: 7px;
+  color: #8b7a6e;
+  font-size: 12px;
+}
+
+.cart-drawer-close {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eadfd6;
+  border-radius: 10px;
+  background: #fffaf6;
+  color: #654b3b;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cart-drawer-close:hover {
+  background: #f3e9df;
+}
+
+/* ISI DRAWER */
+
+.cart-drawer-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 25px 20px;
+}
+
+.cart-item-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px 0;
+  border-bottom: 1px solid #f0e9e3;
+}
+
+.cart-item-info {
+  min-width: 0;
+}
+
+.cart-item-info h3 {
+  margin: 0 0 6px;
+  color: #38271e;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cart-item-info p {
+  margin-bottom: 8px;
+  color: #8b7a6e;
+  font-size: 12px;
+}
+
+.cart-item-info > strong {
+  color: #85451f;
+  font-size: 14px;
+}
+
+.cart-item-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 9px;
+}
+
+.cart-quantity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px;
+  border: 1px solid #eadfd6;
+  border-radius: 9px;
+  background: #fffaf6;
+}
+
+.cart-quantity button {
+  display: flex;
+  width: 27px;
+  height: 27px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #85451f;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.cart-quantity button:hover {
+  background: #f0e3d7;
+}
+
+.cart-quantity span {
+  min-width: 15px;
+  color: #38271e;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-item-remove {
+  padding: 3px 0;
+  border: none;
+  background: transparent;
+  color: #b34b43;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.cart-item-remove:hover {
+  color: #8e2924;
+  text-decoration: underline;
+}
+
+/* KERANJANG KOSONG */
+
+.cart-empty {
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #a18e80;
+  text-align: center;
+}
+
+.cart-empty strong {
+  color: #493528;
+  font-size: 16px;
+}
+
+.cart-empty p {
+  max-width: 240px;
+  color: #8b7a6e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.cart-empty button {
+  margin-top: 5px;
+  padding: 10px 15px;
+  border: 1px solid #e6d6c8;
+  border-radius: 8px;
+  background: #fffaf6;
+  color: #85451f;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* FOOTER DRAWER */
+
+.cart-drawer-footer {
+  padding: 20px 25px 24px;
+  border-top: 1px solid #eee5de;
+  background: #ffffff;
+  box-shadow: 0 -8px 25px rgba(48, 32, 25, 0.035);
+}
+
+.cart-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #827267;
+  font-size: 13px;
+}
+
+.cart-total-row strong {
+  color: #493528;
+}
+
+.cart-grand-total {
+  margin: 17px 0 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee5de;
+  color: #493528;
+  font-size: 14px;
+}
+
+.cart-grand-total strong {
+  color: #85451f;
+  font-size: 20px;
+}
+
+.cart-checkout-button {
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 9px;
+  background: #85451f;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.cart-checkout-button:hover {
+  transform: translateY(-1px);
+  background: #603015;
+}
+
+.cart-footer-note {
+  margin-top: 11px;
+  color: #9a8b80;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* TOMBOL BUKA KERANJANG DI HALAMAN */
+
+.cart-page-button {
+  margin-top: 25px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 576px) {
+  .cart-drawer {
+    width: 100%;
+  }
+
+  .cart-drawer-header {
+    padding: 22px 19px 18px;
+  }
+
+  .cart-drawer-content {
+    padding-right: 19px;
+    padding-left: 19px;
+  }
+
+  .cart-drawer-footer {
+    padding: 17px 19px 20px;
+  }
+
+  .cart-item {
+    gap: 10px;
+  }
+
+  .cart-toast {
+    right: 16px;
+    bottom: 82px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-toast,
+  .cart-backdrop,
+  .cart-drawer {
+    animation: none;
+  }
+
+  .add-to-cart,
+  .cart-checkout-button {
+    transition: none;
+  }
+}
