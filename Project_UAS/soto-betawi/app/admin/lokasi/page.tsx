@@ -46,18 +46,6 @@ const emptyForm: LocationForm = {
   sortOrder: "1",
 };
 
-// INI BAGIAN PILIHAN GAMBAR LOKASI
-const imageOptions = [
-  {
-    path: "/images/map-menteng.jpeg",
-    label: "Peta Menteng",
-  },
-  {
-    path: "/images/map-kemang.jpeg",
-    label: "Peta Kemang",
-  },
-];
-
 // INI BAGIAN FORMAT TANGGAL
 function formatTanggal(tanggal: string) {
   return new Date(tanggal).toLocaleString("id-ID", {
@@ -613,35 +601,10 @@ export default function AdminLocationsPage() {
               />
             </div>
 
-            {/* INI BAGIAN GAMBAR LOKASI */}
+            {/* INI BAGIAN UPLOAD GAMBAR LOKASI */}
             <div className="loc-admin-field">
-              <label htmlFor="location-image">Gambar Peta</label>
-
-              {/* INI BAGIAN MEMILIH GAMBAR LAMA */}
-              <select
-                id="location-image"
-                value={
-                  imageOptions.some((image) => image.path === form.imagePath)
-                    ? form.imagePath
-                    : ""
-                }
-                onChange={(event) =>
-                  updateForm("imagePath", event.target.value)
-                }
-                disabled={saving || uploadingImage}
-              >
-                <option value="">Pilih gambar yang tersedia</option>
-
-                {imageOptions.map((image) => (
-                  <option key={image.path} value={image.path}>
-                    {image.label}
-                  </option>
-                ))}
-              </select>
-
-              {/* INI BAGIAN UPLOAD GAMBAR BARU */}
               <label htmlFor="location-image-upload">
-                Atau tambahkan gambar dari komputer
+                Unggah Gambar Lokasi
               </label>
 
               <input
@@ -652,17 +615,18 @@ export default function AdminLocationsPage() {
                 disabled={saving || uploadingImage}
               />
 
-              <small>Format JPG, PNG, atau WEBP. Ukuran maksimal 2 MB.</small>
+              <small>
+                Pilih gambar dari perangkat Anda. Format JPG, PNG, atau WEBP.
+                Ukuran maksimal 2 MB.
+              </small>
 
-              {/* INI BAGIAN STATUS UPLOAD */}
               {uploadingImage && <small>Sedang mengunggah gambar...</small>}
 
-              {/* INI BAGIAN PREVIEW GAMBAR */}
               {form.imagePath && (
                 <div className="loc-admin-image-preview">
                   <Image
                     src={form.imagePath}
-                    alt="Preview gambar peta lokasi"
+                    alt="Preview gambar lokasi"
                     width={800}
                     height={400}
                     unoptimized
