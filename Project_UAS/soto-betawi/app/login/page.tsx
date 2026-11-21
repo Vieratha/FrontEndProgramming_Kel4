@@ -83,7 +83,6 @@ export default function LoginPage() {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        \
         <div className="auth-header">
           <h1>Masuk ke Akun</h1>
 
