@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
+import Image from "next/image";
 import { PAYMENT_INFO } from "@/app/lib/payment-info";
 
 // INI BAGIAN TIPE DATA RINGKASAN PEMBAYARAN
-type PaymentSummary = {
+export type PaymentSummary = {
   id: string;
   method: string;
   reference: string | null;
@@ -15,10 +16,10 @@ type PaymentSummary = {
   customerReference: string | null;
   proofFileName: string | null;
   submittedAt: string | null;
-  verifiedAt: string | null;
+  verifiedAt?: string | null;
   rejectedAt: string | null;
   verificationNote: string | null;
-  paidAt: string | null;
+  paidAt?: string | null;
   createdAt: string;
 };
 
@@ -30,6 +31,7 @@ type PaymentProofFormProps = {
   paymentStatus: string;
   total: number;
   payments: PaymentSummary[];
+  onPaymentUpdate: (payment: PaymentSummary) => void;
 };
 
 // INI BAGIAN FORMAT RUPIAH
@@ -73,12 +75,12 @@ export default function PaymentProofForm({
   paymentStatus,
   total,
   payments,
+  onPaymentUpdate,
 }: PaymentProofFormProps) {
-  // INI BAGIAN STATUS PEMBAYARAN
-  const [currentStatus, setCurrentStatus] = useState(paymentStatus);
-  const [latestPayment, setLatestPayment] = useState<PaymentSummary | null>(
-    payments[0] ?? null,
-  );
+  // STATUS PEMBAYARAN DIAMBIL DARI PROPS HALAMAN INDUK.
+  // Tidak ada state status pembayaran kedua di komponen ini.
+  const currentStatus = paymentStatus;
+  const latestPayment = payments[0] ?? null;
 
   // INI BAGIAN DATA FORM
   const [payerName, setPayerName] = useState("");
@@ -195,12 +197,14 @@ export default function PaymentProofForm({
         throw new Error(result.message || "Gagal mengirim bukti pembayaran.");
       }
 
-      // INI BAGIAN MEMPERBARUI STATUS DI TAMPILAN
-      setCurrentStatus("MENUNGGU_VERIFIKASI");
-
-      if (result.payment) {
-        setLatestPayment(result.payment as PaymentSummary);
+      // INI BAGIAN MEMERIKSA RESPONS PEMBAYARAN
+      if (!result.payment || typeof result.payment.id !== "string") {
+        throw new Error("Respons pembayaran dari server tidak lengkap.");
       }
+
+      // INI BAGIAN MEMPERBARUI STATE HALAMAN INDUK
+      // Status Detail Pesanan dan Form Pembayaran langsung berubah bersama.
+      onPaymentUpdate(result.payment as PaymentSummary);
 
       setSuccess(
         "Bukti pembayaran berhasil dikirim. Admin akan memeriksa pembayaranmu.",
@@ -266,9 +270,12 @@ export default function PaymentProofForm({
         <div className="payment-proof-instruction">
           <h3>Scan QRIS Restoran</h3>
 
-          <img
+          <Image
             src={PAYMENT_INFO.qris.imagePath}
             alt="QRIS resmi Soto Betawi Jakarta"
+            width={640}
+            height={640}
+            sizes="(max-width: 640px) 100vw, 480px"
             className="payment-qris-image"
           />
 

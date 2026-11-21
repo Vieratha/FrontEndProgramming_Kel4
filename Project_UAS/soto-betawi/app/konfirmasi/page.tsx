@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import PaymentProofForm from "@/app/components/PaymentProofForm";
+import PaymentProofForm, {
+  type PaymentSummary,
+} from "@/app/components/PaymentProofForm";
 
 // INI BAGIAN TIPE DATA ITEM PESANAN
 type OrderItem = {
@@ -11,24 +13,6 @@ type OrderItem = {
   menuName: string;
   price: number;
   quantity: number;
-};
-
-// INI BAGIAN TIPE DATA RINGKASAN PEMBAYARAN
-type PaymentSummary = {
-  id: string;
-  method: string;
-  reference: string | null;
-  status: string;
-  amount: number;
-  payerName: string | null;
-  customerReference: string | null;
-  proofFileName: string | null;
-  submittedAt: string | null;
-  verifiedAt: string | null;
-  rejectedAt: string | null;
-  verificationNote: string | null;
-  paidAt: string | null;
-  createdAt: string;
 };
 
 // INI BAGIAN TIPE DATA PESANAN
@@ -131,6 +115,27 @@ export default function KonfirmasiPage() {
       controller.abort();
     };
   }, []);
+
+  // INI BAGIAN MENYINKRONKAN STATUS PEMBAYARAN
+  // Semua bagian halaman menggunakan state pesanan yang sama.
+  const handlePaymentUpdate = (payment: PaymentSummary) => {
+    setPesanan((previous) => {
+      if (!previous) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        paymentStatus: payment.status,
+        payments: [
+          payment,
+          ...previous.payments.filter(
+            (existingPayment) => existingPayment.id !== payment.id,
+          ),
+        ],
+      };
+    });
+  };
 
   // INI BAGIAN FORMAT HARGA RUPIAH
   const formatRupiah = (angka: number) => {
@@ -249,7 +254,9 @@ export default function KonfirmasiPage() {
               className={
                 pesanan.paymentStatus === "LUNAS"
                   ? "payment-status-text paid"
-                  : "payment-status-text unpaid"
+                  : pesanan.paymentStatus === "GAGAL"
+                    ? "payment-status-text failed"
+                    : "payment-status-text unpaid"
               }
             >
               {getPaymentLabel(pesanan.paymentStatus)}
@@ -303,6 +310,7 @@ export default function KonfirmasiPage() {
           paymentStatus={pesanan.paymentStatus}
           total={pesanan.total}
           payments={pesanan.payments ?? []}
+          onPaymentUpdate={handlePaymentUpdate}
         />
 
         {/* INI BAGIAN TOMBOL NAVIGASI */}

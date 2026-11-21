@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Buffer } from "node:buffer";
 import { prisma } from "@/app/lib/prisma";
 import { createSession, hashPassword } from "@/app/lib/auth";
 
@@ -12,6 +13,7 @@ export async function POST(request: Request) {
       .toLowerCase();
     const password = String(body.password ?? "");
 
+    // INI BAGIAN VALIDASI FIELD WAJIB
     if (!name || !email || !password) {
       return NextResponse.json(
         { message: "Semua field wajib diisi." },
@@ -19,6 +21,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // INI BAGIAN VALIDASI EMAIL
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { message: "Email tidak valid." },
@@ -26,6 +29,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // INI BAGIAN VALIDASI PANJANG PASSWORD
     if (password.length < 8) {
       return NextResponse.json(
         { message: "Password minimal 8 karakter." },
@@ -33,6 +37,16 @@ export async function POST(request: Request) {
       );
     }
 
+    // bcrypt memiliki batas input password 72 byte.
+    // Validasi dilakukan berdasarkan byte UTF-8, bukan jumlah karakter.
+    if (Buffer.byteLength(password, "utf8") > 72) {
+      return NextResponse.json(
+        { message: "Password maksimal 72 byte (UTF-8)." },
+        { status: 400 },
+      );
+    }
+
+    // INI BAGIAN MEMERIKSA EMAIL YANG SUDAH TERDAFTAR
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -44,8 +58,10 @@ export async function POST(request: Request) {
       );
     }
 
+    // INI BAGIAN MEMBUAT HASH PASSWORD
     const passwordHash = await hashPassword(password);
 
+    // INI BAGIAN MENYIMPAN USER BARU
     const user = await prisma.user.create({
       data: {
         name,
@@ -55,6 +71,7 @@ export async function POST(request: Request) {
       },
     });
 
+    // INI BAGIAN MEMBUAT SESSION OTOMATIS
     await createSession(user.id);
 
     return NextResponse.json(

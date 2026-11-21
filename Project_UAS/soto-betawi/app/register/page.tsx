@@ -39,9 +39,17 @@ export default function RegisterPage() {
       return;
     }
 
-    // INI BAGIAN VALIDASI PASSWORD
+    // INI BAGIAN VALIDASI PANJANG PASSWORD
     if (password.length < 8) {
       setError("Password minimal 8 karakter.");
+      return;
+    }
+
+    // INI BAGIAN VALIDASI BATAS 72 BYTE UTF-8
+    const passwordBytes = new TextEncoder().encode(password).length;
+
+    if (passwordBytes > 72) {
+      setError("Password maksimal 72 byte (UTF-8).");
       return;
     }
 
@@ -144,6 +152,10 @@ export default function RegisterPage() {
             onChange={setPassword}
             autoComplete="new-password"
           />
+
+          <small>
+            Password minimal 8 karakter dan maksimal 72 byte (UTF-8).
+          </small>
 
           {/* INI BAGIAN KONFIRMASI PASSWORD */}
           <PasswordField
