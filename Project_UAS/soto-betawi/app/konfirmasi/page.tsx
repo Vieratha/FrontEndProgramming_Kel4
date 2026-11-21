@@ -6,7 +6,7 @@ import PaymentProofForm, {
   type PaymentSummary,
 } from "@/app/components/PaymentProofForm";
 
-// INI BAGIAN TIPE DATA ITEM PESANAN
+// Data item dan pesanan dari API.
 type OrderItem = {
   id: number;
   menuId: number | null;
@@ -15,7 +15,6 @@ type OrderItem = {
   quantity: number;
 };
 
-// INI BAGIAN TIPE DATA PESANAN
 type Order = {
   id: string;
   orderNumber: string;
@@ -35,7 +34,7 @@ type Order = {
   payments: PaymentSummary[];
 };
 
-// INI BAGIAN LABEL STATUS PEMBAYARAN
+// Mengubah kode status pembayaran menjadi label.
 function getPaymentLabel(status: string) {
   const labels: Record<string, string> = {
     BELUM_DIBAYAR: "Belum Dibayar",
@@ -56,13 +55,12 @@ export default function KonfirmasiPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // INI BAGIAN MENGAMBIL PESANAN DARI DATABASE
+  // Mengambil detail pesanan berdasarkan nomor dari URL.
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchOrder = async () => {
       try {
-        // Ambil nomor pesanan dari URL.
         const orderNumber = new URLSearchParams(window.location.search).get(
           "order",
         );
@@ -71,7 +69,6 @@ export default function KonfirmasiPage() {
           throw new Error("Nomor pesanan tidak ditemukan.");
         }
 
-        // INI BAGIAN MEMINTA DETAIL PESANAN KEPADA API
         const response = await fetch(
           `/api/orders?order=${encodeURIComponent(orderNumber)}`,
           {
@@ -116,8 +113,7 @@ export default function KonfirmasiPage() {
     };
   }, []);
 
-  // INI BAGIAN MENYINKRONKAN STATUS PEMBAYARAN
-  // Semua bagian halaman menggunakan state pesanan yang sama.
+  // Sinkronkan status di halaman ini setelah pembayaran diperbarui.
   const handlePaymentUpdate = (payment: PaymentSummary) => {
     setPesanan((previous) => {
       if (!previous) {
@@ -137,7 +133,6 @@ export default function KonfirmasiPage() {
     });
   };
 
-  // INI BAGIAN FORMAT HARGA RUPIAH
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -146,7 +141,6 @@ export default function KonfirmasiPage() {
     }).format(angka);
   };
 
-  // INI BAGIAN FORMAT TANGGAL
   const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleString("id-ID", {
       timeZone: "Asia/Jakarta",
@@ -155,7 +149,6 @@ export default function KonfirmasiPage() {
     });
   };
 
-  // INI BAGIAN TAMPILAN LOADING
   if (loading) {
     return (
       <main className="konfirmasi-page">
@@ -164,7 +157,6 @@ export default function KonfirmasiPage() {
     );
   }
 
-  // INI BAGIAN TAMPILAN JIKA PESANAN TIDAK DITEMUKAN
   if (error || !pesanan) {
     return (
       <main className="konfirmasi-page">
@@ -186,7 +178,6 @@ export default function KonfirmasiPage() {
   return (
     <main className="konfirmasi-page">
       <section className="konfirmasi-card">
-        {/* INI BAGIAN ICON BERHASIL */}
         <div className="konfirmasi-icon">✓</div>
 
         <h1>Pesanan Berhasil Dicatat!</h1>
@@ -196,7 +187,7 @@ export default function KonfirmasiPage() {
           ke database Soto Betawi Jakarta.
         </p>
 
-        {/* INI BAGIAN INFORMASI PESANAN */}
+        {/* Informasi pesanan */}
         <div className="konfirmasi-info">
           <h2>Detail Pesanan</h2>
 
@@ -220,7 +211,6 @@ export default function KonfirmasiPage() {
             <strong>{pesanan.orderType}</strong>
           </div>
 
-          {/* INI BAGIAN NOMOR MEJA */}
           {pesanan.orderType === "Makan di Tempat" && pesanan.tableNumber && (
             <div className="konfirmasi-row">
               <span>Nomor Meja</span>
@@ -228,7 +218,6 @@ export default function KonfirmasiPage() {
             </div>
           )}
 
-          {/* INI BAGIAN INFORMASI TAMBAHAN */}
           {pesanan.phone && (
             <div className="konfirmasi-row">
               <span>Nomor Telepon</span>
@@ -241,13 +230,11 @@ export default function KonfirmasiPage() {
             <strong>{pesanan.paymentMethod || "Bayar di Kasir"}</strong>
           </div>
 
-          {/* INI BAGIAN STATUS PESANAN */}
           <div className="konfirmasi-row">
             <span>Status Pesanan</span>
             <strong>{pesanan.status}</strong>
           </div>
 
-          {/* INI BAGIAN STATUS PEMBAYARAN */}
           <div className="konfirmasi-row">
             <span>Status Pembayaran</span>
             <strong
@@ -263,7 +250,6 @@ export default function KonfirmasiPage() {
             </strong>
           </div>
 
-          {/* INI BAGIAN WAKTU PEMBAYARAN */}
           {pesanan.paidAt && (
             <div className="konfirmasi-row">
               <span>Waktu Pembayaran</span>
@@ -271,7 +257,6 @@ export default function KonfirmasiPage() {
             </div>
           )}
 
-          {/* INI BAGIAN CATATAN */}
           {pesanan.note && (
             <div className="konfirmasi-row">
               <span>Catatan</span>
@@ -279,7 +264,6 @@ export default function KonfirmasiPage() {
             </div>
           )}
 
-          {/* INI BAGIAN DAFTAR MENU */}
           <h2 className="konfirmasi-menu-title">Menu yang Dipesan</h2>
 
           <div className="konfirmasi-items">
@@ -295,14 +279,13 @@ export default function KonfirmasiPage() {
             ))}
           </div>
 
-          {/* INI BAGIAN TOTAL PEMBAYARAN */}
           <div className="konfirmasi-total">
             <span>Total Pembayaran</span>
             <strong>{formatRupiah(pesanan.total)}</strong>
           </div>
         </div>
 
-        {/* INI BAGIAN FORM DAN INFORMASI PEMBAYARAN */}
+        {/* Form pembayaran */}
         <PaymentProofForm
           orderNumber={pesanan.orderNumber}
           orderStatus={pesanan.status}
@@ -313,7 +296,7 @@ export default function KonfirmasiPage() {
           onPaymentUpdate={handlePaymentUpdate}
         />
 
-        {/* INI BAGIAN TOMBOL NAVIGASI */}
+        {/* Navigasi setelah konfirmasi */}
         <div className="konfirmasi-actions">
           <Link href="/" className="konfirmasi-button">
             Kembali ke Beranda

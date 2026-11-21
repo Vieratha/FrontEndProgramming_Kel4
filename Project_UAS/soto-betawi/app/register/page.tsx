@@ -9,43 +9,38 @@ import PasswordField from "../components/PasswordField";
 export default function RegisterPage() {
   const router = useRouter();
 
-  // INI BAGIAN DATA REGISTER
+  // Data formulir pendaftaran.
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // INI BAGIAN STATUS FORM
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // INI BAGIAN PROSES REGISTER
+  // Validasi dan proses pendaftaran.
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
     setSuccess("");
 
-    // INI BAGIAN VALIDASI NAMA
     if (!name.trim()) {
       setError("Nama lengkap wajib diisi.");
       return;
     }
 
-    // INI BAGIAN VALIDASI EMAIL
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError("Masukkan alamat email yang valid.");
       return;
     }
 
-    // INI BAGIAN VALIDASI PANJANG PASSWORD
     if (password.length < 8) {
       setError("Password minimal 8 karakter.");
       return;
     }
 
-    // INI BAGIAN VALIDASI BATAS 72 BYTE UTF-8
     const passwordBytes = new TextEncoder().encode(password).length;
 
     if (passwordBytes > 72) {
@@ -53,7 +48,6 @@ export default function RegisterPage() {
       return;
     }
 
-    // INI BAGIAN VALIDASI KONFIRMASI PASSWORD
     if (password !== confirmPassword) {
       setError("Konfirmasi password tidak sesuai.");
       return;
@@ -62,7 +56,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // INI BAGIAN MENGIRIM DATA REGISTER KE API
+      // Kirim data pendaftaran ke API.
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
@@ -83,7 +77,7 @@ export default function RegisterPage() {
 
       setSuccess("Registrasi berhasil! Mengalihkan...");
 
-      // INI BAGIAN MENGARAHKAN USER KE BERANDA
+      // Arahkan user ke beranda setelah registrasi berhasil.
       router.replace("/");
     } catch (error) {
       setError(
@@ -99,7 +93,6 @@ export default function RegisterPage() {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        {/* INI BAGIAN HEADER REGISTER */}
         <div className="auth-header">
           <h1>Buat Akun Baru</h1>
 
@@ -109,9 +102,8 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* INI BAGIAN FORM REGISTER */}
+        {/* Form pendaftaran */}
         <form className="auth-form" onSubmit={handleRegister} noValidate>
-          {/* INI BAGIAN INPUT NAMA */}
           <div className="form-group">
             <label htmlFor="name">Nama Lengkap</label>
 
@@ -127,7 +119,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* INI BAGIAN INPUT EMAIL */}
           <div className="form-group">
             <label htmlFor="email">Email</label>
 
@@ -143,7 +134,6 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* INI BAGIAN INPUT PASSWORD */}
           <PasswordField
             id="password"
             label="Password"
@@ -157,7 +147,6 @@ export default function RegisterPage() {
             Password minimal 8 karakter dan maksimal 72 byte (UTF-8).
           </small>
 
-          {/* INI BAGIAN KONFIRMASI PASSWORD */}
           <PasswordField
             id="confirmPassword"
             label="Konfirmasi Password"
@@ -167,32 +156,29 @@ export default function RegisterPage() {
             autoComplete="new-password"
           />
 
-          {/* INI BAGIAN PESAN ERROR */}
+          {/* Pesan hasil pendaftaran */}
           {error && (
             <p className="auth-error" role="alert">
               {error}
             </p>
           )}
 
-          {/* INI BAGIAN PESAN BERHASIL */}
           {success && (
             <p className="auth-success" role="status">
               {success}
             </p>
           )}
 
-          {/* INI BAGIAN TOMBOL REGISTER */}
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? "Mendaftarkan..." : "Daftar"}
           </button>
         </form>
 
-        {/* INI BAGIAN LINK LOGIN */}
+        {/* Navigasi akun */}
         <p className="auth-footer">
           Sudah punya akun? <Link href="/login">Masuk Sekarang</Link>
         </p>
 
-        {/* INI BAGIAN KEMBALI KE BERANDA */}
         <Link href="/" className="back-home">
           ← Kembali ke Beranda
         </Link>

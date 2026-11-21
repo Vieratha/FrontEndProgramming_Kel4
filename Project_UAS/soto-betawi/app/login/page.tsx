@@ -9,16 +9,15 @@ import PasswordField from "../components/PasswordField";
 export default function LoginPage() {
   const router = useRouter();
 
-  // INI BAGIAN DATA LOGIN
+  // Data formulir login.
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // INI BAGIAN STATUS FORM
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // INI BAGIAN PROSES LOGIN
+  // Validasi dan proses login.
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -30,7 +29,7 @@ export default function LoginPage() {
       return;
     }
 
-    // INI BAGIAN VALIDASI EMAIL
+    // Periksa format email sebelum mengirim permintaan.
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email.trim())) {
@@ -38,7 +37,6 @@ export default function LoginPage() {
       return;
     }
 
-    // INI BAGIAN VALIDASI PASSWORD
     if (password.length < 8) {
       setError("Password minimal 8 karakter.");
       return;
@@ -47,7 +45,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // INI BAGIAN MENGIRIM DATA LOGIN KE API
+      // Kirim data login ke API.
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
@@ -67,7 +65,7 @@ export default function LoginPage() {
 
       setSuccess("Login berhasil!");
 
-      // INI BAGIAN MENGARAHKAN USER BERDASARKAN ROLE
+      // Arahkan user sesuai role akun.
       const destination = result.user.role === "ADMIN" ? "/admin" : "/";
 
       router.replace(destination);
@@ -85,7 +83,7 @@ export default function LoginPage() {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        {/* INI BAGIAN HEADER LOGIN */}
+        \
         <div className="auth-header">
           <h1>Masuk ke Akun</h1>
 
@@ -94,10 +92,8 @@ export default function LoginPage() {
             mengelola restoran.
           </p>
         </div>
-
-        {/* INI BAGIAN FORM LOGIN */}
+        {/* Form login */}
         <form className="auth-form" onSubmit={handleLogin} noValidate>
-          {/* INI BAGIAN INPUT EMAIL */}
           <div className="form-group">
             <label htmlFor="email">Email</label>
 
@@ -113,7 +109,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* INI BAGIAN INPUT PASSWORD */}
           <PasswordField
             id="password"
             label="Password"
@@ -123,32 +118,27 @@ export default function LoginPage() {
             autoComplete="current-password"
           />
 
-          {/* INI BAGIAN PESAN ERROR */}
+          {/* Pesan hasil login */}
           {error && (
             <p className="auth-error" role="alert">
               {error}
             </p>
           )}
 
-          {/* INI BAGIAN PESAN BERHASIL */}
           {success && (
             <p className="auth-success" role="status">
               {success}
             </p>
           )}
 
-          {/* INI BAGIAN TOMBOL LOGIN */}
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? "Memproses..." : "Masuk"}
           </button>
         </form>
-
-        {/* INI BAGIAN LINK REGISTER */}
+        {/* Navigasi akun */}
         <p className="auth-footer">
           Belum punya akun? <Link href="/register">Daftar Sekarang</Link>
         </p>
-
-        {/* INI BAGIAN KEMBALI KE BERANDA */}
         <Link href="/" className="back-home">
           ← Kembali ke Beranda
         </Link>

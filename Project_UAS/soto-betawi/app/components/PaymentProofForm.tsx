@@ -5,7 +5,7 @@ import type { FormEvent } from "react";
 import Image from "next/image";
 import { PAYMENT_INFO } from "@/app/lib/payment-info";
 
-// INI BAGIAN TIPE DATA RINGKASAN PEMBAYARAN
+// Data pembayaran dari API.
 export type PaymentSummary = {
   id: string;
   method: string;
@@ -23,7 +23,7 @@ export type PaymentSummary = {
   createdAt: string;
 };
 
-// INI BAGIAN TIPE DATA PROPS FORM PEMBAYARAN
+// Props form pembayaran.
 type PaymentProofFormProps = {
   orderNumber: string;
   orderStatus: string;
@@ -34,7 +34,6 @@ type PaymentProofFormProps = {
   onPaymentUpdate: (payment: PaymentSummary) => void;
 };
 
-// INI BAGIAN FORMAT RUPIAH
 function formatRupiah(angka: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -43,7 +42,6 @@ function formatRupiah(angka: number) {
   }).format(angka);
 }
 
-// INI BAGIAN LABEL STATUS PEMBAYARAN
 function getPaymentLabel(status: string) {
   const labels: Record<string, string> = {
     BELUM_DIBAYAR: "Belum Dibayar",
@@ -59,7 +57,6 @@ function getPaymentLabel(status: string) {
   return labels[status] || status;
 }
 
-// INI BAGIAN FORMAT TANGGAL
 function formatTanggal(tanggal: string) {
   return new Date(tanggal).toLocaleString("id-ID", {
     timeZone: "Asia/Jakarta",
@@ -77,17 +74,14 @@ export default function PaymentProofForm({
   payments,
   onPaymentUpdate,
 }: PaymentProofFormProps) {
-  // STATUS PEMBAYARAN DIAMBIL DARI PROPS HALAMAN INDUK.
-  // Tidak ada state status pembayaran kedua di komponen ini.
+  // Status pembayaran mengikuti halaman konfirmasi.
   const currentStatus = paymentStatus;
   const latestPayment = payments[0] ?? null;
 
-  // INI BAGIAN DATA FORM
   const [payerName, setPayerName] = useState("");
   const [customerReference, setCustomerReference] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
 
-  // INI BAGIAN STATUS PENGIRIMAN BUKTI
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -138,13 +132,11 @@ export default function PaymentProofForm({
 
     if (submitting) return;
 
-    // INI BAGIAN VALIDASI STATUS PESANAN
     if (orderStatus === "Dibatalkan" || orderStatus === "Selesai") {
       setError("Pesanan ini tidak dapat menerima bukti pembayaran.");
       return;
     }
 
-    // INI BAGIAN VALIDASI KONFIGURASI PEMBAYARAN
     if (!paymentInfoReady) {
       setError(
         "Informasi pembayaran restoran belum dikonfigurasi. Hubungi administrator.",
@@ -152,13 +144,11 @@ export default function PaymentProofForm({
       return;
     }
 
-    // INI BAGIAN VALIDASI NAMA PENGIRIM
     if (payerName.trim().length < 3 || payerName.trim().length > 100) {
       setError("Nama pengirim harus berisi 3 sampai 100 karakter.");
       return;
     }
 
-    // INI BAGIAN VALIDASI FILE
     if (!proofFile) {
       setError("Pilih gambar bukti pembayaran terlebih dahulu.");
       return;
@@ -202,8 +192,6 @@ export default function PaymentProofForm({
         throw new Error("Respons pembayaran dari server tidak lengkap.");
       }
 
-      // INI BAGIAN MEMPERBARUI STATE HALAMAN INDUK
-      // Status Detail Pesanan dan Form Pembayaran langsung berubah bersama.
       onPaymentUpdate(result.payment as PaymentSummary);
 
       setSuccess(
@@ -235,14 +223,12 @@ export default function PaymentProofForm({
 
   return (
     <section className="payment-proof-card">
-      {/* INI BAGIAN HEADER PEMBAYARAN */}
       <div className="payment-proof-header">
         <h2>{isQris ? "Pembayaran QRIS" : "Pembayaran Transfer Bank"}</h2>
 
         <p>Nomor Pesanan: {orderNumber}</p>
       </div>
 
-      {/* INI BAGIAN TOTAL PEMBAYARAN */}
       <div className="payment-proof-total">
         <span>Total yang harus dibayar</span>
         <strong>{formatRupiah(total)}</strong>
@@ -317,7 +303,6 @@ export default function PaymentProofForm({
         </div>
       )}
 
-      {/* INI BAGIAN PERINGATAN KONFIGURASI */}
       {!paymentInfoReady && (
         <div className="payment-proof-warning">
           Informasi QRIS atau rekening belum dikonfigurasi oleh administrator.
@@ -325,7 +310,6 @@ export default function PaymentProofForm({
         </div>
       )}
 
-      {/* INI BAGIAN STATUS LUNAS */}
       {currentStatus === "LUNAS" && (
         <div className="payment-proof-success">
           Pembayaran telah diverifikasi oleh administrator. Terima kasih!
@@ -349,7 +333,6 @@ export default function PaymentProofForm({
         </div>
       )}
 
-      {/* INI BAGIAN ALASAN PENOLAKAN */}
       {currentStatus === "GAGAL" && latestPayment?.verificationNote && (
         <div className="payment-proof-rejected">
           <strong>Bukti sebelumnya ditolak.</strong>
@@ -366,7 +349,6 @@ export default function PaymentProofForm({
           <form className="payment-proof-form" onSubmit={handleSubmit}>
             <h3>Kirim Bukti Pembayaran</h3>
 
-            {/* INI BAGIAN NAMA PENGIRIM */}
             <div className="payment-proof-field">
               <label htmlFor="payerName">Nama Pengirim</label>
 
@@ -382,7 +364,6 @@ export default function PaymentProofForm({
               />
             </div>
 
-            {/* INI BAGIAN REFERENSI TRANSAKSI */}
             <div className="payment-proof-field">
               <label htmlFor="customerReference">
                 Nomor Referensi Transaksi
@@ -424,21 +405,18 @@ export default function PaymentProofForm({
               )}
             </div>
 
-            {/* INI BAGIAN PESAN ERROR */}
             {error && (
               <p className="payment-proof-error" role="alert">
                 {error}
               </p>
             )}
 
-            {/* INI BAGIAN PESAN BERHASIL */}
             {success && (
               <p className="payment-proof-success" role="status">
                 {success}
               </p>
             )}
 
-            {/* INI BAGIAN TOMBOL KIRIM BUKTI */}
             <button
               type="submit"
               className="payment-proof-submit"

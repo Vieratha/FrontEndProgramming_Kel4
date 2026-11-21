@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { ChangeEvent } from "react";
 
-// INI BAGIAN TIPE DATA PASSWORD FIELD
+// Props untuk komponen input password.
 type PasswordFieldProps = {
   id: string;
   label: string;
@@ -14,7 +14,6 @@ type PasswordFieldProps = {
   required?: boolean;
 };
 
-// INI BAGIAN KOMPONEN INPUT PASSWORD
 export default function PasswordField({
   id,
   label,
@@ -24,10 +23,9 @@ export default function PasswordField({
   autoComplete,
   required = true,
 }: PasswordFieldProps) {
-  // INI BAGIAN STATUS VISIBILITAS PASSWORD
+  // Mengatur apakah password ditampilkan atau disembunyikan.
   const [showPassword, setShowPassword] = useState(false);
 
-  // INI BAGIAN MENGUBAH NILAI PASSWORD
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     onChange(event.target.value);
   };
@@ -49,7 +47,7 @@ export default function PasswordField({
           required={required}
         />
 
-        {/* INI BAGIAN TOMBOL LIHAT PASSWORD */}
+        {/* Tombol untuk mengubah visibilitas password */}
         <button
           type="button"
           className="password-toggle"
@@ -59,7 +57,6 @@ export default function PasswordField({
           title={showPassword ? "Sembunyikan password" : "Lihat password"}
         >
           {showPassword ? (
-            /* INI BAGIAN ICON MATA TERTUTUP */
             <svg
               viewBox="0 0 24 24"
               width="21"
@@ -77,7 +74,6 @@ export default function PasswordField({
               <path d="M6.2 6.2C3.9 7.8 2.5 12 2.5 12s4 7 9.5 7a10.8 10.8 0 0 0 4-.8" />
             </svg>
           ) : (
-            /* INI BAGIAN ICON MATA TERBUKA */
             <svg
               viewBox="0 0 24 24"
               width="21"

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// INI BAGIAN TIPE DATA USER
+// Data user yang ditampilkan pada menu profil.
 type ProfileUser = {
   id: number;
   name: string;
@@ -12,24 +12,19 @@ type ProfileUser = {
   role: string;
 };
 
-// INI BAGIAN PROPS CUSTOMER PROFILE
 type CustomerProfileProps = {
   user: ProfileUser | null;
 };
 
 export default function CustomerProfile({ user }: CustomerProfileProps) {
   const router = useRouter();
-
   const profileRef = useRef<HTMLDivElement>(null);
 
-  // INI BAGIAN STATUS DROPDOWN PROFILE
   const [isOpen, setIsOpen] = useState(false);
-
-  // INI BAGIAN STATUS LOGOUT
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // INI BAGIAN MEMBUAT INISIAL NAMA USER
+  // Membuat inisial nama untuk avatar.
   const initials =
     user?.name
       .trim()
@@ -39,10 +34,9 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
       .join("")
       .toUpperCase() || "U";
 
-  // INI BAGIAN MEMERIKSA ROLE USER
   const isAdmin = user?.role === "ADMIN";
 
-  // INI BAGIAN MENUTUP DROPDOWN KETIKA KLIK DI LUAR
+  // Tutup dropdown saat klik di luar atau menekan Escape.
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (
@@ -68,7 +62,7 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
     };
   }, []);
 
-  // INI BAGIAN PROSES LOGOUT
+  // Proses logout dan kembali ke beranda.
   const handleLogout = async () => {
     if (loading) return;
 
@@ -88,7 +82,6 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
 
       setIsOpen(false);
 
-      // Arahkan kembali ke beranda setelah session dihapus.
       router.replace("/");
       router.refresh();
     } catch (err) {
@@ -100,7 +93,7 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
     }
   };
 
-  // INI BAGIAN TAMPILAN GUEST
+  // Tampilan untuk user yang belum login.
   if (!user) {
     return (
       <div className="customer-profile">
@@ -119,7 +112,7 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
 
   return (
     <div className="customer-profile" ref={profileRef}>
-      {/* INI BAGIAN TOMBOL PROFILE */}
+      {/* Tombol profil */}
       <button
         type="button"
         className="customer-profile-trigger"
@@ -143,7 +136,7 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
         </span>
       </button>
 
-      {/* INI BAGIAN DROPDOWN PROFILE */}
+      {/* Menu dropdown profil */}
       {isOpen && (
         <div className="customer-profile-dropdown">
           <div className="customer-profile-info">
@@ -153,7 +146,7 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
             <small>{isAdmin ? "Administrator" : "Customer"}</small>
           </div>
 
-          {/* NAVIGASI BERDASARKAN ROLE */}
+          {/* Navigasi ditampilkan sesuai role user. */}
           {isAdmin ? (
             <Link
               href="/admin"
@@ -226,7 +219,6 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
             </>
           )}
 
-          {/* INI BAGIAN TOMBOL LOGOUT */}
           <button
             type="button"
             className="customer-profile-logout"
@@ -237,7 +229,6 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
             {loading ? "Keluar..." : "Logout"}
           </button>
 
-          {/* INI BAGIAN PESAN ERROR LOGOUT */}
           {error && (
             <p className="customer-profile-error" role="alert">
               {error}

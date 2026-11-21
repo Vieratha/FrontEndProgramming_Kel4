@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
-// INI BAGIAN TIPE DATA LOKASI CUSTOMER
+// Data lokasi yang ditampilkan kepada customer.
 type LocationItem = {
   id: number;
   name: string;
@@ -16,13 +16,12 @@ type LocationItem = {
   sortOrder: number;
 };
 
-// INI BAGIAN KOMPONEN LOKASI CUSTOMER
 export default function Location() {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // INI BAGIAN MENGAMBIL LOKASI AKTIF DARI DATABASE
+  // Mengambil daftar lokasi aktif dari database.
   useEffect(() => {
     let ignore = false;
 
@@ -63,7 +62,7 @@ export default function Location() {
     };
   }, []);
 
-  // INI BAGIAN MEMBUAT LINK GOOGLE MAPS
+  // Membuat link Google Maps jika lokasi belum memiliki URL khusus.
   const getMapUrl = (location: LocationItem) => {
     if (location.mapUrl) {
       return location.mapUrl;
@@ -81,7 +80,6 @@ export default function Location() {
   return (
     <section className="location-section" id="lokasi">
       <div className="location-container">
-        {/* INI BAGIAN HEADER LOKASI */}
         <div className="location-heading">
           <span className="location-badge">Kunjungi Kami</span>
 
@@ -93,12 +91,10 @@ export default function Location() {
           </p>
         </div>
 
-        {/* INI BAGIAN STATUS PEMUATAN */}
         {loading && (
           <div className="location-message">Memuat informasi lokasi...</div>
         )}
 
-        {/* INI BAGIAN PESAN ERROR */}
         {!loading && error && (
           <div className="location-message">
             Informasi lokasi belum dapat dimuat. Silakan coba beberapa saat
@@ -106,7 +102,6 @@ export default function Location() {
           </div>
         )}
 
-        {/* INI BAGIAN JIKA BELUM ADA LOKASI AKTIF */}
         {!loading && !error && locations.length === 0 && (
           <div className="location-message">
             Informasi cabang sedang diperbarui. Silakan kunjungi kembali halaman
@@ -114,12 +109,11 @@ export default function Location() {
           </div>
         )}
 
-        {/* INI BAGIAN DAFTAR CABANG RESTORAN */}
+        {/* Daftar cabang restoran */}
         {!loading && !error && locations.length > 0 && (
           <div className="location-grid">
             {locations.map((location) => (
               <article key={location.id} className="location-card">
-                {/* INI BAGIAN GAMBAR PETA */}
                 <div className="location-image-wrap">
                   <Image
                     src={location.imagePath}
@@ -131,27 +125,23 @@ export default function Location() {
                   />
                 </div>
 
-                {/* INI BAGIAN INFORMASI CABANG */}
                 <div className="location-info">
                   <span className="location-city">{location.city}</span>
 
                   <h3>{location.name}</h3>
 
-                  {/* INI BAGIAN ALAMAT */}
                   <div className="location-detail">
                     <span className="location-detail-icon">📍</span>
 
                     <p>{location.address}</p>
                   </div>
 
-                  {/* INI BAGIAN JAM OPERASIONAL */}
                   <div className="location-detail">
                     <span className="location-detail-icon">◷</span>
 
                     <p>{location.openingHours}</p>
                   </div>
 
-                  {/* INI BAGIAN NOMOR TELEPON */}
                   {location.phone && (
                     <div className="location-detail">
                       <span className="location-detail-icon">☎</span>
@@ -160,7 +150,6 @@ export default function Location() {
                     </div>
                   )}
 
-                  {/* INI BAGIAN TOMBOL GOOGLE MAPS */}
                   <a
                     href={getMapUrl(location)}
                     target="_blank"
