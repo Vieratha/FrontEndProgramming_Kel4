@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const navigationItems = [
   { id: "home", label: "Home" },
@@ -12,34 +12,62 @@ const navigationItems = [
 export default function MainNavigation() {
   const [activeSection, setActiveSection] = useState("home");
 
-  // MEMANTAU BAGIAN HALAMAN YANG SEDANG DILIHAT
-  useEffect(() => {
-    const sections = navigationItems
-      .map((item) => document.getElementById(item.id))
-      .filter((section): section is HTMLElement => section !== null);
+  // MEMERIKSA BAGIAN HALAMAN YANG SEDANG DILIHAT
+  const updateActiveSection = useCallback(() => {
+    const activationPosition = window.scrollY + 130;
+    let currentSection = "home";
 
-    if (sections.length === 0) return;
+    for (const item of navigationItems) {
+      const section = document.getElementById(item.id);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleSections = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (!section) continue;
 
-        if (visibleSections.length > 0) {
-          setActiveSection(visibleSections[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-20% 0px -60% 0px",
-        threshold: [0, 0.1, 0.25, 0.5],
-      },
-    );
+      const sectionTop = section.getBoundingClientRect().top + window.scrollY;
 
-    sections.forEach((section) => observer.observe(section));
+      if (activationPosition >= sectionTop) {
+        currentSection = item.id;
+      } else {
+        break;
+      }
+    }
 
-    return () => observer.disconnect();
+    setActiveSection(currentSection);
   }, []);
+
+  // MEMANTAU SCROLL DAN PERUBAHAN UKURAN LAYAR
+  useEffect(() => {
+    let animationFrame = 0;
+
+    const handleScroll = () => {
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+
+      animationFrame = window.requestAnimationFrame(() => {
+        updateActiveSection();
+      });
+    };
+
+    // MEMPERBARUI STATUS AKTIF SETELAH BROWSER SIAP
+    animationFrame = window.requestAnimationFrame(() => {
+      updateActiveSection();
+    });
+
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+
+    window.addEventListener("resize", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [updateActiveSection]);
 
   return (
     <nav className="main-nav" aria-label="Navigasi utama">
