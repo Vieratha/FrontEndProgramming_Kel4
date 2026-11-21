@@ -8299,3 +8299,358 @@ textarea {
     padding: 20px;
   }
 }
+
+/* =========================================
+   T5 - REDESIGN DASHBOARD ADMIN
+========================================= */
+
+/* JUDUL BAGIAN DASHBOARD */
+
+.admin-dashboard-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 29px 0 15px;
+}
+
+.admin-dashboard-section-heading > div > p {
+  margin-bottom: 5px;
+  color: #a1846f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.admin-dashboard-section-heading h2 {
+  color: #30251f;
+  font-size: 19px;
+  font-weight: 750;
+}
+
+/* KARTU STATISTIK UTAMA */
+
+.admin-dashboard-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.admin-dashboard-stat-card {
+  min-height: 145px;
+  padding: 21px;
+  border-radius: 13px;
+  box-shadow: 0 4px 15px rgba(76, 48, 29, 0.035);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-dashboard-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: #d8c2ae;
+  box-shadow: 0 8px 20px rgba(76, 48, 29, 0.07);
+}
+
+.admin-stat-info p {
+  margin-bottom: 9px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.admin-stat-info h2 {
+  font-size: clamp(19px, 1.8vw, 27px);
+}
+
+.admin-stat-info small {
+  display: block;
+  margin-top: 8px;
+  color: #9a8a7e;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.admin-stat-icon {
+  display: flex;
+  width: 45px;
+  height: 45px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: #f5ebe1;
+  color: #85451f;
+}
+
+/* PANEL PERLU PERHATIAN */
+
+.admin-dashboard-attention {
+  margin: 24px 0 30px;
+  padding: 23px;
+  border: 1px solid #e8e1da;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(76, 48, 29, 0.035);
+}
+
+.admin-attention-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.admin-attention-heading > div > p {
+  margin-bottom: 5px;
+  color: #a1846f;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.admin-attention-heading h2 {
+  margin-bottom: 5px;
+  color: #30251f;
+  font-size: 19px;
+}
+
+.admin-attention-heading > div > span {
+  color: #8d837a;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.admin-attention-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.admin-attention-item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 13px;
+  padding: 16px;
+  border: 1px solid #eee5dc;
+  border-radius: 10px;
+  background: #fffdfa;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.admin-attention-item:hover {
+  border-color: #d9bfa8;
+  background: #fff9f3;
+}
+
+.admin-attention-icon {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.admin-attention-icon.warning {
+  background: #fff3d7;
+  color: #a97916;
+}
+
+.admin-attention-icon.neutral {
+  background: #f3e9df;
+  color: #85451f;
+}
+
+.admin-attention-info {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-attention-info small {
+  color: #8d837a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.admin-attention-info strong {
+  color: #30251f;
+  font-size: 21px;
+}
+
+.admin-attention-info > span {
+  color: #8d837a;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.admin-attention-arrow {
+  flex-shrink: 0;
+  color: #a1846f;
+  font-size: 19px;
+}
+
+/* RINGKASAN MENU DAN PELANGGAN */
+
+.admin-dashboard-secondary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 28px;
+}
+
+.admin-secondary-stat-card {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 19px;
+  border: 1px solid #e8e1da;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(76, 48, 29, 0.03);
+}
+
+.admin-secondary-stat-icon {
+  display: flex;
+  width: 43px;
+  height: 43px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #f5ebe1;
+  color: #85451f;
+}
+
+.admin-secondary-stat-card > div {
+  min-width: 0;
+}
+
+.admin-secondary-stat-card p {
+  margin-bottom: 5px;
+  color: #8d837a;
+  font-size: 11px;
+}
+
+.admin-secondary-stat-card h3 {
+  margin-bottom: 5px;
+  color: #30251f;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.admin-secondary-stat-card small {
+  color: #9a8a7e;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* STATUS PEMBAYARAN DI TABEL PESANAN */
+
+.admin-payment-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 9px;
+  border-radius: 20px;
+  background: #f1ece6;
+  color: #756456;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.admin-payment-status.lunas {
+  background: #e7f3e9;
+  color: #35764a;
+}
+
+.admin-payment-status.menunggu-verifikasi {
+  background: #fff3d7;
+  color: #9a701c;
+}
+
+.admin-payment-status.menunggu-pembayaran,
+.admin-payment-status.belum-dibayar {
+  background: #f3e9df;
+  color: #85451f;
+}
+
+.admin-payment-status.gagal {
+  background: #fff0ed;
+  color: #b04c40;
+}
+
+.admin-payment-status.dibatalkan {
+  background: #f0eeee;
+  color: #77716e;
+}
+
+/* RESPONSIVE TABLET */
+
+@media (max-width: 1200px) {
+  .admin-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .admin-dashboard-secondary-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* RESPONSIVE MOBILE */
+
+@media (max-width: 768px) {
+  .admin-dashboard-attention {
+    padding: 18px;
+  }
+
+  .admin-attention-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-secondary-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-dashboard-section-heading {
+    margin-top: 24px;
+  }
+
+  .admin-dashboard-stats {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .admin-dashboard-stat-card {
+    min-height: 112px;
+    padding: 18px;
+  }
+
+  .admin-dashboard-secondary-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-attention-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-dashboard-header h1 {
+    font-size: 24px;
+  }
+}

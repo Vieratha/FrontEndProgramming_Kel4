@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // INI BAGIAN MENGAMBIL STATISTIK DASHBOARD ADMIN
 export async function GET() {
   try {
-    // INI BAGIAN MEMERIKSA HAK AKSES ADMIN
+    // MEMERIKSA HAK AKSES ADMIN
     const user = await getCurrentUser();
 
     if (!user) {
@@ -25,7 +25,7 @@ export async function GET() {
       );
     }
 
-    // INI BAGIAN MENENTUKAN TANGGAL HARI INI DI JAKARTA
+    // MENENTUKAN TANGGAL HARI INI DI JAKARTA
     const jakartaDate = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Jakarta",
       year: "numeric",
@@ -39,7 +39,7 @@ export async function GET() {
 
     const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
 
-    // INI BAGIAN MENGAMBIL DATA STATISTIK DARI DATABASE
+    // MENGAMBIL DATA STATISTIK DARI DATABASE
     const [
       totalPesanan,
       pesananHariIni,
@@ -50,11 +50,14 @@ export async function GET() {
       totalItemTerjual,
       penjualanMenu,
       pembayaranBelumLunas,
+      pesananMenungguKonfirmasi,
+      pembayaranMenungguVerifikasi,
+      totalCustomer,
     ] = await Promise.all([
-      // INI BAGIAN MENGHITUNG SEMUA PESANAN
+      // MENGHITUNG SELURUH PESANAN
       prisma.order.count(),
 
-      // INI BAGIAN MENGHITUNG PESANAN HARI INI
+      // MENGHITUNG PESANAN HARI INI
       prisma.order.count({
         where: {
           createdAt: {
@@ -64,8 +67,7 @@ export async function GET() {
         },
       }),
 
-      // INI BAGIAN MENGHITUNG PENDAPATAN YANG SUDAH DITERIMA
-      // Pendapatan dihitung berdasarkan pembayaran yang sudah Lunas.
+      // MENGHITUNG PENDAPATAN DARI PEMBAYARAN LUNAS
       prisma.order.aggregate({
         where: {
           paymentStatus: "LUNAS",
@@ -75,17 +77,17 @@ export async function GET() {
         },
       }),
 
-      // INI BAGIAN MENGHITUNG TOTAL MENU
+      // MENGHITUNG TOTAL MENU TERDAFTAR
       prisma.menu.count(),
 
-      // INI BAGIAN MENGHITUNG MENU YANG TERSEDIA
+      // MENGHITUNG MENU YANG TERSEDIA
       prisma.menu.count({
         where: {
           status: "Tersedia",
         },
       }),
 
-      // INI BAGIAN MENGAMBIL LIMA PESANAN TERBARU
+      // MENGAMBIL LIMA PESANAN TERBARU
       prisma.order.findMany({
         orderBy: {
           createdAt: "desc",
@@ -102,8 +104,8 @@ export async function GET() {
         },
       }),
 
-      // INI BAGIAN MENGHITUNG SELURUH ITEM TERJUAL
-      // Item dihitung jika pesanan selesai dan pembayarannya Lunas.
+      // MENGHITUNG ITEM TERJUAL
+      // Hanya pesanan selesai dengan pembayaran lunas.
       prisma.orderItem.aggregate({
         where: {
           order: {
@@ -118,7 +120,7 @@ export async function GET() {
         },
       }),
 
-      // INI BAGIAN MENGAMBIL LIMA MENU TERLARIS
+      // MENGAMBIL LIMA MENU TERLARIS
       prisma.orderItem.groupBy({
         by: ["menuName"],
         where: {
@@ -140,18 +142,49 @@ export async function GET() {
         take: 5,
       }),
 
-      // INI BAGIAN MENGHITUNG PEMBAYARAN YANG BELUM LUNAS
+      // MENGHITUNG PESANAN YANG BELUM LUNAS
       prisma.order.count({
         where: {
-          paymentStatus: "BELUM_DIBAYAR",
+          paymentStatus: {
+            in: [
+              "BELUM_DIBAYAR",
+              "MENUNGGU_PEMBAYARAN",
+              "MENUNGGU_VERIFIKASI",
+              "GAGAL",
+            ],
+          },
           status: {
             not: "Dibatalkan",
           },
         },
       }),
+
+      // MENGHITUNG PESANAN MENUNGGU KONFIRMASI
+      prisma.order.count({
+        where: {
+          status: "Menunggu Konfirmasi",
+        },
+      }),
+
+      // MENGHITUNG PEMBAYARAN MENUNGGU VERIFIKASI
+      prisma.order.count({
+        where: {
+          paymentStatus: "MENUNGGU_VERIFIKASI",
+          status: {
+            notIn: ["Dibatalkan", "Selesai"],
+          },
+        },
+      }),
+
+      // MENGHITUNG TOTAL CUSTOMER TERDAFTAR
+      prisma.user.count({
+        where: {
+          role: "CUSTOMER",
+        },
+      }),
     ]);
 
-    // INI BAGIAN MENGEMBALIKAN DATA DASHBOARD
+    // MENGEMBALIKAN DATA DASHBOARD
     return NextResponse.json({
       statistics: {
         totalPesanan,
@@ -161,11 +194,14 @@ export async function GET() {
         menuTersedia,
         totalMenuTerjual: totalItemTerjual._sum.quantity ?? 0,
         pembayaranBelumLunas,
+        pesananMenungguKonfirmasi,
+        pembayaranMenungguVerifikasi,
+        totalCustomer,
       },
 
       pesananTerbaru,
 
-      // INI BAGIAN DATA MENU TERLARIS
+      // DATA MENU TERLARIS
       menuTerlaris: penjualanMenu.map((item) => ({
         name: item.menuName,
         quantity: item._sum.quantity ?? 0,
