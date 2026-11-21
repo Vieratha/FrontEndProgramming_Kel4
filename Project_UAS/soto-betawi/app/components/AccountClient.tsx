@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import PasswordField from "./PasswordField";
 
 // TIPE DATA USER
 type AccountUser = {
@@ -25,21 +23,10 @@ type FavoriteMenu = {
 };
 
 export default function AccountClient({ user }: { user: AccountUser }) {
-  // DATA FAVORIT
   const [favorites, setFavorites] = useState<FavoriteMenu[]>([]);
   const [favoritesLoading, setFavoritesLoading] = useState(true);
   const [favoritesError, setFavoritesError] = useState("");
   const [removingId, setRemovingId] = useState<number | null>(null);
-
-  // DATA PASSWORD
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  // STATUS FORM PASSWORD
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   // MEMBUAT INISIAL NAMA
   const initials =
@@ -129,63 +116,12 @@ export default function AccountClient({ user }: { user: AccountUser }) {
       setFavorites((previous) => previous.filter((menu) => menu.id !== menuId));
     } catch (error) {
       setFavoritesError(
-        error instanceof Error ? error.message : "Terjadi kesalahan.",
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat menghapus favorit.",
       );
     } finally {
       setRemovingId(null);
-    }
-  };
-
-  // PROSES GANTI PASSWORD
-  const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setPasswordError("");
-    setPasswordSuccess("");
-
-    if (newPassword.length < 8) {
-      setPasswordError("Password baru minimal 8 karakter.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError("Konfirmasi password tidak cocok.");
-      return;
-    }
-
-    setPasswordLoading(true);
-
-    try {
-      const response = await fetch("/api/auth/change-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Gagal mengganti password.");
-      }
-
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-
-      setPasswordSuccess(result.message);
-    } catch (error) {
-      setPasswordError(
-        error instanceof Error
-          ? error.message
-          : "Terjadi kesalahan saat mengganti password.",
-      );
-    } finally {
-      setPasswordLoading(false);
     }
   };
 
@@ -193,17 +129,17 @@ export default function AccountClient({ user }: { user: AccountUser }) {
     <main className="account-page">
       <div className="account-container">
         {/* HEADER HALAMAN */}
-        <div className="account-heading">
+        <header className="account-heading">
           <div>
             <p className="account-eyebrow">PUSAT AKUN</p>
             <h1>Akun Saya</h1>
-            <p>Kelola informasi akun dan menu favorit Anda.</p>
+            <p>Kelola akun dan menu pilihan Anda.</p>
           </div>
 
           <Link href="/" className="account-back-link">
             Kembali ke Beranda
           </Link>
-        </div>
+        </header>
 
         {/* INFORMASI PROFIL */}
         <section className="account-profile-card">
@@ -214,189 +150,192 @@ export default function AccountClient({ user }: { user: AccountUser }) {
             <h2>{user.name}</h2>
             <p>{user.email}</p>
           </div>
-
-          <div className="account-profile-actions">
-            <Link href="/riwayat">Riwayat Pesanan</Link>
-          </div>
         </section>
 
-        <div className="account-layout">
-          {/* BAGIAN MENU FAVORIT */}
-          <section className="account-card">
-            <div className="account-card-header">
-              <div>
-                <p>DAFTAR PILIHAN</p>
-                <h2>Menu Favorit</h2>
-              </div>
-
-              <span className="account-favorite-total">
-                {favorites.length} menu
-              </span>
+        {/* NAVIGASI PENGATURAN AKUN */}
+        <section className="account-shortcuts-section">
+          <div className="account-section-heading">
+            <div>
+              <p>PENGELOLAAN AKUN</p>
+              <h2>Pengaturan Akun</h2>
             </div>
+          </div>
 
-            {favoritesLoading ? (
-              <p className="account-message">Memuat menu favorit...</p>
-            ) : favoritesError ? (
-              <p className="account-alert error" role="alert">
-                {favoritesError}
-              </p>
-            ) : favorites.length === 0 ? (
-              <div className="account-empty">
+          <div className="account-shortcuts">
+            {/* KEAMANAN AKUN */}
+            <Link href="/akun/keamanan" className="account-shortcut-card">
+              <span className="account-shortcut-icon">
                 <svg
                   viewBox="0 0 24 24"
-                  width="42"
-                  height="42"
+                  width="23"
+                  height="23"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.6"
+                  strokeWidth="1.7"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   aria-hidden="true"
                 >
-                  <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+                  <rect x="4" y="10" width="16" height="11" rx="2" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                  <path d="M12 14v3" />
                 </svg>
+              </span>
 
-                <strong>Belum ada menu favorit</strong>
-                <p>
-                  Menu yang Anda tandai sebagai favorit akan muncul di sini.
-                </p>
-
-                <Link href="/#menu">Jelajahi Menu</Link>
-              </div>
-            ) : (
-              <div className="account-favorite-list">
-                {favorites.map((menu) => (
-                  <article className="account-favorite-item" key={menu.id}>
-                    <Image
-                      src={menu.image}
-                      alt={menu.name}
-                      width={112}
-                      height={100}
-                      unoptimized
-                      className="account-favorite-image"
-                    />
-
-                    <div className="account-favorite-info">
-                      <span>{menu.category}</span>
-                      <h3>{menu.name}</h3>
-                      <p>{menu.description}</p>
-                      <strong>{formatRupiah(menu.price)}</strong>
-
-                      {menu.status === "Habis" && (
-                        <small className="account-menu-unavailable">
-                          Saat ini tidak tersedia
-                        </small>
-                      )}
-                    </div>
-
-                    <button
-                      type="button"
-                      className="account-remove-favorite"
-                      onClick={() => removeFavorite(menu.id)}
-                      disabled={removingId !== null}
-                    >
-                      {removingId === menu.id ? "Menghapus..." : "Hapus"}
-                    </button>
-                  </article>
-                ))}
-              </div>
-            )}
-
-            {!favoritesLoading && favorites.length > 0 && (
-              <Link href="/#menu" className="account-browse-link">
-                Lihat semua menu
-              </Link>
-            )}
-          </section>
-
-          {/* BAGIAN KEAMANAN AKUN */}
-          <section className="account-card">
-            <div className="account-card-header">
-              <div>
-                <p>KEAMANAN</p>
-                <h2>Ganti Password</h2>
-              </div>
+              <span className="account-shortcut-info">
+                <strong>Keamanan Akun</strong>
+                <small>Ganti password dan jaga keamanan akun.</small>
+              </span>
 
               <svg
+                className="account-shortcut-arrow"
                 viewBox="0 0 24 24"
-                width="25"
-                height="25"
+                width="19"
+                height="19"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.7"
+                strokeWidth="1.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
               >
-                <rect x="4" y="10" width="16" height="11" rx="2" />
-                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-                <path d="M12 14v3" />
+                <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
+            </Link>
+
+            {/* RIWAYAT PESANAN */}
+            <Link href="/riwayat" className="account-shortcut-card">
+              <span className="account-shortcut-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="23"
+                  height="23"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M8 3h8l4 4v14H4V3h4Z" />
+                  <path d="M8 3v5h8V3M8 13h8M8 17h8" />
+                </svg>
+              </span>
+
+              <span className="account-shortcut-info">
+                <strong>Riwayat Pesanan</strong>
+                <small>Lihat pesanan dan status transaksi Anda.</small>
+              </span>
+
+              <svg
+                className="account-shortcut-arrow"
+                viewBox="0 0 24 24"
+                width="19"
+                height="19"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </Link>
+          </div>
+        </section>
+
+        {/* MENU FAVORIT */}
+        <section className="account-card account-favorites-card">
+          <div className="account-card-header">
+            <div>
+              <p>DAFTAR PILIHAN</p>
+              <h2>Menu Favorit</h2>
+              <span className="account-favorite-subtitle">
+                Menu yang Anda simpan untuk dipesan kembali.
+              </span>
             </div>
 
-            <p className="account-password-description">
-              Gunakan password yang kuat dan jangan membagikannya kepada orang
-              lain.
+            <span className="account-favorite-total">
+              {favorites.length} menu
+            </span>
+          </div>
+
+          {favoritesLoading ? (
+            <p className="account-message">Memuat menu favorit...</p>
+          ) : favoritesError ? (
+            <p className="account-alert error" role="alert">
+              {favoritesError}
             </p>
-
-            <form
-              className="account-password-form"
-              onSubmit={handlePasswordChange}
-            >
-              <PasswordField
-                id="account-current-password"
-                label="Password Saat Ini"
-                placeholder="Masukkan password saat ini"
-                value={currentPassword}
-                onChange={setCurrentPassword}
-                autoComplete="current-password"
-              />
-
-              <PasswordField
-                id="account-new-password"
-                label="Password Baru"
-                placeholder="Minimal 8 karakter"
-                value={newPassword}
-                onChange={setNewPassword}
-                autoComplete="new-password"
-              />
-
-              <PasswordField
-                id="account-confirm-password"
-                label="Konfirmasi Password Baru"
-                placeholder="Ulangi password baru"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                autoComplete="new-password"
-              />
-
-              {passwordError && (
-                <p className="account-alert error" role="alert">
-                  {passwordError}
-                </p>
-              )}
-
-              {passwordSuccess && (
-                <p className="account-alert success" role="status">
-                  {passwordSuccess}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                className="account-password-submit"
-                disabled={passwordLoading}
+          ) : favorites.length === 0 ? (
+            <div className="account-empty">
+              <svg
+                viewBox="0 0 24 24"
+                width="44"
+                height="44"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                {passwordLoading ? "Menyimpan..." : "Simpan Password Baru"}
-              </button>
-            </form>
-          </section>
-        </div>
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+              </svg>
 
-        <div className="account-bottom-links">
-          <Link href="/riwayat">Lihat Riwayat Pesanan</Link>
-          <Link href="/">Kembali ke Beranda</Link>
-        </div>
+              <strong>Belum ada menu favorit</strong>
+
+              <p>
+                Tandai menu yang Anda sukai agar lebih mudah ditemukan kembali.
+              </p>
+
+              <Link href="/#menu">Jelajahi Menu</Link>
+            </div>
+          ) : (
+            <div className="account-favorite-list">
+              {favorites.map((menu) => (
+                <article className="account-favorite-item" key={menu.id}>
+                  <Image
+                    src={menu.image}
+                    alt={menu.name}
+                    width={120}
+                    height={105}
+                    unoptimized
+                    className="account-favorite-image"
+                  />
+
+                  <div className="account-favorite-info">
+                    <span>{menu.category}</span>
+                    <h3>{menu.name}</h3>
+                    <p>{menu.description}</p>
+                    <strong>{formatRupiah(menu.price)}</strong>
+
+                    {menu.status === "Habis" && (
+                      <small className="account-menu-unavailable">
+                        Saat ini tidak tersedia
+                      </small>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="account-remove-favorite"
+                    onClick={() => removeFavorite(menu.id)}
+                    disabled={removingId !== null}
+                  >
+                    {removingId === menu.id ? "Menghapus..." : "Hapus"}
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {!favoritesLoading && !favoritesError && favorites.length > 0 && (
+            <Link href="/#menu" className="account-browse-link">
+              Lihat semua menu
+            </Link>
+          )}
+        </section>
       </div>
     </main>
   );

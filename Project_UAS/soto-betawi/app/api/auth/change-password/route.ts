@@ -119,8 +119,7 @@ export async function POST(request: Request) {
     await deleteOtherSessions(user.id);
 
     return NextResponse.json({
-      message:
-        "Password berhasil diperbarui. Session perangkat lain telah dikeluarkan.",
+      message: "Password berhasil diperbarui.",
     });
   } catch (error) {
     console.error("Gagal mengganti password:", error);
