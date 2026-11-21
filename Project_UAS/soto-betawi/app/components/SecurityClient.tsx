@@ -221,12 +221,6 @@ export default function SecurityClient({ user }: { user: SecurityUser }) {
             </button>
           </form>
         </section>
-
-        {/* CATATAN KEAMANAN */}
-        <p className="security-footer-note">
-          Setelah password berhasil diperbarui, sesi login di perangkat lain
-          akan diakhiri. Perangkat yang sedang digunakan tetap login.
-        </p>
       </div>
     </main>
   );
