@@ -9115,3 +9115,284 @@ textarea {
     transition: none;
   }
 }
+
+/* =========================================
+   FOOTER - SOTO BETAWI JAKARTA
+========================================= */
+
+.sb-footer {
+  width: 100%;
+  padding: 72px 0 0;
+  background: #2e211a;
+  color: #fffaf4;
+}
+
+.sb-footer-container {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+/* BAGIAN UTAMA */
+
+.sb-footer-main {
+  display: grid;
+  grid-template-columns: 1.4fr 0.7fr 1.1fr;
+  gap: clamp(32px, 5vw, 75px);
+  padding-bottom: 52px;
+}
+
+/* IDENTITAS RESTORAN */
+
+.sb-footer-brand-column {
+  min-width: 0;
+}
+
+.sb-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #fffaf4;
+  text-decoration: none;
+}
+
+.sb-footer-logo {
+  display: block;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.sb-footer-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
+}
+
+.sb-footer-brand-accent {
+  color: #d4a747;
+}
+
+.sb-footer-description {
+  max-width: 370px;
+  margin: 20px 0 0;
+  color: #d5c8bd;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+/* JUDUL KOLOM */
+
+.sb-footer-section-title {
+  margin: 8px 0 22px;
+  color: #e0b75e;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+/* NAVIGASI */
+
+.sb-footer-link-column {
+  min-width: 0;
+}
+
+.sb-footer-link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sb-footer-link-list a {
+  display: inline-block;
+  color: #eee5dc;
+  font-size: 14px;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.sb-footer-link-list a:hover {
+  color: #e0b75e;
+  transform: translateX(3px);
+}
+
+/* AJAKAN CUSTOMER */
+
+.sb-footer-visit-column {
+  min-width: 0;
+}
+
+.sb-footer-visit-description {
+  max-width: 330px;
+  margin: 0 0 22px;
+  color: #d5c8bd;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* TOMBOL FOOTER */
+
+.sb-footer-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.sb-footer-primary-button,
+.sb-footer-secondary-button {
+  display: inline-flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.sb-footer-primary-button {
+  border: 1px solid #d4a747;
+  background: #d4a747;
+  color: #2e211a;
+}
+
+.sb-footer-primary-button:hover {
+  border-color: #e7c36d;
+  background: #e7c36d;
+}
+
+.sb-footer-secondary-button {
+  border: 1px solid rgba(255, 250, 244, 0.35);
+  background: transparent;
+  color: #fffaf4;
+}
+
+.sb-footer-secondary-button:hover {
+  border-color: #d4a747;
+  color: #e0b75e;
+}
+
+/* COPYRIGHT */
+
+.sb-footer-bottom {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid rgba(255, 250, 244, 0.13);
+  color: #c7b7aa;
+  font-size: 12px;
+}
+
+.sb-footer-bottom p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.sb-footer-back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #e0b75e;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.sb-footer-back-to-top:hover {
+  color: #fff0c5;
+}
+
+/* AKSESIBILITAS */
+
+.sb-footer a:focus-visible {
+  outline: 2px solid #e0b75e;
+  outline-offset: 4px;
+}
+
+/* RESPONSIVE TABLET */
+
+@media (max-width: 900px) {
+  .sb-footer-main {
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 42px;
+  }
+
+  .sb-footer-visit-column {
+    grid-column: 1 / -1;
+  }
+
+  .sb-footer-visit-description {
+    max-width: 500px;
+  }
+}
+
+/* RESPONSIVE MOBILE */
+
+@media (max-width: 600px) {
+  .sb-footer {
+    padding-top: 52px;
+  }
+
+  .sb-footer-container {
+    width: min(100% - 36px, 480px);
+  }
+
+  .sb-footer-main {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding-bottom: 38px;
+  }
+
+  .sb-footer-visit-column {
+    grid-column: auto;
+  }
+
+  .sb-footer-wordmark {
+    font-size: 17px;
+  }
+
+  .sb-footer-description,
+  .sb-footer-visit-description {
+    font-size: 13px;
+  }
+
+  .sb-footer-bottom {
+    min-height: 88px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+    padding: 18px 0;
+  }
+}
+
+/* REDUCED MOTION */
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-footer-link-list a,
+  .sb-footer-primary-button,
+  .sb-footer-secondary-button,
+  .sb-footer-back-to-top {
+    transition: none;
+  }
+}

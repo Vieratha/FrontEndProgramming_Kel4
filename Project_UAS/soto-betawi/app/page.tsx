@@ -5,6 +5,7 @@ import FAQ from "./components/FAQ";
 import Location from "./components/Location";
 import Image from "next/image";
 import MainNavigation from "./components/MainNavigation";
+import Footer from "./components/Footer";
 
 export default async function Home() {
   // INI BAGIAN MENGAMBIL DATA USER DARI SESSION PRISMA
@@ -159,6 +160,9 @@ export default async function Home() {
         {/* INI BAGIAN FAQ */}
         <FAQ />
       </main>
+
+      {/* INI BAGIAN FOOTER CUSTOMER */}
+      <Footer />
     </>
   );
 }
