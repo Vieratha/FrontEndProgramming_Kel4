@@ -23,7 +23,7 @@ export type PaymentSummary = {
   createdAt: string;
 };
 
-// Props form pembayaran.
+// Props yang diterima oleh form pembayaran.
 type PaymentProofFormProps = {
   orderNumber: string;
   orderStatus: string;
@@ -86,16 +86,15 @@ export default function PaymentProofForm({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // INI BAGIAN FORMAT FILE YANG DIIZINKAN
+  // Format file yang dapat diunggah.
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
   const maxFileSize = 1 * 1024 * 1024;
 
-  // INI BAGIAN MEMERIKSA METODE PEMBAYARAN
   const isQris = paymentMethod === "QRIS";
   const isBankTransfer = paymentMethod === "Transfer Bank";
   const isOnlinePayment = isQris || isBankTransfer;
 
-  // INI BAGIAN MEMERIKSA KELENGKAPAN INSTRUKSI PEMBAYARAN
+  // Memastikan informasi pembayaran sudah tersedia.
   const paymentInfoReady = isQris
     ? Boolean(PAYMENT_INFO.qris.imagePath.trim())
     : isBankTransfer
@@ -106,7 +105,7 @@ export default function PaymentProofForm({
         )
       : false;
 
-  // Metode kasir tetap menggunakan proses konfirmasi admin yang sudah ada.
+  // Pembayaran tunai tetap dikonfirmasi oleh admin melalui proses kasir.
   if (!isOnlinePayment) {
     return (
       <section className="payment-proof-card">
@@ -123,7 +122,7 @@ export default function PaymentProofForm({
     );
   }
 
-  // INI BAGIAN MEMPROSES UPLOAD BUKTI PEMBAYARAN
+  // Memproses pengiriman bukti pembayaran.
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -167,7 +166,6 @@ export default function PaymentProofForm({
     setSubmitting(true);
 
     try {
-      // INI BAGIAN MENYUSUN FORM DATA
       const formData = new FormData();
 
       formData.append("orderNumber", orderNumber);
@@ -175,7 +173,6 @@ export default function PaymentProofForm({
       formData.append("customerReference", customerReference.trim());
       formData.append("proof", proofFile);
 
-      // INI BAGIAN MENGIRIM BUKTI KE API
       const response = await fetch("/api/payment-proof", {
         method: "POST",
         body: formData,
@@ -187,7 +184,6 @@ export default function PaymentProofForm({
         throw new Error(result.message || "Gagal mengirim bukti pembayaran.");
       }
 
-      // INI BAGIAN MEMERIKSA RESPONS PEMBAYARAN
       if (!result.payment || typeof result.payment.id !== "string") {
         throw new Error("Respons pembayaran dari server tidak lengkap.");
       }
@@ -198,7 +194,6 @@ export default function PaymentProofForm({
         "Bukti pembayaran berhasil dikirim. Admin akan memeriksa pembayaranmu.",
       );
 
-      // INI BAGIAN MENGOSONGKAN FORM
       setPayerName("");
       setCustomerReference("");
       setProofFile(null);
@@ -234,7 +229,6 @@ export default function PaymentProofForm({
         <strong>{formatRupiah(total)}</strong>
       </div>
 
-      {/* INI BAGIAN STATUS PEMBAYARAN */}
       <div className="payment-proof-status">
         <span>Status Pembayaran</span>
 
@@ -251,7 +245,7 @@ export default function PaymentProofForm({
         </strong>
       </div>
 
-      {/* INI BAGIAN INSTRUKSI QRIS */}
+      {/* Instruksi pembayaran QRIS */}
       {isQris && paymentInfoReady && (
         <div className="payment-proof-instruction">
           <h3>Scan QRIS Restoran</h3>
@@ -276,7 +270,7 @@ export default function PaymentProofForm({
         </div>
       )}
 
-      {/* INI BAGIAN INSTRUKSI TRANSFER BANK */}
+      {/* Informasi rekening transfer bank */}
       {isBankTransfer && paymentInfoReady && (
         <div className="payment-proof-instruction">
           <h3>Rekening Tujuan</h3>
@@ -316,7 +310,6 @@ export default function PaymentProofForm({
         </div>
       )}
 
-      {/* INI BAGIAN STATUS MENUNGGU VERIFIKASI */}
       {currentStatus === "MENUNGGU_VERIFIKASI" && (
         <div className="payment-proof-pending">
           <strong>Bukti pembayaran sudah diterima.</strong>
@@ -341,7 +334,7 @@ export default function PaymentProofForm({
         </div>
       )}
 
-      {/* INI BAGIAN FORM UPLOAD BUKTI */}
+      {/* Form untuk mengirim bukti pembayaran */}
       {(currentStatus === "MENUNGGU_PEMBAYARAN" || currentStatus === "GAGAL") &&
         orderStatus !== "Dibatalkan" &&
         orderStatus !== "Selesai" &&
@@ -380,7 +373,6 @@ export default function PaymentProofForm({
               />
             </div>
 
-            {/* INI BAGIAN FILE BUKTI */}
             <div className="payment-proof-field">
               <label htmlFor="payment-proof-file">
                 Gambar Bukti Pembayaran
@@ -427,7 +419,6 @@ export default function PaymentProofForm({
           </form>
         )}
 
-      {/* INI BAGIAN PESAN UNTUK STATUS LAIN */}
       {currentStatus !== "LUNAS" &&
         currentStatus !== "GAGAL" &&
         currentStatus !== "MENUNGGU_VERIFIKASI" &&

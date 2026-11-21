@@ -4,10 +4,10 @@ import { getCurrentUser } from "@/app/lib/auth";
 
 export const runtime = "nodejs";
 
-// INI BAGIAN GAMBAR LOKASI YANG DIIZINKAN
+// Gambar bawaan yang dapat digunakan untuk lokasi.
 const ALLOWED_IMAGES = ["/images/map-menteng.jpeg", "/images/map-kemang.jpeg"];
 
-// INI BAGIAN MEMERIKSA HAK AKSES ADMIN
+// Memastikan hanya admin yang dapat mengelola lokasi.
 async function checkAdmin() {
   const user = await getCurrentUser();
 
@@ -36,7 +36,7 @@ async function checkAdmin() {
   };
 }
 
-// INI BAGIAN MEMERIKSA LINK GOOGLE MAPS
+// Memvalidasi URL Google Maps yang dimasukkan.
 function validateMapUrl(value: unknown) {
   if (value === null || value === undefined || value === "") {
     return {
@@ -55,12 +55,12 @@ function validateMapUrl(value: unknown) {
   try {
     const parsedUrl = new URL(value.trim());
 
-    // Hanya menerima HTTPS.
+    // URL harus menggunakan HTTPS.
     if (parsedUrl.protocol !== "https:") {
       throw new Error("Protocol tidak diizinkan.");
     }
 
-    // INI BAGIAN HOST GOOGLE MAPS YANG DIIZINKAN
+    // Domain Google Maps yang diperbolehkan.
     const allowedHosts = [
       "google.com",
       "www.google.com",
@@ -85,7 +85,7 @@ function validateMapUrl(value: unknown) {
   }
 }
 
-// INI BAGIAN VALIDASI DATA LOKASI
+// Memvalidasi data lokasi sebelum disimpan.
 function validateLocation(body: Record<string, unknown>) {
   const name = typeof body.name === "string" ? body.name.trim() : "";
 
@@ -105,28 +105,24 @@ function validateLocation(body: Record<string, unknown>) {
 
   const sortOrder = Number(body.sortOrder ?? 0);
 
-  // INI BAGIAN VALIDASI NAMA CABANG
   if (!name || name.length > 100) {
     return {
       error: "Nama cabang wajib diisi dan maksimal 100 karakter.",
     };
   }
 
-  // INI BAGIAN VALIDASI ALAMAT
   if (!address || address.length > 500) {
     return {
       error: "Alamat wajib diisi dan maksimal 500 karakter.",
     };
   }
 
-  // INI BAGIAN VALIDASI KOTA
   if (!city || city.length > 100) {
     return {
       error: "Kota atau wilayah wajib diisi.",
     };
   }
 
-  // INI BAGIAN VALIDASI NOMOR TELEPON
   if (phone.length > 30) {
     return {
       error: "Nomor telepon maksimal 30 karakter.",
@@ -139,14 +135,13 @@ function validateLocation(body: Record<string, unknown>) {
     };
   }
 
-  // INI BAGIAN VALIDASI JAM OPERASIONAL
   if (!openingHours || openingHours.length > 200) {
     return {
       error: "Jam operasional wajib diisi dan maksimal 200 karakter.",
     };
   }
 
-  // INI BAGIAN VALIDASI GAMBAR LOKASI
+  // Memastikan gambar menggunakan path yang diizinkan.
   const isAllowedImage = ALLOWED_IMAGES.includes(imagePath);
 
   const isUploadedImage = /^\/api\/uploads\/[1-9]\d*$/.test(imagePath);
@@ -157,14 +152,12 @@ function validateLocation(body: Record<string, unknown>) {
     };
   }
 
-  // INI BAGIAN VALIDASI URUTAN
   if (!Number.isSafeInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
     return {
       error: "Urutan lokasi harus berupa angka 0 sampai 9999.",
     };
   }
 
-  // INI BAGIAN VALIDASI LINK GOOGLE MAPS
   const mapValidation = validateMapUrl(body.mapUrl);
 
   if (mapValidation.error) {
@@ -188,11 +181,11 @@ function validateLocation(body: Record<string, unknown>) {
   };
 }
 
-// INI BAGIAN MEMERIKSA GAMBAR UPLOAD DI DATABASE
+// Memeriksa apakah gambar hasil upload masih tersimpan di database.
 async function uploadedImageExists(imagePath: string) {
   const match = imagePath.match(/^\/api\/uploads\/([1-9]\d*)$/);
 
-  // Gambar lama dari public/images tidak perlu diperiksa.
+  // Gambar bawaan dari public/images tidak perlu diperiksa.
   if (!match) {
     return true;
   }
@@ -209,7 +202,7 @@ async function uploadedImageExists(imagePath: string) {
   return Boolean(uploadedImage);
 }
 
-// INI BAGIAN MENGAMBIL SELURUH LOKASI UNTUK ADMIN
+// Mengambil seluruh lokasi untuk halaman admin.
 export async function GET() {
   const auth = await checkAdmin();
 
@@ -233,7 +226,7 @@ export async function GET() {
   }
 }
 
-// INI BAGIAN MENAMBAHKAN LOKASI BARU
+// Menambahkan lokasi baru.
 export async function POST(request: Request) {
   const auth = await checkAdmin();
 
@@ -257,7 +250,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: validated.error }, { status: 400 });
     }
 
-    // INI BAGIAN MEMERIKSA GAMBAR LOKASI
+    // Memastikan gambar yang dipilih masih tersedia.
     if (!(await uploadedImageExists(validated.data!.imagePath))) {
       return NextResponse.json(
         { message: "Gambar yang dipilih tidak ditemukan." },
@@ -265,7 +258,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENYIMPAN LOKASI KE DATABASE
     const location = await prisma.location.create({
       data: validated.data!,
     });
@@ -287,7 +279,7 @@ export async function POST(request: Request) {
   }
 }
 
-// INI BAGIAN MENGEDIT LOKASI
+// Memperbarui data lokasi.
 export async function PATCH(request: Request) {
   const auth = await checkAdmin();
 
@@ -321,7 +313,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: validated.error }, { status: 400 });
     }
 
-    // INI BAGIAN MEMERIKSA GAMBAR LOKASI
+    // Memastikan gambar yang dipilih masih tersedia.
     if (!(await uploadedImageExists(validated.data!.imagePath))) {
       return NextResponse.json(
         { message: "Gambar yang dipilih tidak ditemukan." },
@@ -329,7 +321,6 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA LOKASI
     const existingLocation = await prisma.location.findUnique({
       where: { id },
     });
@@ -341,7 +332,6 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MENYIMPAN PERUBAHAN LOKASI
     const location = await prisma.location.update({
       where: { id },
       data: validated.data!,
@@ -361,7 +351,7 @@ export async function PATCH(request: Request) {
   }
 }
 
-// INI BAGIAN MENGHAPUS LOKASI
+// Menghapus lokasi berdasarkan ID.
 export async function DELETE(request: Request) {
   const auth = await checkAdmin();
 
@@ -399,7 +389,6 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGHAPUS LOKASI DARI DATABASE
     await prisma.location.delete({
       where: { id },
     });

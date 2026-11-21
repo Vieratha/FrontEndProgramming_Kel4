@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-// INI BAGIAN TIPE DATA ITEM PESANAN
+// Data menu yang termasuk dalam pesanan.
 type OrderItem = {
   id: number;
   menuId: number | null;
@@ -12,7 +12,7 @@ type OrderItem = {
   quantity: number;
 };
 
-// INI BAGIAN TIPE DATA RINGKASAN PEMBAYARAN
+// Ringkasan informasi pembayaran.
 type PaymentSummary = {
   id: string;
   method: string;
@@ -30,7 +30,7 @@ type PaymentSummary = {
   createdAt: string;
 };
 
-// INI BAGIAN TIPE DATA PESANAN
+// Data pesanan yang ditampilkan pada halaman riwayat.
 type Order = {
   id: string;
   orderNumber: string;
@@ -50,7 +50,7 @@ type Order = {
   payments: PaymentSummary[];
 };
 
-// INI BAGIAN LABEL STATUS PEMBAYARAN
+// Mengubah kode status pembayaran menjadi label yang mudah dibaca.
 function getPaymentLabel(status: string) {
   const labels: Record<string, string> = {
     BELUM_DIBAYAR: "Belum Dibayar",
@@ -72,7 +72,7 @@ export default function RiwayatPage() {
   const [error, setError] = useState("");
   const [isGuest, setIsGuest] = useState(false);
 
-  // INI BAGIAN MENGAMBIL RIWAYAT PESANAN DARI DATABASE
+  // Mengambil riwayat pesanan dari akun yang sedang login.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -83,7 +83,6 @@ export default function RiwayatPage() {
           signal: controller.signal,
         });
 
-        // INI BAGIAN MEMERIKSA STATUS LOGIN
         if (response.status === 401) {
           if (!controller.signal.aborted) {
             setIsGuest(true);
@@ -100,7 +99,6 @@ export default function RiwayatPage() {
           throw new Error(result.message || "Gagal mengambil riwayat pesanan.");
         }
 
-        // INI BAGIAN MENGAMBIL PESANAN AKUN DARI DATABASE
         const result = await response.json();
 
         const accountOrders: Order[] = Array.isArray(result.orders)
@@ -138,7 +136,7 @@ export default function RiwayatPage() {
     };
   }, []);
 
-  // INI BAGIAN FORMAT RUPIAH
+  // Format harga dan waktu sesuai pengaturan Indonesia.
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -147,7 +145,6 @@ export default function RiwayatPage() {
     }).format(angka);
   };
 
-  // INI BAGIAN FORMAT TANGGAL
   const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleString("id-ID", {
       timeZone: "Asia/Jakarta",
@@ -159,23 +156,19 @@ export default function RiwayatPage() {
   return (
     <main className="riwayat-page">
       <div className="riwayat-container">
-        {/* INI BAGIAN HEADER RIWAYAT */}
         <div className="riwayat-header">
           <h1>Riwayat Pesanan</h1>
           <p>Lihat kembali daftar pesanan yang pernah kamu buat.</p>
         </div>
 
-        {/* INI BAGIAN LOADING */}
         {loading ? (
           <p>Memuat riwayat pesanan...</p>
         ) : error ? (
-          /* INI BAGIAN PESAN ERROR */
           <div className="riwayat-empty">
             <h2>Gagal Memuat Riwayat</h2>
             <p>{error}</p>
           </div>
         ) : isGuest ? (
-          /* INI BAGIAN RIWAYAT UNTUK GUEST */
           <div className="riwayat-empty">
             <h2>Login untuk Melihat Riwayat</h2>
 
@@ -196,7 +189,6 @@ export default function RiwayatPage() {
             </div>
           </div>
         ) : orders.length === 0 ? (
-          /* INI BAGIAN KETIKA BELUM ADA PESANAN */
           <div className="riwayat-empty">
             <h2>Belum Ada Pesanan</h2>
 
@@ -209,11 +201,9 @@ export default function RiwayatPage() {
             </Link>
           </div>
         ) : (
-          /* INI BAGIAN DAFTAR RIWAYAT PESANAN */
           <div className="riwayat-list">
             {orders.map((order) => (
               <article className="riwayat-card" key={order.id}>
-                {/* INI BAGIAN HEADER KARTU PESANAN */}
                 <div className="riwayat-card-header">
                   <div>
                     <h2>{order.orderNumber}</h2>
@@ -223,7 +213,6 @@ export default function RiwayatPage() {
                   <span className="riwayat-status">{order.status}</span>
                 </div>
 
-                {/* INI BAGIAN DETAIL CUSTOMER */}
                 <div className="riwayat-detail">
                   <p>
                     <strong>Nama Pemesan:</strong> {order.customerName}
@@ -245,13 +234,11 @@ export default function RiwayatPage() {
                     </p>
                   )}
 
-                  {/* INI BAGIAN METODE PEMBAYARAN */}
                   <p>
                     <strong>Metode Pembayaran:</strong>{" "}
                     {order.paymentMethod || "Bayar di Kasir"}
                   </p>
 
-                  {/* INI BAGIAN STATUS PEMBAYARAN */}
                   <p>
                     <strong>Status Pembayaran:</strong>{" "}
                     <span
@@ -265,7 +252,6 @@ export default function RiwayatPage() {
                     </span>
                   </p>
 
-                  {/* INI BAGIAN INFORMASI PENOLAKAN PEMBAYARAN */}
                   {order.paymentStatus === "GAGAL" &&
                     order.payments?.[0]?.verificationNote && (
                       <p className="payment-rejection-reason">
@@ -274,7 +260,6 @@ export default function RiwayatPage() {
                       </p>
                     )}
 
-                  {/* INI BAGIAN WAKTU PEMBAYARAN */}
                   {order.paidAt && (
                     <p>
                       <strong>Waktu Pembayaran:</strong>{" "}
@@ -282,7 +267,6 @@ export default function RiwayatPage() {
                     </p>
                   )}
 
-                  {/* INI BAGIAN CATATAN */}
                   {order.note && (
                     <p>
                       <strong>Catatan:</strong> {order.note}
@@ -290,7 +274,7 @@ export default function RiwayatPage() {
                   )}
                 </div>
 
-                {/* INI BAGIAN DAFTAR MENU */}
+                {/* Daftar menu dalam pesanan */}
                 <div className="riwayat-items">
                   <h3>Daftar Menu</h3>
 
@@ -307,13 +291,11 @@ export default function RiwayatPage() {
                   ))}
                 </div>
 
-                {/* INI BAGIAN TOTAL PESANAN */}
                 <div className="riwayat-total">
                   <span>Total Pembayaran</span>
                   <strong>{formatRupiah(order.total)}</strong>
                 </div>
 
-                {/* INI BAGIAN LIHAT STRUK */}
                 <div style={{ marginTop: "18px" }}>
                   <Link
                     href={`/konfirmasi?order=${encodeURIComponent(order.orderNumber)}`}
@@ -327,7 +309,6 @@ export default function RiwayatPage() {
           </div>
         )}
 
-        {/* INI BAGIAN KEMBALI KE BERANDA */}
         <Link href="/" className="riwayat-back">
           ← Kembali ke Beranda
         </Link>

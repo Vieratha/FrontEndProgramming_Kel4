@@ -5,13 +5,13 @@ import { getCurrentUser } from "@/app/lib/auth";
 
 export const runtime = "nodejs";
 
-// INI BAGIAN BATAS UKURAN GAMBAR
+// Ukuran maksimal file gambar yang dapat diunggah.
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 
-// INI BAGIAN TIPE GAMBAR YANG DIIZINKAN
+// Format gambar yang diterima.
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-// INI BAGIAN MEMERIKSA HAK AKSES ADMIN
+// Memastikan hanya admin yang dapat mengunggah gambar.
 async function checkAdmin() {
   const user = await getCurrentUser();
 
@@ -40,9 +40,8 @@ async function checkAdmin() {
   };
 }
 
-// INI BAGIAN MEMERIKSA FORMAT ASLI FILE GAMBAR
+// Memeriksa format gambar berdasarkan signature file.
 function detectImageMimeType(bytes: Uint8Array) {
-  // Format JPEG
   if (
     bytes.length >= 3 &&
     bytes[0] === 0xff &&
@@ -52,7 +51,6 @@ function detectImageMimeType(bytes: Uint8Array) {
     return "image/jpeg";
   }
 
-  // Format PNG
   if (
     bytes.length >= 8 &&
     bytes[0] === 0x89 &&
@@ -67,7 +65,6 @@ function detectImageMimeType(bytes: Uint8Array) {
     return "image/png";
   }
 
-  // Format WEBP
   if (
     bytes.length >= 12 &&
     Buffer.from(bytes.subarray(0, 4)).toString("ascii") === "RIFF" &&
@@ -79,7 +76,7 @@ function detectImageMimeType(bytes: Uint8Array) {
   return null;
 }
 
-// INI BAGIAN MENGUNGGAH GAMBAR BARU
+// Mengunggah gambar baru.
 export async function POST(request: Request) {
   const auth = await checkAdmin();
 
@@ -88,7 +85,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    // INI BAGIAN MEMBACA FILE DARI FORM DATA
     const formData = await request.formData();
     const file = formData.get("file");
 
@@ -99,7 +95,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA UKURAN FILE
     if (file.size <= 0 || file.size > MAX_IMAGE_SIZE) {
       return NextResponse.json(
         { message: "Ukuran gambar harus lebih dari 0 dan maksimal 2 MB." },
@@ -107,7 +102,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA TIPE FILE
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
         { message: "Format gambar harus JPG, PNG, atau WEBP." },
@@ -115,10 +109,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMBACA DATA GAMBAR
     const imageBytes = new Uint8Array(await file.arrayBuffer());
 
-    // INI BAGIAN MEMERIKSA FORMAT ASLI GAMBAR
+    // Memastikan format sebenarnya sesuai dengan tipe file.
     const actualMimeType = detectImageMimeType(imageBytes);
 
     if (!actualMimeType || actualMimeType !== file.type) {
@@ -128,7 +121,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMBERSIHKAN NAMA FILE
+    // Membersihkan nama file sebelum disimpan.
     const safeFileName =
       file.name
         .split(/[\\/]/)
@@ -136,7 +129,6 @@ export async function POST(request: Request) {
         ?.replace(/[^a-zA-Z0-9._-]/g, "_")
         .slice(0, 255) || "uploaded-image";
 
-    // INI BAGIAN MENYIMPAN GAMBAR KE POSTGRESQL
     const uploadedImage = await prisma.uploadedImage.create({
       data: {
         data: Buffer.from(imageBytes),
@@ -148,7 +140,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // INI BAGIAN MENGIRIM URL GAMBAR KE ADMIN
     return NextResponse.json(
       {
         message: "Gambar berhasil diunggah.",
