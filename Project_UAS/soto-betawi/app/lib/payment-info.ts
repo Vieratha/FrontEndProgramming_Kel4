@@ -1,5 +1,4 @@
 /* Konfigurasi pembayaran restoran. */
-
 export const PAYMENT_INFO = {
   // Informasi QRIS.
   qris: {
