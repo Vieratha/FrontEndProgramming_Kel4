@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       .toLowerCase();
     const password = String(body.password ?? "");
 
-    // INI BAGIAN VALIDASI FIELD WAJIB
+    // Memeriksa field wajib pendaftaran.
     if (!name || !email || !password) {
       return NextResponse.json(
         { message: "Semua field wajib diisi." },
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI EMAIL
+    // Memvalidasi format email.
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { message: "Email tidak valid." },
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI PANJANG PASSWORD
+    // Memvalidasi panjang password.
     if (password.length < 8) {
       return NextResponse.json(
         { message: "Password minimal 8 karakter." },
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA EMAIL YANG SUDAH TERDAFTAR
+    // Memeriksa apakah email sudah digunakan.
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -58,10 +58,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMBUAT HASH PASSWORD
+    // Membuat hash password.
     const passwordHash = await hashPassword(password);
 
-    // INI BAGIAN MENYIMPAN USER BARU
+    // Menyimpan akun baru ke database.
     const user = await prisma.user.create({
       data: {
         name,
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // INI BAGIAN MEMBUAT SESSION OTOMATIS
+    // Membuat session setelah pendaftaran berhasil.
     await createSession(user.id);
 
     return NextResponse.json(

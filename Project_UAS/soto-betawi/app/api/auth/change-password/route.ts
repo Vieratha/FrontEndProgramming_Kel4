@@ -9,10 +9,10 @@ import {
 
 export const runtime = "nodejs";
 
-// INI BAGIAN MENGGANTI PASSWORD CUSTOMER
+// Proses penggantian password customer.
 export async function POST(request: Request) {
   try {
-    // MEMERIKSA SESSION
+    // Memeriksa session user.
     const user = await getCurrentUser();
 
     if (!user) {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // MEMERIKSA FORMAT REQUEST
+    // Memvalidasi data request.
     const body: unknown = await request.json();
 
     if (typeof body !== "object" || body === null || Array.isArray(body)) {
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // VALIDASI PASSWORD BARU
+    // Memvalidasi password baru.
     if (newPassword.length < 8 || Buffer.byteLength(newPassword, "utf8") > 72) {
       return NextResponse.json(
         {
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // MENGAMBIL PASSWORD HASH DARI DATABASE
+    // Mengambil hash password dari database.
     const account = await prisma.user.findUnique({
       where: { id: user.id },
       select: { passwordHash: true },
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // MEMERIKSA PASSWORD LAMA
+    // Memeriksa password lama.
     const isPasswordValid = await verifyPassword(
       currentPassword,
       account.passwordHash,
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // MEMERIKSA PASSWORD BARU AGAR TIDAK SAMA
+    // Memastikan password baru berbeda dari password lama.
     const isSamePassword = await verifyPassword(
       newPassword,
       account.passwordHash,
@@ -104,10 +104,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // MEMBUAT HASH PASSWORD BARU
+    // Membuat hash untuk password baru.
     const newPasswordHash = await hashPassword(newPassword);
 
-    // MEMPERBARUI DATABASE
+    // Memperbarui password di database.
     await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // MENGAKHIRI SESSION DI PERANGKAT LAIN
+    // Mengakhiri session pada perangkat lain.
     await deleteOtherSessions(user.id);
 
     return NextResponse.json({

@@ -7,18 +7,18 @@ import { getCurrentUser } from "@/app/lib/auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// INI BAGIAN BATAS UKURAN DAN JENIS FILE
+// Batas ukuran dan format file bukti pembayaran.
 const MAX_FILE_SIZE = 1 * 1024 * 1024;
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-// INI BAGIAN MENGUNGGAH BUKTI PEMBAYARAN CUSTOMER
+// Proses upload bukti pembayaran customer.
 export async function POST(request: Request) {
   try {
-    // INI BAGIAN MEMBACA USER YANG SEDANG LOGIN
+    // Memeriksa user yang sedang login.
     const user = await getCurrentUser();
 
-    // INI BAGIAN MEMBACA FORM DATA
+    // Membaca data dari form upload.
     const formData = await request.formData();
 
     const orderNumberValue = formData.get("orderNumber");
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const customerReferenceValue = formData.get("customerReference");
     const proofValue = formData.get("proof");
 
-    // INI BAGIAN VALIDASI NOMOR PESANAN
+    // Validasi nomor pesanan.
     const orderNumber =
       typeof orderNumberValue === "string" ? orderNumberValue.trim() : "";
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI NAMA PENGIRIM
+    // Validasi nama pengirim.
     const payerName =
       typeof payerNameValue === "string" ? payerNameValue.trim() : "";
 
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI REFERENSI TRANSAKSI
+    // Validasi referensi transaksi.
     const customerReference =
       typeof customerReferenceValue === "string"
         ? customerReferenceValue.trim()
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI FILE BUKTI
+    // Validasi file bukti pembayaran.
     if (!(proofValue instanceof File)) {
       return NextResponse.json(
         { message: "File bukti pembayaran wajib diunggah." },
@@ -87,10 +87,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGUBAH FILE MENJADI DATA BINER
+    // Membaca file sebagai data biner.
     const proofBuffer = Buffer.from(await proofValue.arrayBuffer());
 
-    // INI BAGIAN MEMERIKSA SIGNATURE FILE
+    // Memeriksa signature file untuk memastikan format aslinya.
     // Pemeriksaan ini memastikan isi file sesuai dengan format gambar.
     const isJpeg =
       proofBuffer.length >= 3 &&
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGAMBIL DATA PESANAN
+    // Mengambil data pesanan dari database.
     const order = await prisma.order.findUnique({
       where: {
         orderNumber,
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA KEPEMILIKAN PESANAN
+    // Memastikan pesanan dimiliki oleh user yang mengirim bukti.
     const isOwner =
       user !== null && user !== undefined && order.userId === user.id;
 
@@ -165,7 +165,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA JENIS PEMBAYARAN
+    // Memeriksa metode pembayaran pesanan.
     if (
       order.paymentMethod !== "QRIS" &&
       order.paymentMethod !== "Transfer Bank"
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA STATUS PESANAN
+    // Memeriksa status pesanan sebelum menerima bukti.
     if (order.status === "Dibatalkan" || order.status === "Selesai") {
       return NextResponse.json(
         {
@@ -192,7 +192,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA STATUS PEMBAYARAN
+    // Memeriksa status pembayaran saat ini.
     if (
       order.paymentStatus === "LUNAS" ||
       order.paymentStatus === "MENUNGGU_VERIFIKASI"
@@ -221,7 +221,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENYIMPAN BUKTI PEMBAYARAN
+    // Menyimpan bukti pembayaran.
     const result = await prisma.$transaction(async (tx) => {
       // Ambil transaksi terakhir untuk pesanan ini.
       const latestPayment = await tx.payment.findFirst({
@@ -233,7 +233,7 @@ export async function POST(request: Request) {
         },
       });
 
-      // INI BAGIAN MEMASTIKAN TRANSAKSI MASIH DAPAT DIPROSES
+      // Memastikan transaksi masih dapat diproses.
       if (
         latestPayment &&
         latestPayment.status !== "MENUNGGU_PEMBAYARAN" &&
@@ -247,7 +247,7 @@ export async function POST(request: Request) {
         };
       }
 
-      // INI BAGIAN MENGUNCI STATUS PESANAN
+      // Mengunci perubahan status agar tidak diproses bersamaan.
       const updatedOrder = await tx.order.updateMany({
         where: {
           id: order.id,
@@ -268,7 +268,7 @@ export async function POST(request: Request) {
         };
       }
 
-      // INI BAGIAN DATA BUKTI PEMBAYARAN
+      // Menyusun data bukti pembayaran.
       const proofData = {
         payerName,
         customerReference: customerReference || null,
@@ -281,7 +281,7 @@ export async function POST(request: Request) {
         status: "MENUNGGU_VERIFIKASI",
       };
 
-      // INI BAGIAN MEMPERBARUI ATAU MEMBUAT TRANSAKSI BARU
+      // Memperbarui transaksi atau membuat catatan pembayaran baru.
       if (latestPayment && latestPayment.status === "MENUNGGU_PEMBAYARAN") {
         await tx.payment.update({
           where: {
@@ -320,7 +320,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGAMBIL TRANSAKSI TERBARU SETELAH UPLOAD
+    // Mengambil transaksi terbaru setelah upload.
     const latestPayment = await prisma.payment.findFirst({
       where: {
         orderId: order.id,
@@ -344,7 +344,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // INI BAGIAN MENGIRIM HASIL UPLOAD KE CUSTOMER
+    // Mengirim hasil upload kepada customer.
     return NextResponse.json(
       {
         message:

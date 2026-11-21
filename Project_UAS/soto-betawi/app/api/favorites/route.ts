@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/app/lib/auth";
 
 export const runtime = "nodejs";
 
-// INI BAGIAN MEMERIKSA AKUN CUSTOMER
+// Memeriksa akun customer yang sedang login.
 async function checkCustomer() {
   const user = await getCurrentUser();
 
@@ -34,7 +34,7 @@ async function checkCustomer() {
   };
 }
 
-// GET: MENGAMBIL DAFTAR FAVORIT MILIK CUSTOMER
+// Mengambil daftar favorit milik customer.
 export async function GET() {
   const auth = await checkCustomer();
 
@@ -82,14 +82,14 @@ export async function GET() {
   }
 }
 
-// INI BAGIAN VALIDASI ID MENU
+// Memvalidasi ID menu.
 function validateMenuId(value: unknown) {
   const menuId = Number(value);
 
   return Number.isSafeInteger(menuId) && menuId > 0 ? menuId : null;
 }
 
-// INI BAGIAN MENAMBAHKAN FAVORIT
+// Menambahkan menu ke daftar favorit.
 export async function POST(request: Request) {
   const auth = await checkCustomer();
 
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
   }
 }
 
-// INI BAGIAN MENGHAPUS FAVORIT
+// Menghapus menu dari daftar favorit.
 export async function DELETE(request: Request) {
   const auth = await checkCustomer();
 

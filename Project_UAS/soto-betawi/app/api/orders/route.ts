@@ -6,13 +6,13 @@ import { PAYMENT_AVAILABILITY } from "@/app/lib/payment-info";
 
 export const runtime = "nodejs";
 
-// INI BAGIAN TIPE DATA ITEM CHECKOUT
+// Data item yang dikirim saat checkout.
 type CheckoutItem = {
   menuId: number;
   quantity: number;
 };
 
-// INI BAGIAN FIELD PEMBAYARAN YANG BOLEH DILIHAT CUSTOMER
+// Field pembayaran yang boleh ditampilkan kepada customer.
 // Isi file bukti tidak dikirim melalui API detail atau riwayat pesanan.
 const customerPaymentSelect = {
   id: true,
@@ -31,21 +31,21 @@ const customerPaymentSelect = {
   createdAt: true,
 } as const;
 
-// INI BAGIAN MEMERIKSA OBJECT REQUEST
+// Memeriksa format object request.
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-// INI BAGIAN MENGAMBIL DATA PESANAN
+// Mengambil data pesanan.
 export async function GET(request: Request) {
   try {
-    // INI BAGIAN MEMERIKSA USER YANG SEDANG LOGIN
+    // Memeriksa user yang sedang login.
     const user = await getCurrentUser();
 
     const { searchParams } = new URL(request.url);
     const orderNumber = searchParams.get("order")?.trim();
 
-    // INI BAGIAN MENGAMBIL SATU PESANAN BERDASARKAN NOMOR
+    // Mengambil satu pesanan berdasarkan nomor pesanan.
     if (orderNumber) {
       const order = await prisma.order.findUnique({
         where: {
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
         );
       }
 
-      // INI BAGIAN MEMERIKSA HAK AKSES PESANAN
+      // Memeriksa hak akses terhadap pesanan.
       const isAdmin = user?.role === "ADMIN";
 
       const isOwner =
@@ -103,7 +103,7 @@ export async function GET(request: Request) {
       });
     }
 
-    // INI BAGIAN MEMERIKSA LOGIN UNTUK RIWAYAT
+    // Memeriksa session sebelum mengambil riwayat pesanan.
     if (!user) {
       return NextResponse.json(
         {
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // INI BAGIAN MENENTUKAN HAK AKSES BERDASARKAN ROLE
+    // Menentukan data pesanan sesuai role user.
     const where =
       user.role === "ADMIN"
         ? {}
@@ -123,7 +123,7 @@ export async function GET(request: Request) {
             userId: user.id,
           };
 
-    // INI BAGIAN MENGAMBIL PESANAN DARI DATABASE
+    // Mengambil daftar pesanan dari database.
     const orders = await prisma.order.findMany({
       where,
       include: {
@@ -161,12 +161,12 @@ export async function GET(request: Request) {
   }
 }
 
-// INI BAGIAN MEMBUAT PESANAN BARU
+// Proses pembuatan pesanan baru.
 export async function POST(request: Request) {
   try {
     const body: unknown = await request.json();
 
-    // INI BAGIAN MEMERIKSA FORMAT REQUEST
+    // Memvalidasi format data checkout.
     if (!isRecord(body)) {
       return NextResponse.json(
         {
@@ -178,7 +178,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN DATA CUSTOMER
+    // Mengambil data customer dari request.
     const customerName =
       typeof body.customerName === "string" ? body.customerName.trim() : "";
 
@@ -192,7 +192,7 @@ export async function POST(request: Request) {
     const paymentMethod =
       typeof body.paymentMethod === "string" ? body.paymentMethod.trim() : "";
 
-    // INI BAGIAN JENIS PESANAN
+    // Memeriksa jenis pesanan.
     const orderType =
       typeof body.orderType === "string" ? body.orderType.trim() : "";
 
@@ -201,7 +201,6 @@ export async function POST(request: Request) {
 
     const note = typeof body.note === "string" ? body.note.trim() : "";
 
-    // INI BAGIAN VALIDASI NAMA CUSTOMER
     if (customerName.length < 3 || customerName.length > 100) {
       return NextResponse.json(
         {
@@ -213,7 +212,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI NOMOR TELEPON
     if (phone && !/^08[0-9]{8,11}$/.test(phone)) {
       return NextResponse.json(
         {
@@ -225,7 +223,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI ALAMAT
     if (address && address.length < 10) {
       return NextResponse.json(
         {
@@ -237,7 +234,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI METODE PEMBAYARAN
+    // Validasi metode pembayaran.
     const selectedPaymentMethod = paymentMethod || "Bayar di Kasir";
 
     // Metode online hanya tersedia jika konfigurasi sudah lengkap.
@@ -262,7 +259,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI JENIS PESANAN
     const allowedOrderTypes = ["Makan di Tempat", "Bawa Pulang"];
 
     if (!allowedOrderTypes.includes(orderType)) {
@@ -276,7 +272,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI NOMOR MEJA
     if (orderType === "Makan di Tempat" && !/^[0-9]{1,4}$/.test(tableNumber)) {
       return NextResponse.json(
         {
@@ -299,7 +294,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN VALIDASI KERANJANG
+    // Validasi item pada keranjang.
     if (
       !Array.isArray(body.items) ||
       body.items.length === 0 ||
@@ -355,7 +350,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // INI BAGIAN MENCEGAH MENU DUPLIKAT
+    // Menggabungkan item menu yang duplikat.
     const menuIds = items.map((item) => item.menuId);
 
     if (new Set(menuIds).size !== menuIds.length) {
@@ -369,7 +364,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGAMBIL HARGA MENU DARI DATABASE
+    // Mengambil harga menu terbaru dari database.
     const menus = await prisma.menu.findMany({
       where: {
         id: {
@@ -390,7 +385,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENYUSUN ITEM PESANAN
+    // Menyusun rincian item pesanan.
     const menuMap = new Map(menus.map((menu) => [menu.id, menu]));
 
     const orderItems = items.map((item) => {
@@ -408,7 +403,7 @@ export async function POST(request: Request) {
       };
     });
 
-    // INI BAGIAN MENGHITUNG TOTAL HARGA
+    // Menghitung total berdasarkan harga dari database.
     const total = orderItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
@@ -425,14 +420,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGAMBIL USER YANG SEDANG LOGIN
+    // Mengambil user yang sedang login.
     // Customer yang belum login tetap dapat melakukan pemesanan.
     const user = await getCurrentUser();
 
-    // INI BAGIAN MEMBUAT NOMOR PESANAN ACAK
+    // Membuat nomor pesanan.
     const orderNumber = `SB-${randomBytes(16).toString("hex").toUpperCase()}`;
 
-    // INI BAGIAN MENENTUKAN STATUS AWAL PEMBAYARAN
+    // Menentukan status awal pembayaran.
     const isCashierPayment = selectedPaymentMethod === "Bayar di Kasir";
 
     const paymentStatus = isCashierPayment
@@ -446,12 +441,11 @@ export async function POST(request: Request) {
           ? "QRIS"
           : "TRANSFER_BANK";
 
-    // INI BAGIAN MEMBUAT REFERENSI PEMBAYARAN
+    // Membuat referensi transaksi pembayaran.
     const paymentReference = `${paymentMethodCode}-${orderNumber}`;
 
-    // INI BAGIAN MENYIMPAN PESANAN DAN PEMBAYARAN KE DATABASE
+    // Menyimpan pesanan dan pembayaran ke database.
     // Nested write memastikan semua data tersimpan bersama.
-
     const order = await prisma.order.create({
       data: {
         orderNumber,
@@ -471,16 +465,16 @@ export async function POST(request: Request) {
         total,
         status: "Menunggu Konfirmasi",
 
-        // INI BAGIAN STATUS PEMBAYARAN AWAL
+        // Status awal transaksi pembayaran.
         paymentStatus,
         paidAt: null,
 
-        // INI BAGIAN MENYIMPAN RINCIAN ITEM PESANAN
+        // Menyimpan rincian item pesanan.
         items: {
           create: orderItems,
         },
 
-        // INI BAGIAN MEMBUAT TRANSAKSI PEMBAYARAN
+        // Membuat catatan transaksi pembayaran.
         payments: {
           create: {
             provider: "MANUAL",

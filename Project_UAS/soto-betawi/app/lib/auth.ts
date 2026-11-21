@@ -104,7 +104,7 @@ export async function deleteCurrentSession() {
   cookieStore.delete(SESSION_COOKIE);
 }
 
-// MENGHAPUS SESSION DARI PERANGKAT LAIN
+// Menghapus session lain setelah password berhasil diubah.
 export async function deleteOtherSessions(userId: number) {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;

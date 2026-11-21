@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/app/lib/auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// INI BAGIAN TIPE DATA REQUEST ADMIN
+// Data request untuk tindakan admin.
 type UpdateOrderRequest = {
   id: string;
   status?: string;
@@ -14,7 +14,7 @@ type UpdateOrderRequest = {
   note?: string;
 };
 
-// INI BAGIAN FIELD PEMBAYARAN YANG BOLEH DIKIRIM KE FRONTEND
+// Field pembayaran yang boleh dikirim ke frontend.
 // proofData sengaja tidak disertakan karena diambil melalui API khusus admin.
 const paymentSelect = {
   id: true,
@@ -36,12 +36,12 @@ const paymentSelect = {
   createdAt: true,
 } as const;
 
-// INI BAGIAN MEMERIKSA OBJECT REQUEST
+// Memeriksa format object request.
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-// INI BAGIAN MEMERIKSA HAK AKSES ADMIN
+// Memeriksa hak akses admin.
 async function checkAdmin(): Promise<
   | { authorized: true; response: null }
   | { authorized: false; response: NextResponse }
@@ -74,7 +74,7 @@ async function checkAdmin(): Promise<
   };
 }
 
-// INI BAGIAN MENENTUKAN STATUS SELANJUTNYA
+// Menentukan status pesanan berikutnya.
 function getAllowedNextStatuses(
   currentStatus: string,
   orderType: string,
@@ -100,17 +100,17 @@ function getAllowedNextStatuses(
   }
 }
 
-// INI BAGIAN MENGAMBIL SELURUH PESANAN ADMIN
+// Mengambil daftar pesanan untuk admin.
 export async function GET() {
   try {
-    // INI BAGIAN MEMERIKSA ADMIN
+    // Memeriksa session dan role admin.
     const access = await checkAdmin();
 
     if (!access.authorized) {
       return access.response;
     }
 
-    // INI BAGIAN MENGAMBIL PESANAN DARI DATABASE
+    // Mengambil data pesanan dari database.
     const orders = await prisma.order.findMany({
       include: {
         items: {
@@ -148,17 +148,17 @@ export async function GET() {
   }
 }
 
-// INI BAGIAN MEMPERBARUI PESANAN DAN PEMBAYARAN
+// Memproses perubahan pesanan dan pembayaran.
 export async function PATCH(request: Request) {
   try {
-    // INI BAGIAN MEMERIKSA ADMIN
+    // Memeriksa session dan role admin.
     const access = await checkAdmin();
 
     if (!access.authorized) {
       return access.response;
     }
 
-    // INI BAGIAN MEMERIKSA FORMAT REQUEST
+    // Memvalidasi data request.
     const body: unknown = await request.json();
 
     if (!isRecord(body)) {
@@ -187,7 +187,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MENGAMBIL DATA PESANAN
+    // Mengambil pesanan yang akan diperbarui.
     const existingOrder = await prisma.order.findUnique({
       where: {
         id: orderId,
@@ -214,7 +214,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN KONFIRMASI PEMBAYARAN MANUAL OLEH KASIR
+    // Proses konfirmasi pembayaran oleh kasir.
     if (data.action === "MARK_PAID") {
       // Pesanan yang dibatalkan tidak dapat menerima pembayaran baru.
       if (existingOrder.status === "Dibatalkan") {
@@ -228,7 +228,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MEMERIKSA STATUS PEMBAYARAN
+      // Memeriksa status pembayaran saat ini.
       if (existingOrder.paymentStatus === "LUNAS") {
         return NextResponse.json(
           {
@@ -240,7 +240,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MEMERIKSA METODE PEMBAYARAN
+      // Memeriksa metode pembayaran pesanan.
       const paymentMethod = existingOrder.paymentMethod || "Bayar di Kasir";
 
       if (paymentMethod !== "Bayar di Kasir") {
@@ -255,7 +255,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MENYIMPAN KONFIRMASI KASIR SECARA ATOMIK
+      // Menyimpan konfirmasi kasir dalam satu transaksi.
       const paidAt = new Date();
       const paymentReference = `KASIR-${existingOrder.orderNumber}`;
 
@@ -279,7 +279,7 @@ export async function PATCH(request: Request) {
           return null;
         }
 
-        // INI BAGIAN MENCATAT TRANSAKSI KASIR
+        // Mencatat transaksi pembayaran kasir.
         // Upsert mencegah pembayaran kasir tercatat dua kali.
         await tx.payment.upsert({
           where: {
@@ -301,7 +301,7 @@ export async function PATCH(request: Request) {
           },
         });
 
-        // INI BAGIAN MENGAMBIL PESANAN TERBARU
+        // Mengambil ulang data pesanan setelah perubahan.
         return tx.order.findUnique({
           where: {
             id: existingOrder.id,
@@ -340,9 +340,9 @@ export async function PATCH(request: Request) {
       });
     }
 
-    // INI BAGIAN VERIFIKASI DAN PENOLAKAN PEMBAYARAN ONLINE
+    // Proses verifikasi atau penolakan pembayaran online.
     if (data.action === "VERIFY_PAYMENT" || data.action === "REJECT_PAYMENT") {
-      // INI BAGIAN MEMERIKSA ID PEMBAYARAN
+      // Memeriksa ID pembayaran.
       const paymentId =
         typeof data.paymentId === "string" ? data.paymentId.trim() : "";
 
@@ -353,7 +353,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MEMERIKSA CATATAN ADMIN
+      // Memeriksa catatan admin saat menolak pembayaran.
       const verificationNote =
         typeof data.note === "string" ? data.note.trim() : "";
 
@@ -371,7 +371,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MEMERIKSA STATUS ORDER
+      // Memeriksa status pesanan sebelum verifikasi.
       if (
         existingOrder.paymentStatus !== "MENUNGGU_VERIFIKASI" ||
         existingOrder.status === "Dibatalkan" ||
@@ -388,7 +388,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MENGAMBIL TRANSAKSI PEMBAYARAN
+      // Mengambil transaksi pembayaran yang akan diverifikasi.
       const payment = await prisma.payment.findFirst({
         where: {
           id: paymentId,
@@ -414,7 +414,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MEMERIKSA STATUS TRANSAKSI
+      // Memeriksa status transaksi pembayaran.
       if (
         payment.status !== "MENUNGGU_VERIFIKASI" ||
         !["QRIS", "TRANSFER_BANK"].includes(payment.method)
@@ -429,7 +429,7 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MEMERIKSA KECocOKAN NOMINAL
+      // Memastikan nominal transaksi sesuai dengan pesanan.
       if (payment.amount !== existingOrder.total) {
         return NextResponse.json(
           {
@@ -441,15 +441,15 @@ export async function PATCH(request: Request) {
         );
       }
 
-      // INI BAGIAN MENENTUKAN WAKTU KEPUTUSAN ADMIN
+      // Menentukan waktu keputusan admin.
       const reviewedAt = new Date();
 
       try {
-        // INI BAGIAN MENYIMPAN KEPUTUSAN SECARA ATOMIK
+        // Menyimpan keputusan pembayaran secara atomik.
         // Order dan Payment harus berubah bersama-sama.
         const updatedOrder = await prisma.$transaction(async (tx) => {
           if (data.action === "VERIFY_PAYMENT") {
-            // INI BAGIAN MENGUBAH STATUS ORDER MENJADI LUNAS
+            // Memperbarui status pesanan menjadi lunas.
             const orderUpdated = await tx.order.updateMany({
               where: {
                 id: existingOrder.id,
@@ -468,7 +468,7 @@ export async function PATCH(request: Request) {
               throw new Error("PAYMENT_REVIEW_CONFLICT");
             }
 
-            // INI BAGIAN MENGUBAH STATUS PAYMENT MENJADI LUNAS
+            // Memperbarui status transaksi menjadi lunas.
             const paymentUpdated = await tx.payment.updateMany({
               where: {
                 id: payment.id,
@@ -487,7 +487,7 @@ export async function PATCH(request: Request) {
               throw new Error("PAYMENT_REVIEW_CONFLICT");
             }
           } else {
-            // INI BAGIAN MENGUBAH STATUS PAYMENT MENJADI GAGAL
+            // Menandai transaksi pembayaran sebagai gagal.
             const paymentUpdated = await tx.payment.updateMany({
               where: {
                 id: payment.id,
@@ -505,7 +505,7 @@ export async function PATCH(request: Request) {
               throw new Error("PAYMENT_REVIEW_CONFLICT");
             }
 
-            // INI BAGIAN MENGUBAH STATUS ORDER MENJADI GAGAL
+            // Memperbarui status pesanan setelah bukti ditolak.
             const orderUpdated = await tx.order.updateMany({
               where: {
                 id: existingOrder.id,
@@ -525,7 +525,7 @@ export async function PATCH(request: Request) {
             }
           }
 
-          // INI BAGIAN MENGAMBIL PESANAN TERBARU
+          // Mengambil ulang data pesanan setelah perubahan.
           return tx.order.findUnique({
             where: {
               id: existingOrder.id,
@@ -580,7 +580,7 @@ export async function PATCH(request: Request) {
       }
     }
 
-    // INI BAGIAN MEMVALIDASI STATUS PESANAN
+    // Memvalidasi perubahan status pesanan.
     const targetStatus =
       typeof data.status === "string" ? data.status.trim() : "";
 
@@ -595,7 +595,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA URUTAN STATUS PESANAN
+    // Memastikan urutan perubahan status sesuai alur pesanan.
     const allowedStatuses = getAllowedNextStatuses(
       existingOrder.status,
       existingOrder.orderType,
@@ -613,7 +613,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MEMERIKSA PEMBAYARAN SEBELUM PESANAN SELESAI
+    // Pesanan hanya dapat diselesaikan setelah pembayaran lunas.
     if (targetStatus === "Selesai" && existingOrder.paymentStatus !== "LUNAS") {
       return NextResponse.json(
         {
@@ -626,7 +626,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MENCEGAH PEMBATALAN PESANAN YANG SUDAH DIBAYAR
+    // Pesanan yang sudah dibayar tidak dapat dibatalkan.
     if (
       targetStatus === "Dibatalkan" &&
       existingOrder.paymentStatus === "LUNAS"
@@ -642,7 +642,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // INI BAGIAN MENYIMPAN PERUBAHAN STATUS SECARA ATOMIK
+    // Menyimpan perubahan pesanan dan pembayaran dalam satu transaksi.
     const updatedOrder = await prisma.$transaction(async (tx) => {
       const updated = await tx.order.updateMany({
         where: {
@@ -665,7 +665,7 @@ export async function PATCH(request: Request) {
         return null;
       }
 
-      // INI BAGIAN MEMBATALKAN TRANSAKSI PEMBAYARAN YANG BELUM LUNAS
+      // Membatalkan transaksi pembayaran yang belum lunas.
       if (targetStatus === "Dibatalkan") {
         await tx.payment.updateMany({
           where: {
@@ -680,7 +680,7 @@ export async function PATCH(request: Request) {
         });
       }
 
-      // INI BAGIAN MENGAMBIL DATA PESANAN TERBARU
+      // Mengambil data pesanan terbaru setelah perubahan.
       return tx.order.findUnique({
         where: {
           id: existingOrder.id,

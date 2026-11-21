@@ -1,13 +1,13 @@
-/* INI BAGIAN KONFIGURASI PEMBAYARAN SOTO BETAWI */
+/* Konfigurasi pembayaran restoran. */
 
 export const PAYMENT_INFO = {
-  // INI BAGIAN INFORMASI QRIS
+  // Informasi QRIS.
   qris: {
     merchantName: "Soto Betawi Jakarta",
     imagePath: "/images/qris-soto-betawi.jpeg",
   },
 
-  // INI BAGIAN INFORMASI TRANSFER BANK
+  // Informasi transfer bank.
   bankTransfer: {
     bankName: "BCA",
     accountNumber: "49519991863",
@@ -15,7 +15,7 @@ export const PAYMENT_INFO = {
   },
 };
 
-// INI BAGIAN MEMERIKSA KELENGKAPAN METODE PEMBAYARAN
+// Memeriksa metode pembayaran yang sudah dikonfigurasi.
 export const PAYMENT_AVAILABILITY = {
   qris: Boolean(PAYMENT_INFO.qris.imagePath.trim()),
 

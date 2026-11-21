@@ -5,7 +5,7 @@ import { prisma } from "@/app/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// INI BAGIAN MENAMPILKAN GAMBAR DARI DATABASE
+// Mengambil gambar yang tersimpan di database.
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> },
@@ -14,7 +14,7 @@ export async function GET(
     const { id } = await context.params;
     const imageId = Number(id);
 
-    // INI BAGIAN MEMERIKSA ID GAMBAR
+    // Memvalidasi ID gambar.
     if (!Number.isSafeInteger(imageId) || imageId <= 0) {
       return NextResponse.json(
         { message: "ID gambar tidak valid." },
@@ -22,7 +22,7 @@ export async function GET(
       );
     }
 
-    // INI BAGIAN MENGAMBIL GAMBAR DARI DATABASE
+    // Mengambil data gambar dari database.
     const image = await prisma.uploadedImage.findUnique({
       where: {
         id: imageId,
@@ -40,7 +40,7 @@ export async function GET(
       );
     }
 
-    // INI BAGIAN MENGIRIM GAMBAR KE BROWSER
+    // Mengirim gambar ke browser.
     return new NextResponse(Buffer.from(image.data), {
       headers: {
         "Content-Type": image.mimeType,
