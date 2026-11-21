@@ -8654,3 +8654,205 @@ textarea {
     font-size: 24px;
   }
 }
+
+.admin-dashboard-stat-card:nth-child(3) .admin-stat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-dashboard-stat-card:nth-child(3) .admin-stat-info h2 {
+  font-size: clamp(16px, 1.35vw, 22px);
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-header .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.site-header .brand-main,
+.site-header .brand-accent {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.site-header .brand-accent {
+  margin-left: 0;
+}
+
+/* =========================================
+   REDESIGN NAVBAR CUSTOMER
+========================================= */
+
+.site-header {
+  background: rgba(255, 250, 244, 0.97);
+  border-bottom: 1px solid #eadfd3;
+  box-shadow: 0 3px 14px rgba(67, 42, 27, 0.035);
+  backdrop-filter: blur(12px);
+}
+
+.site-header .container.navbar {
+  min-height: 78px;
+  gap: 22px;
+}
+
+/* LOGO */
+
+.site-header .brand {
+  gap: 5px;
+  font-size: 18px;
+  letter-spacing: 0.25px;
+}
+
+.site-header .brand-mark {
+  display: inline-flex;
+  width: 31px;
+  height: 31px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 2px;
+  border-radius: 9px;
+  background: #f3e7da;
+  color: #85451f;
+  font-size: 17px;
+}
+
+.site-header .brand-main {
+  color: #603015;
+  font-weight: 850;
+}
+
+.site-header .brand-accent {
+  color: #98552c;
+  font-weight: 750;
+}
+
+/* NAVIGASI */
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 3px;
+  padding: 5px;
+  border: 1px solid #f0e8df;
+  border-radius: 11px;
+  background: #fffdf9;
+}
+
+.main-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #624b3b;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.main-nav a:hover {
+  background: #f5ebe1;
+  color: #85451f;
+}
+
+.main-nav a.active {
+  background: #f3e7da;
+  color: #85451f;
+}
+
+/* AKSI NAVBAR */
+
+.nav-actions {
+  gap: 10px;
+}
+
+.site-header .nav-actions > .btn,
+.site-header .nav-actions > .btn-primary {
+  min-height: 43px;
+  padding: 11px 19px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+/* PROFIL */
+
+.customer-profile-trigger {
+  min-height: 46px;
+  padding: 5px 11px 5px 5px;
+  border-color: #eadfd3;
+  background: #ffffff;
+}
+
+.customer-profile-trigger:hover {
+  border-color: #d1ad91;
+  background: #fffaf5;
+}
+
+.customer-profile-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+/* RESPONSIVE TABLET */
+
+@media (max-width: 1100px) {
+  .site-header .container.navbar {
+    gap: 12px;
+  }
+
+  .site-header .brand {
+    font-size: 15px;
+  }
+
+  .main-nav a {
+    padding: 8px 9px;
+    font-size: 12px;
+  }
+}
+
+/* RESPONSIVE MOBILE */
+
+@media (max-width: 576px) {
+  .site-header .container.navbar {
+    gap: 12px;
+    padding: 15px 0;
+  }
+
+  .site-header .brand {
+    justify-content: center;
+    font-size: 17px;
+  }
+
+  .main-nav {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .main-nav a {
+    min-height: 35px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}

@@ -24,9 +24,8 @@ export default async function Home() {
             <a className="active" href="#home">
               Home
             </a>
-
-            <a href="#menu">Menu</a>
             <a href="#tentang">Tentang Kami</a>
+            <a href="#menu">Menu</a>
             <a href="#lokasi">Lokasi</a>
           </nav>
 
