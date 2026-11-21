@@ -28,6 +28,7 @@ export default async function Home() {
               priority
               className="brand-logo"
             />
+
             <span className="brand-wordmark">
               <span className="brand-main">SOTO BETAWI</span>
               <span className="brand-accent">JAKARTA</span>
@@ -81,9 +82,13 @@ export default async function Home() {
             </div>
 
             <div className="hero-image-wrap">
-              <img
+              <Image
                 src="/images/hero-soto.jpeg"
                 alt="Soto Betawi"
+                width={1200}
+                height={900}
+                sizes="(max-width: 992px) 100vw, 50vw"
+                priority
                 className="hero-image"
               />
             </div>
@@ -94,11 +99,15 @@ export default async function Home() {
         <section className="about section-cream" id="tentang">
           <div className="container about-grid">
             <div className="about-image-wrap decorative-frame">
-              <img
-                src="/images/tentang-betawi.jpeg"
-                alt="Tradisi kuliner Betawi"
-                className="about-image"
-              />
+              <div className="about-image">
+                <Image
+                  src="/images/tentang-betawi.jpeg"
+                  alt="Tradisi kuliner Betawi"
+                  width={1000}
+                  height={900}
+                  sizes="(max-width: 992px) 100vw, 50vw"
+                />
+              </div>
             </div>
 
             <div className="about-copy">

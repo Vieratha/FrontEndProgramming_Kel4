@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { type Menu } from "../lib/menuStorage";
 
 type CartItem = Menu & {
@@ -17,6 +18,12 @@ type MenuSectionProps = {
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   onCartCountChange: (count: number) => void;
+};
+
+type Feedback = {
+  type: "success" | "error";
+  title: string;
+  message: string;
 };
 
 export default function MenuSection({
@@ -40,10 +47,12 @@ export default function MenuSection({
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartLoaded, setCartLoaded] = useState(false);
 
-  // FEEDBACK SETELAH MENAMBAHKAN MENU
-  const [cartFeedback, setCartFeedback] = useState<{
-    name: string;
-  } | null>(null);
+  // FEEDBACK CUSTOMER
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+
+  // REF DRAWER DAN TOMBOL TUTUP
+  const cartDrawerRef = useRef<HTMLElement | null>(null);
+  const cartCloseButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // MENGAMBIL MENU DAN KERANJANG
   useEffect(() => {
@@ -135,16 +144,16 @@ export default function MenuSection({
     }
   }, [cart, cartLoaded]);
 
-  // MENGHILANGKAN NOTIFIKASI KERANJANG
+  // MENGHILANGKAN NOTIFIKASI
   useEffect(() => {
-    if (!cartFeedback) return;
+    if (!feedback) return;
 
     const timeout = window.setTimeout(() => {
-      setCartFeedback(null);
-    }, 2200);
+      setFeedback(null);
+    }, 2800);
 
     return () => window.clearTimeout(timeout);
-  }, [cartFeedback]);
+  }, [feedback]);
 
   // MEMPERBARUI JUMLAH FAVORIT SECARA BERKALA
   useEffect(() => {
@@ -168,23 +177,94 @@ export default function MenuSection({
     return () => window.clearInterval(interval);
   }, []);
 
-  // MENUTUP DRAWER DENGAN TOMBOL ESCAPE
+  // MENUTUP DRAWER, MENJAGA FOKUS KEYBOARD, DAN MENGUNCI SCROLL
   useEffect(() => {
     if (!isCartOpen) return;
 
-    const handleEscape = (event: KeyboardEvent) => {
+    const drawer = cartDrawerRef.current;
+
+    if (!drawer) return;
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    // Arahkan fokus awal ke tombol tutup.
+    const focusFrame = window.requestAnimationFrame(() => {
+      cartCloseButtonRef.current?.focus();
+    });
+
+    const focusableSelector = [
+      "a[href]",
+      "button:not([disabled])",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(",");
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Tutup drawer dengan Escape.
       if (event.key === "Escape") {
+        event.preventDefault();
         setIsCartOpen(false);
+        return;
+      }
+
+      // Batasi perpindahan fokus dengan Tab di dalam drawer.
+      if (event.key !== "Tab") return;
+
+      const focusableElements = Array.from(
+        drawer.querySelectorAll<HTMLElement>(focusableSelector),
+      );
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      // Shift + Tab dari elemen pertama kembali ke elemen terakhir.
+      if (
+        event.shiftKey &&
+        (document.activeElement === firstElement ||
+          !drawer.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        lastElement.focus();
+        return;
+      }
+
+      // Tab dari elemen terakhir kembali ke elemen pertama.
+      if (
+        !event.shiftKey &&
+        (document.activeElement === lastElement ||
+          !drawer.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", handleEscape);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleEscape);
+
+      // Kembalikan fokus ke tombol yang membuka drawer.
+      if (previouslyFocused?.isConnected) {
+        previouslyFocused.focus();
+      }
     };
   }, [isCartOpen, setIsCartOpen]);
 
@@ -215,8 +295,10 @@ export default function MenuSection({
       ];
     });
 
-    setCartFeedback({
-      name: menu.name,
+    setFeedback({
+      type: "success",
+      title: "Berhasil ditambahkan",
+      message: `${menu.name} masuk ke keranjang.`,
     });
   };
 
@@ -224,11 +306,13 @@ export default function MenuSection({
   const toggleFavorite = async (menu: MenuWithFavorite) => {
     if (favoriteBusyIds.includes(menu.id)) return;
 
+    const wasFavorited = menu.isFavorited;
+
     setFavoriteBusyIds((previous) => [...previous, menu.id]);
 
     try {
       const response = await fetch("/api/favorites", {
-        method: menu.isFavorited ? "DELETE" : "POST",
+        method: wasFavorited ? "DELETE" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -259,13 +343,25 @@ export default function MenuSection({
             : item,
         ),
       );
+
+      setFeedback({
+        type: "success",
+        title: wasFavorited ? "Dihapus dari favorit" : "Ditambahkan ke favorit",
+        message: wasFavorited
+          ? `${menu.name} dihapus dari daftar favorit.`
+          : `${menu.name} disimpan ke daftar favorit.`,
+      });
     } catch (error) {
       console.error("Gagal mengubah favorit:", error);
-      window.alert(
-        error instanceof Error
-          ? error.message
-          : "Terjadi kesalahan saat mengubah favorit.",
-      );
+
+      setFeedback({
+        type: "error",
+        title: "Favorit gagal diperbarui",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Terjadi kesalahan saat mengubah favorit.",
+      });
     } finally {
       setFavoriteBusyIds((previous) => previous.filter((id) => id !== menu.id));
     }
@@ -400,7 +496,13 @@ export default function MenuSection({
                 data-category={menu.category.toLowerCase()}
               >
                 <div className="menu-photo">
-                  <img src={menu.image} alt={menu.name} />
+                  <Image
+                    src={menu.image}
+                    alt={menu.name}
+                    width={640}
+                    height={480}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1100px) 50vw, 33vw"
+                  />
                 </div>
 
                 <div className="menu-body">
@@ -501,27 +603,61 @@ export default function MenuSection({
           </p>
         )}
 
-        {/* NOTIFIKASI KERANJANG */}
-        {cartFeedback && (
-          <div className="cart-toast" role="status" aria-live="polite">
-            <span className="cart-toast-icon" aria-hidden="true">
-              <svg
-                viewBox="0 0 24 24"
-                width="19"
-                height="19"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m5 12 4 4L19 6" />
-              </svg>
+        {/* NOTIFIKASI INTERNAL CUSTOMER */}
+        {feedback && (
+          <div
+            className="cart-toast"
+            role={feedback.type === "error" ? "alert" : "status"}
+            aria-live={feedback.type === "error" ? "assertive" : "polite"}
+            style={
+              feedback.type === "error" ? { borderColor: "#efc6bf" } : undefined
+            }
+          >
+            <span
+              className="cart-toast-icon"
+              aria-hidden="true"
+              style={
+                feedback.type === "error"
+                  ? {
+                      background: "#fff0ee",
+                      color: "#a33b32",
+                    }
+                  : undefined
+              }
+            >
+              {feedback.type === "error" ? (
+                <svg
+                  viewBox="0 0 24 24"
+                  width="19"
+                  height="19"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 8v5M12 17h.01" />
+                  <circle cx="12" cy="12" r="9" />
+                </svg>
+              ) : (
+                <svg
+                  viewBox="0 0 24 24"
+                  width="19"
+                  height="19"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="m5 12 4 4L19 6" />
+                </svg>
+              )}
             </span>
 
             <span>
-              <strong>Berhasil ditambahkan</strong>
-              <small>{cartFeedback.name} masuk ke keranjang.</small>
+              <strong>{feedback.title}</strong>
+              <small>{feedback.message}</small>
             </span>
           </div>
         )}
@@ -546,6 +682,7 @@ export default function MenuSection({
             />
 
             <aside
+              ref={cartDrawerRef}
               className="cart-drawer"
               role="dialog"
               aria-modal="true"
@@ -560,6 +697,7 @@ export default function MenuSection({
                 </div>
 
                 <button
+                  ref={cartCloseButtonRef}
                   type="button"
                   className="cart-drawer-close"
                   onClick={() => setIsCartOpen(false)}
@@ -599,8 +737,10 @@ export default function MenuSection({
                       <circle cx="10" cy="20" r="1" />
                       <circle cx="18" cy="20" r="1" />
                     </svg>
+
                     <strong>Keranjang masih kosong</strong>
                     <p>Silakan pilih menu yang ingin Anda pesan.</p>
+
                     <button type="button" onClick={() => setIsCartOpen(false)}>
                       Kembali memilih menu
                     </button>
