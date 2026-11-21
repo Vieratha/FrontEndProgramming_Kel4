@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
-// INI BAGIAN TIPE DATA FAQ
+// Data FAQ.
 type FaqItem = {
   id: number;
   question: string;
@@ -14,7 +14,7 @@ type FaqItem = {
   updatedAt: string;
 };
 
-// INI BAGIAN TIPE DATA FORM FAQ
+// Data form FAQ.
 type FaqForm = {
   question: string;
   answer: string;
@@ -22,7 +22,7 @@ type FaqForm = {
   sortOrder: string;
 };
 
-// INI BAGIAN FORM KOSONG
+// Nilai awal form FAQ.
 const emptyForm: FaqForm = {
   question: "",
   answer: "",
@@ -30,26 +30,26 @@ const emptyForm: FaqForm = {
   sortOrder: "1",
 };
 
-// INI BAGIAN HALAMAN MANAJEMEN FAQ
+// Halaman pengelolaan FAQ admin.
 export default function AdminFaqPage() {
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  // INI BAGIAN PENCARIAN DAN FILTER
+  // State pencarian dan filter.
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
 
-  // INI BAGIAN FORM FAQ
+  // State form FAQ.
   const [form, setForm] = useState<FaqForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // INI BAGIAN NOTIFIKASI
+  // Notifikasi hasil tindakan admin.
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
-  // INI BAGIAN MEMBACA FAQ DARI DATABASE
+  // Mengambil FAQ dari database.
   const fetchFaqs = useCallback(async () => {
     try {
       setLoading(true);
@@ -77,7 +77,7 @@ export default function AdminFaqPage() {
     }
   }, []);
 
-  // INI BAGIAN MEMUAT DATA FAQ PERTAMA KALI
+  // Memuat data FAQ saat halaman dibuka.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void fetchFaqs();
@@ -86,14 +86,14 @@ export default function AdminFaqPage() {
     return () => window.clearTimeout(timer);
   }, [fetchFaqs]);
 
-  // INI BAGIAN MENGHITUNG STATISTIK FAQ
+  // Menghitung statistik FAQ.
   const totalFaqs = faqs.length;
 
   const activeFaqs = faqs.filter((faq) => faq.isActive).length;
 
   const inactiveFaqs = faqs.filter((faq) => !faq.isActive).length;
 
-  // INI BAGIAN PENCARIAN DAN FILTER FAQ
+  // Memfilter daftar FAQ.
   const filteredFaqs = faqs.filter((faq) => {
     const keyword = search.toLowerCase().trim();
 
@@ -109,7 +109,6 @@ export default function AdminFaqPage() {
     return matchSearch && matchStatus;
   });
 
-  // INI BAGIAN MENGOSONGKAN FORM
   const resetForm = () => {
     setForm({
       ...emptyForm,
@@ -119,7 +118,6 @@ export default function AdminFaqPage() {
     setEditingId(null);
   };
 
-  // INI BAGIAN MEMPERBARUI INPUT FORM
   const updateForm = <K extends keyof FaqForm>(field: K, value: FaqForm[K]) => {
     setForm((previous) => ({
       ...previous,
@@ -127,7 +125,7 @@ export default function AdminFaqPage() {
     }));
   };
 
-  // INI BAGIAN MEMBUKA FORM EDIT
+  // Mengisi form untuk mengedit FAQ.
   const handleEdit = (faq: FaqItem) => {
     setEditingId(faq.id);
 
@@ -146,7 +144,7 @@ export default function AdminFaqPage() {
     });
   };
 
-  // INI BAGIAN MENYIMPAN FAQ BARU ATAU PERUBAHAN FAQ
+  // Menyimpan FAQ baru atau perubahan.
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -157,19 +155,16 @@ export default function AdminFaqPage() {
     const answer = form.answer.trim();
     const sortOrder = Number(form.sortOrder);
 
-    // INI BAGIAN VALIDASI PERTANYAAN
     if (!question || question.length > 200) {
       setError("Pertanyaan wajib diisi dan maksimal 200 karakter.");
       return;
     }
 
-    // INI BAGIAN VALIDASI JAWABAN
     if (!answer || answer.length > 3000) {
       setError("Jawaban wajib diisi dan maksimal 3000 karakter.");
       return;
     }
 
-    // INI BAGIAN VALIDASI URUTAN
     if (!Number.isSafeInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
       setError("Urutan FAQ harus berupa angka 0 sampai 9999.");
       return;
@@ -178,10 +173,9 @@ export default function AdminFaqPage() {
     try {
       setSaving(true);
 
-      // INI BAGIAN MENENTUKAN METHOD API
       const method = editingId !== null ? "PATCH" : "POST";
 
-      // INI BAGIAN MENGIRIM DATA FAQ KE API
+      // Mengirim data FAQ ke API.
       const response = await fetch("/api/admin/faq", {
         method,
         headers: {
@@ -202,7 +196,7 @@ export default function AdminFaqPage() {
         throw new Error(data.message || "Gagal menyimpan FAQ.");
       }
 
-      // INI BAGIAN MEMUAT ULANG DATA FAQ
+      // Memuat ulang daftar FAQ.
       await fetchFaqs();
 
       setSuccess(
@@ -223,7 +217,7 @@ export default function AdminFaqPage() {
     }
   };
 
-  // INI BAGIAN MENGAKTIFKAN ATAU MENONAKTIFKAN FAQ
+  // Mengubah status aktif FAQ.
   const handleToggle = async (faq: FaqItem) => {
     setBusyId(faq.id);
     setSuccess("");
@@ -268,7 +262,7 @@ export default function AdminFaqPage() {
     }
   };
 
-  // INI BAGIAN MENGHAPUS FAQ
+  // Menghapus FAQ.
   const handleDelete = async (faq: FaqItem) => {
     const confirmed = window.confirm(
       `Yakin ingin menghapus pertanyaan "${faq.question}"?`,
@@ -315,7 +309,7 @@ export default function AdminFaqPage() {
     }
   };
 
-  // INI BAGIAN FORMAT TANGGAL
+  // Format tanggal.
   const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleString("id-ID", {
       timeZone: "Asia/Jakarta",
@@ -325,7 +319,7 @@ export default function AdminFaqPage() {
 
   return (
     <main className="faq-admin-page">
-      {/* INI BAGIAN HEADER HALAMAN */}
+      {/* Header halaman */}
       <header className="faq-admin-header">
         <div>
           <p className="faq-admin-breadcrumb">FAQ</p>
@@ -350,7 +344,7 @@ export default function AdminFaqPage() {
         </button>
       </header>
 
-      {/* INI BAGIAN NOTIFIKASI */}
+      {/* Notifikasi */}
       {success && (
         <div className="faq-admin-alert success" role="status">
           {success}
@@ -363,7 +357,7 @@ export default function AdminFaqPage() {
         </div>
       )}
 
-      {/* INI BAGIAN RINGKASAN STATISTIK FAQ */}
+      {/* Ringkasan statistik FAQ */}
       <section className="faq-admin-summary">
         <div className="faq-admin-summary-card">
           <span>Total FAQ</span>
@@ -381,9 +375,9 @@ export default function AdminFaqPage() {
         </div>
       </section>
 
-      {/* INI BAGIAN FORM DAN DAFTAR FAQ */}
+      {/* Form dan daftar FAQ */}
       <div className="faq-admin-layout">
-        {/* INI BAGIAN FORM TAMBAH DAN EDIT FAQ */}
+        {/* Form tambah dan edit FAQ */}
         <section className="faq-admin-form-card">
           <div className="faq-admin-card-header">
             <div>
@@ -395,7 +389,6 @@ export default function AdminFaqPage() {
           </div>
 
           <form className="faq-admin-form" onSubmit={handleSubmit}>
-            {/* INI BAGIAN INPUT PERTANYAAN */}
             <div className="faq-admin-field">
               <label htmlFor="faq-question">Pertanyaan</label>
 
@@ -412,7 +405,6 @@ export default function AdminFaqPage() {
               <small>{form.question.length}/200 karakter</small>
             </div>
 
-            {/* INI BAGIAN INPUT JAWABAN */}
             <div className="faq-admin-field">
               <label htmlFor="faq-answer">Jawaban</label>
 
@@ -429,7 +421,6 @@ export default function AdminFaqPage() {
               <small>{form.answer.length}/3000 karakter</small>
             </div>
 
-            {/* INI BAGIAN URUTAN FAQ */}
             <div className="faq-admin-field">
               <label htmlFor="faq-sort">Urutan Tampil</label>
 
@@ -449,7 +440,6 @@ export default function AdminFaqPage() {
               <small>Angka lebih kecil akan ditampilkan lebih dahulu.</small>
             </div>
 
-            {/* INI BAGIAN STATUS AKTIF */}
             <label className="faq-admin-checkbox">
               <input
                 type="checkbox"
@@ -462,7 +452,6 @@ export default function AdminFaqPage() {
               <span>Tampilkan FAQ di halaman utama</span>
             </label>
 
-            {/* INI BAGIAN TOMBOL FORM */}
             <div className="faq-admin-form-actions">
               <button
                 type="submit"
@@ -490,7 +479,7 @@ export default function AdminFaqPage() {
           </form>
         </section>
 
-        {/* INI BAGIAN DAFTAR FAQ */}
+        {/* Daftar FAQ */}
         <section className="faq-admin-list-card">
           <div className="faq-admin-card-header">
             <div>
@@ -501,7 +490,7 @@ export default function AdminFaqPage() {
             <span className="faq-admin-count">{filteredFaqs.length} FAQ</span>
           </div>
 
-          {/* INI BAGIAN PENCARIAN DAN FILTER */}
+          {/* Pencarian dan filter */}
           <div className="faq-admin-toolbar">
             <input
               type="search"
@@ -522,7 +511,7 @@ export default function AdminFaqPage() {
             </select>
           </div>
 
-          {/* INI BAGIAN TABEL FAQ */}
+          {/* Tabel FAQ */}
           <div className="faq-admin-table-scroll">
             <table className="faq-admin-table">
               <thead>

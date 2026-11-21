@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import Image from "next/image";
 
-// INI BAGIAN TIPE DATA LOKASI
+// Data lokasi dari database.
 type LocationItem = {
   id: number;
   name: string;
@@ -20,7 +20,7 @@ type LocationItem = {
   updatedAt: string;
 };
 
-// INI BAGIAN TIPE DATA FORM LOKASI
+// Data yang digunakan pada form lokasi.
 type LocationForm = {
   name: string;
   address: string;
@@ -33,7 +33,7 @@ type LocationForm = {
   sortOrder: string;
 };
 
-// INI BAGIAN FORM LOKASI KOSONG
+// Nilai awal form lokasi.
 const emptyForm: LocationForm = {
   name: "",
   address: "",
@@ -46,7 +46,7 @@ const emptyForm: LocationForm = {
   sortOrder: "1",
 };
 
-// INI BAGIAN FORMAT TANGGAL
+// Format tanggal.
 function formatTanggal(tanggal: string) {
   return new Date(tanggal).toLocaleString("id-ID", {
     timeZone: "Asia/Jakarta",
@@ -54,7 +54,7 @@ function formatTanggal(tanggal: string) {
   });
 }
 
-// INI BAGIAN HALAMAN ADMIN LOCATIONS
+// Halaman pengelolaan lokasi admin.
 export default function AdminLocationsPage() {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,19 +62,19 @@ export default function AdminLocationsPage() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
 
-  // INI BAGIAN PENCARIAN DAN FILTER LOKASI
+  // State pencarian dan filter lokasi.
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
 
-  // INI BAGIAN FORM LOKASI
+  // State form lokasi.
   const [form, setForm] = useState<LocationForm>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // INI BAGIAN NOTIFIKASI
+  // Notifikasi hasil tindakan admin.
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
-  // INI BAGIAN MEMBACA DATA LOKASI DARI DATABASE
+  // Mengambil daftar lokasi dari database.
   const fetchLocations = useCallback(async () => {
     try {
       setLoading(true);
@@ -103,7 +103,7 @@ export default function AdminLocationsPage() {
     }
   }, []);
 
-  // INI BAGIAN MEMUAT DATA LOKASI PERTAMA KALI
+  // Memuat data lokasi saat halaman dibuka.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void fetchLocations();
@@ -112,7 +112,7 @@ export default function AdminLocationsPage() {
     return () => window.clearTimeout(timer);
   }, [fetchLocations]);
 
-  // INI BAGIAN MENGHITUNG STATISTIK LOKASI
+  // Menghitung ringkasan statistik lokasi.
   const totalLocations = locations.length;
 
   const activeLocations = locations.filter(
@@ -123,7 +123,6 @@ export default function AdminLocationsPage() {
     (location) => !location.isActive,
   ).length;
 
-  // INI BAGIAN PENCARIAN DAN FILTER
   const filteredLocations = locations.filter((location) => {
     const keyword = search.toLowerCase().trim();
 
@@ -140,7 +139,6 @@ export default function AdminLocationsPage() {
     return matchSearch && matchStatus;
   });
 
-  // INI BAGIAN MENGOSONGKAN FORM
   const resetForm = () => {
     setForm({
       ...emptyForm,
@@ -150,7 +148,6 @@ export default function AdminLocationsPage() {
     setEditingId(null);
   };
 
-  // INI BAGIAN MEMPERBARUI INPUT FORM
   const updateForm = <K extends keyof LocationForm>(
     field: K,
     value: LocationForm[K],
@@ -161,14 +158,13 @@ export default function AdminLocationsPage() {
     }));
   };
 
-  // INI BAGIAN MENGUNGGAH GAMBAR LOKASI BARU
+  // Upload gambar lokasi dan validasi file.
   const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
     const file = input.files?.[0];
 
     if (!file) return;
 
-    // INI BAGIAN MEMERIKSA FORMAT FILE
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
     if (!allowedTypes.includes(file.type)) {
@@ -177,7 +173,6 @@ export default function AdminLocationsPage() {
       return;
     }
 
-    // INI BAGIAN MEMERIKSA UKURAN FILE
     if (file.size > 2 * 1024 * 1024) {
       setError("Ukuran gambar maksimal 2 MB.");
       input.value = "";
@@ -189,11 +184,9 @@ export default function AdminLocationsPage() {
       setError("");
       setSuccess("");
 
-      // INI BAGIAN MEMASUKKAN FILE KE FORM DATA
       const formData = new FormData();
       formData.append("file", file);
 
-      // INI BAGIAN MENGIRIM GAMBAR KE API
       const response = await fetch("/api/admin/uploads", {
         method: "POST",
         body: formData,
@@ -205,7 +198,6 @@ export default function AdminLocationsPage() {
         throw new Error(data.message || "Gagal mengunggah gambar lokasi.");
       }
 
-      // INI BAGIAN MEMASUKKAN URL GAMBAR KE FORM
       updateForm("imagePath", data.imageUrl);
 
       setSuccess("Gambar lokasi berhasil diunggah.");
@@ -221,7 +213,7 @@ export default function AdminLocationsPage() {
     }
   };
 
-  // INI BAGIAN MEMBUKA FORM EDIT LOKASI
+  // Mengisi form dengan data lokasi yang dipilih.
   const handleEdit = (location: LocationItem) => {
     setEditingId(location.id);
 
@@ -246,7 +238,7 @@ export default function AdminLocationsPage() {
     });
   };
 
-  // INI BAGIAN MENYIMPAN LOKASI BARU ATAU PERUBAHAN LOKASI
+  // Proses penyimpanan data lokasi.
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -266,37 +258,31 @@ export default function AdminLocationsPage() {
     const mapUrl = form.mapUrl.trim();
     const sortOrder = Number(form.sortOrder);
 
-    // INI BAGIAN VALIDASI NAMA CABANG
     if (!name || name.length > 100) {
       setError("Nama cabang wajib diisi dan maksimal 100 karakter.");
       return;
     }
 
-    // INI BAGIAN VALIDASI ALAMAT
     if (!address || address.length > 500) {
       setError("Alamat wajib diisi dan maksimal 500 karakter.");
       return;
     }
 
-    // INI BAGIAN VALIDASI KOTA
     if (!city || city.length > 100) {
       setError("Kota atau wilayah wajib diisi.");
       return;
     }
 
-    // INI BAGIAN VALIDASI JAM OPERASIONAL
     if (!openingHours || openingHours.length > 200) {
       setError("Jam operasional wajib diisi.");
       return;
     }
 
-    // INI BAGIAN VALIDASI NOMOR TELEPON
     if (phone && (!/^[0-9+().\-\s]+$/.test(phone) || phone.length > 30)) {
       setError("Format nomor telepon tidak valid.");
       return;
     }
 
-    // INI BAGIAN VALIDASI URUTAN
     if (!Number.isSafeInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
       setError("Urutan lokasi harus berupa angka 0 sampai 9999.");
       return;
@@ -305,10 +291,9 @@ export default function AdminLocationsPage() {
     try {
       setSaving(true);
 
-      // INI BAGIAN MENENTUKAN METHOD API
       const method = editingId !== null ? "PATCH" : "POST";
 
-      // INI BAGIAN MENGIRIM DATA LOKASI KE API
+      // Mengirim perubahan lokasi ke API.
       const response = await fetch("/api/admin/locations", {
         method,
         headers: {
@@ -334,7 +319,7 @@ export default function AdminLocationsPage() {
         throw new Error(data.message || "Gagal menyimpan data lokasi.");
       }
 
-      // INI BAGIAN MEMUAT ULANG DATA LOKASI
+      // Memuat ulang daftar lokasi setelah perubahan.
       await fetchLocations();
 
       setSuccess(
@@ -355,7 +340,7 @@ export default function AdminLocationsPage() {
     }
   };
 
-  // INI BAGIAN MENGAKTIFKAN ATAU MENONAKTIFKAN LOKASI
+  // Mengubah status aktif lokasi.
   const handleToggle = async (location: LocationItem) => {
     setBusyId(location.id);
     setSuccess("");
@@ -405,7 +390,7 @@ export default function AdminLocationsPage() {
     }
   };
 
-  // INI BAGIAN MENGHAPUS LOKASI
+  // Menghapus lokasi dari database.
   const handleDelete = async (location: LocationItem) => {
     const confirmed = window.confirm(
       `Yakin ingin menghapus cabang "${location.name}"?`,
@@ -454,7 +439,6 @@ export default function AdminLocationsPage() {
 
   return (
     <main className="loc-admin-page">
-      {/* INI BAGIAN HEADER HALAMAN */}
       <header className="loc-admin-header">
         <div>
           <p className="loc-admin-breadcrumb">Lokasi</p>
@@ -480,7 +464,7 @@ export default function AdminLocationsPage() {
         </button>
       </header>
 
-      {/* INI BAGIAN NOTIFIKASI */}
+      {/* Notifikasi */}
       {success && (
         <div className="loc-admin-alert success" role="status">
           {success}
@@ -493,7 +477,7 @@ export default function AdminLocationsPage() {
         </div>
       )}
 
-      {/* INI BAGIAN RINGKASAN STATISTIK LOKASI */}
+      {/* Ringkasan lokasi */}
       <section className="loc-admin-summary">
         <div className="loc-admin-summary-card">
           <span>Total Cabang</span>
@@ -511,9 +495,9 @@ export default function AdminLocationsPage() {
         </div>
       </section>
 
-      {/* INI BAGIAN FORM DAN DAFTAR LOKASI */}
+      {/* Form dan daftar lokasi */}
       <div className="loc-admin-layout">
-        {/* INI BAGIAN FORM TAMBAH DAN EDIT LOKASI */}
+        {/* Form tambah dan edit lokasi */}
         <section className="loc-admin-form-card">
           <div className="loc-admin-card-header">
             <div>
@@ -523,7 +507,6 @@ export default function AdminLocationsPage() {
           </div>
 
           <form className="loc-admin-form" onSubmit={handleSubmit}>
-            {/* INI BAGIAN NAMA CABANG */}
             <div className="loc-admin-field">
               <label htmlFor="location-name">Nama Cabang</label>
 
@@ -538,7 +521,6 @@ export default function AdminLocationsPage() {
               />
             </div>
 
-            {/* INI BAGIAN ALAMAT CABANG */}
             <div className="loc-admin-field">
               <label htmlFor="location-address">Alamat Lengkap</label>
 
@@ -553,7 +535,6 @@ export default function AdminLocationsPage() {
               />
             </div>
 
-            {/* INI BAGIAN KOTA ATAU WILAYAH */}
             <div className="loc-admin-field">
               <label htmlFor="location-city">Kota / Wilayah</label>
 
@@ -568,7 +549,6 @@ export default function AdminLocationsPage() {
               />
             </div>
 
-            {/* INI BAGIAN NOMOR TELEPON */}
             <div className="loc-admin-field">
               <label htmlFor="location-phone">
                 Nomor Telepon <span>(Opsional)</span>
@@ -584,7 +564,6 @@ export default function AdminLocationsPage() {
               />
             </div>
 
-            {/* INI BAGIAN JAM OPERASIONAL */}
             <div className="loc-admin-field">
               <label htmlFor="location-hours">Jam Operasional</label>
 
@@ -601,7 +580,6 @@ export default function AdminLocationsPage() {
               />
             </div>
 
-            {/* INI BAGIAN UPLOAD GAMBAR LOKASI */}
             <div className="loc-admin-field">
               <label htmlFor="location-image-upload">
                 Unggah Gambar Lokasi
@@ -635,7 +613,6 @@ export default function AdminLocationsPage() {
               )}
             </div>
 
-            {/* INI BAGIAN LINK GOOGLE MAPS */}
             <div className="loc-admin-field">
               <label htmlFor="location-map-url">
                 Link Google Maps <span>(Opsional)</span>
@@ -655,7 +632,6 @@ export default function AdminLocationsPage() {
               </small>
             </div>
 
-            {/* INI BAGIAN URUTAN TAMPIL */}
             <div className="loc-admin-field">
               <label htmlFor="location-order">Urutan Tampil</label>
 
@@ -675,7 +651,6 @@ export default function AdminLocationsPage() {
               <small>Angka lebih kecil akan ditampilkan lebih dahulu.</small>
             </div>
 
-            {/* INI BAGIAN STATUS LOKASI */}
             <label className="loc-admin-checkbox">
               <input
                 type="checkbox"
@@ -688,7 +663,6 @@ export default function AdminLocationsPage() {
               <span>Tampilkan cabang di halaman Customer</span>
             </label>
 
-            {/* INI BAGIAN TOMBOL FORM */}
             <div className="loc-admin-form-actions">
               <button
                 type="submit"
@@ -716,7 +690,7 @@ export default function AdminLocationsPage() {
           </form>
         </section>
 
-        {/* INI BAGIAN DAFTAR LOKASI */}
+        {/* Daftar lokasi */}
         <section className="loc-admin-list-card">
           <div className="loc-admin-card-header">
             <div>
@@ -729,7 +703,7 @@ export default function AdminLocationsPage() {
             </span>
           </div>
 
-          {/* INI BAGIAN PENCARIAN DAN FILTER */}
+          {/* Pencarian dan filter */}
           <div className="loc-admin-toolbar">
             <input
               type="search"
@@ -750,7 +724,7 @@ export default function AdminLocationsPage() {
             </select>
           </div>
 
-          {/* INI BAGIAN TABEL LOKASI */}
+          {/* Tabel lokasi */}
           <div className="loc-admin-table-scroll">
             <table className="loc-admin-table">
               <thead>

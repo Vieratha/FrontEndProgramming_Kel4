@@ -51,7 +51,7 @@ export default function AdminMenuPage() {
   const [error, setError] = useState("");
   const [modalError, setModalError] = useState("");
 
-  // MEMBACA DATA MENU DARI DATABASE
+  // Mengambil data menu dari database.
   const fetchMenus = async () => {
     try {
       setLoading(true);
@@ -88,7 +88,7 @@ export default function AdminMenuPage() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // MENUTUP SCROLL HALAMAN SAAT MODAL TERBUKA
+  // Mengunci scroll halaman saat modal terbuka.
   useEffect(() => {
     if (!isModalOpen) return;
 
@@ -109,7 +109,7 @@ export default function AdminMenuPage() {
     };
   }, [isModalOpen, saving, uploadingImage]);
 
-  // PENCARIAN DAN FILTER KATEGORI
+  // Pencarian dan filter kategori menu.
   const filteredMenus = menus.filter((menu) => {
     const matchSearch = menu.name
       .toLowerCase()
@@ -121,7 +121,7 @@ export default function AdminMenuPage() {
     return matchSearch && matchCategory;
   });
 
-  // MEMBUKA MODAL TAMBAH
+  // Membuka modal untuk menambah menu.
   const openAddModal = () => {
     setEditingId(null);
     setForm({ ...emptyForm });
@@ -131,7 +131,7 @@ export default function AdminMenuPage() {
     setIsModalOpen(true);
   };
 
-  // MEMBUKA MODAL EDIT
+  // Membuka modal untuk mengedit menu.
   const openEditModal = (menu: Menu) => {
     setEditingId(menu.id);
 
@@ -150,7 +150,7 @@ export default function AdminMenuPage() {
     setIsModalOpen(true);
   };
 
-  // MENUTUP MODAL
+  // Menutup modal.
   const closeModal = () => {
     if (saving || uploadingImage) return;
 
@@ -159,7 +159,7 @@ export default function AdminMenuPage() {
     setModalError("");
   };
 
-  // MEMPERBARUI INPUT FORM
+  // Memperbarui data pada form.
   const updateForm = <K extends keyof MenuForm>(
     field: K,
     value: MenuForm[K],
@@ -170,14 +170,13 @@ export default function AdminMenuPage() {
     }));
   };
 
-  // INI BAGIAN MENGUNGGAH GAMBAR MENU BARU
+  // Upload gambar menu dan validasi file.
   const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
     const file = input.files?.[0];
 
     if (!file) return;
 
-    // INI BAGIAN MEMERIKSA FORMAT FILE
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
     if (!allowedTypes.includes(file.type)) {
@@ -186,7 +185,6 @@ export default function AdminMenuPage() {
       return;
     }
 
-    // INI BAGIAN MEMERIKSA UKURAN FILE
     if (file.size > 2 * 1024 * 1024) {
       setModalError("Ukuran gambar maksimal 2 MB.");
       input.value = "";
@@ -197,11 +195,9 @@ export default function AdminMenuPage() {
       setUploadingImage(true);
       setModalError("");
 
-      // INI BAGIAN MEMASUKKAN FILE KE FORM DATA
       const formData = new FormData();
       formData.append("file", file);
 
-      // INI BAGIAN MENGIRIM GAMBAR KE API
       const response = await fetch("/api/admin/uploads", {
         method: "POST",
         body: formData,
@@ -213,7 +209,6 @@ export default function AdminMenuPage() {
         throw new Error(data.message || "Gagal mengunggah gambar menu.");
       }
 
-      // INI BAGIAN MEMASUKKAN URL GAMBAR KE FORM
       updateForm("image", data.imageUrl);
     } catch (err) {
       setModalError(
@@ -227,7 +222,7 @@ export default function AdminMenuPage() {
     }
   };
 
-  // SIMPAN MENU BARU ATAU PERUBAHAN KE DATABASE
+  // Menyimpan menu baru atau perubahan.
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setModalError("");
@@ -303,7 +298,7 @@ export default function AdminMenuPage() {
     }
   };
 
-  // HAPUS MENU DARI DATABASE
+  // Menghapus menu dari database.
   const handleDelete = async (menu: Menu) => {
     const confirmed = window.confirm(
       `Yakin ingin menghapus menu "${menu.name}"?`,
@@ -342,7 +337,7 @@ export default function AdminMenuPage() {
 
   return (
     <main className="am-page">
-      {/* HEADER */}
+      {/* Header */}
       <header className="am-header">
         <div>
           <p className="am-breadcrumb">Menu</p>
@@ -354,12 +349,12 @@ export default function AdminMenuPage() {
         </button>
       </header>
 
-      {/* NOTIFIKASI */}
+      {/* Notifikasi */}
       {message && <div className="am-alert am-alert-success">{message}</div>}
 
       {error && <div className="am-alert am-alert-error">{error}</div>}
 
-      {/* TABEL MENU */}
+      {/* Tabel menu */}
       <section className="am-table-card">
         <div className="am-toolbar">
           <input
@@ -454,7 +449,7 @@ export default function AdminMenuPage() {
         </div>
       </section>
 
-      {/* MODAL TAMBAH / EDIT MENU */}
+      {/* Modal tambah dan edit menu */}
       {isModalOpen && (
         <div
           className="am-modal-overlay"

@@ -23,25 +23,20 @@ type OrderType = "Makan di Tempat" | "Bawa Pulang";
 export default function CheckoutPage() {
   const router = useRouter();
 
-  // INI BAGIAN DATA CUSTOMER
   const [nama, setNama] = useState("");
   const [telepon, setTelepon] = useState("");
   const [alamat, setAlamat] = useState("");
 
-  // INI BAGIAN JENIS PESANAN
   const [orderType, setOrderType] = useState<OrderType>("Makan di Tempat");
 
   const [nomorMeja, setNomorMeja] = useState("");
   const [catatan, setCatatan] = useState("");
 
-  // INI BAGIAN METODE PEMBAYARAN
   const [paymentMethod, setPaymentMethod] = useState("Bayar di Kasir");
 
-  // INI BAGIAN KERANJANG
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartLoaded, setCartLoaded] = useState(false);
 
-  // INI BAGIAN STATUS CHECKOUT
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -74,13 +69,11 @@ export default function CheckoutPage() {
   }, []);
 
   // INI BAGIAN MENGHITUNG TOTAL SEMENTARA
-  // Harga final tetap akan dihitung ulang oleh server.
   const totalHarga = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
   );
 
-  // INI BAGIAN FORMAT RUPIAH
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -90,7 +83,6 @@ export default function CheckoutPage() {
   };
 
   // INI BAGIAN MENYIMPAN NOMOR PESANAN DI BROWSER
-  // Browser hanya menyimpan referensi, bukan rincian pesanan.
   const saveOrderReference = (orderNumber: string) => {
     try {
       const savedNumbers = localStorage.getItem("soto-betawi-order-numbers");
@@ -127,19 +119,16 @@ export default function CheckoutPage() {
 
     if (submitting) return;
 
-    // INI BAGIAN VALIDASI KERANJANG
     if (!cartLoaded || cart.length === 0) {
       setError("Keranjang masih kosong. Silakan pilih menu terlebih dahulu.");
       return;
     }
 
-    // INI BAGIAN VALIDASI NAMA
     if (nama.trim().length < 3) {
       setError("Nama pemesan minimal 3 karakter.");
       return;
     }
 
-    // INI BAGIAN VALIDASI NOMOR MEJA
     if (
       orderType === "Makan di Tempat" &&
       !/^[0-9]{1,4}$/.test(nomorMeja.trim())
@@ -148,7 +137,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    // INI BAGIAN VALIDASI NOMOR TELEPON OPSIONAL
     const nomorTelepon = telepon.replace(/[\s-]/g, "");
 
     if (nomorTelepon && !/^08[0-9]{8,11}$/.test(nomorTelepon)) {
@@ -156,7 +144,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    // INI BAGIAN VALIDASI ALAMAT OPSIONAL
     if (alamat.trim() && alamat.trim().length < 10) {
       setError("Alamat harus berisi minimal 10 karakter.");
       return;
@@ -187,8 +174,7 @@ export default function CheckoutPage() {
 
           note: catatan.trim(),
 
-          // Kirim ID dan jumlah saja.
-          // Harga final akan diambil dari database oleh API.
+          // Kirim ID dan jumlah saja. Harga final akan diambil dari database oleh API.
           items: cart.map((item) => ({
             menuId: item.id,
             quantity: item.quantity,
@@ -208,7 +194,6 @@ export default function CheckoutPage() {
         throw new Error("Nomor pesanan tidak ditemukan dari server.");
       }
 
-      // INI BAGIAN MENYIMPAN REFERENSI NOMOR PESANAN
       saveOrderReference(orderNumber);
 
       // INI BAGIAN MENGOSONGKAN KERANJANG
@@ -230,7 +215,6 @@ export default function CheckoutPage() {
   return (
     <main className="checkout-page">
       <div className="checkout-container">
-        {/* INI BAGIAN HEADER CHECKOUT */}
         <div className="checkout-header">
           <h1>Checkout Pesanan</h1>
           <p>
@@ -240,12 +224,10 @@ export default function CheckoutPage() {
         </div>
 
         <div className="checkout-content">
-          {/* INI BAGIAN FORM CUSTOMER */}
           <section className="checkout-form-card">
             <h2>Informasi Pemesan</h2>
 
             <form onSubmit={handleCheckout}>
-              {/* INI BAGIAN NAMA PEMESAN */}
               <div className="checkout-form-group">
                 <label htmlFor="nama">Nama Pemesan</label>
                 <input
@@ -260,7 +242,6 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* INI BAGIAN JENIS PESANAN */}
               <div className="checkout-form-group">
                 <label>Jenis Pesanan</label>
 
@@ -296,7 +277,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* INI BAGIAN NOMOR MEJA */}
               {orderType === "Makan di Tempat" && (
                 <div className="checkout-form-group">
                   <label htmlFor="nomorMeja">Nomor Meja</label>
@@ -318,7 +298,6 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* INI BAGIAN NOMOR TELEPON */}
               <div className="checkout-form-group">
                 <label htmlFor="telepon">
                   Nomor Telepon
@@ -334,7 +313,6 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* INI BAGIAN ALAMAT */}
               <div className="checkout-form-group">
                 <label htmlFor="alamat">
                   Alamat
@@ -350,7 +328,6 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* INI BAGIAN METODE PEMBAYARAN */}
               <div className="checkout-form-group">
                 <label htmlFor="paymentMethod">Metode Pembayaran</label>
 
@@ -378,7 +355,6 @@ export default function CheckoutPage() {
                   </option>
                 </select>
 
-                {/* INI BAGIAN INFORMASI PEMBAYARAN */}
                 <div className="checkout-payment-info">
                   {paymentMethod === "Bayar di Kasir" && (
                     <>
@@ -411,7 +387,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* INI BAGIAN CATATAN PESANAN */}
               <div className="checkout-form-group">
                 <label htmlFor="catatan">
                   Catatan
@@ -428,14 +403,12 @@ export default function CheckoutPage() {
                 />
               </div>
 
-              {/* INI BAGIAN PESAN ERROR */}
               {error && (
                 <p className="checkout-error" role="alert">
                   {error}
                 </p>
               )}
 
-              {/* INI TOMBOL BUAT PESANAN */}
               <button
                 type="submit"
                 className="checkout-button"
@@ -446,7 +419,6 @@ export default function CheckoutPage() {
             </form>
           </section>
 
-          {/* INI BAGIAN RINGKASAN PESANAN */}
           <section className="checkout-summary">
             <h2>Ringkasan Pesanan</h2>
 
@@ -486,7 +458,6 @@ export default function CheckoutPage() {
           </section>
         </div>
 
-        {/* INI BAGIAN KEMBALI KE MENU */}
         <Link href="/" className="checkout-back">
           ← Kembali ke Menu
         </Link>

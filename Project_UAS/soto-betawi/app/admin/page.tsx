@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-// TIPE DATA STATISTIK DASHBOARD
+// Data statistik dashboard.
 type Statistics = {
   totalPesanan: number;
   pesananHariIni: number;
@@ -17,7 +17,7 @@ type Statistics = {
   totalCustomer: number;
 };
 
-// TIPE DATA PESANAN TERBARU
+// Data pesanan terbaru.
 type RecentOrder = {
   id: string;
   orderNumber: string;
@@ -28,20 +28,20 @@ type RecentOrder = {
   createdAt: string;
 };
 
-// TIPE DATA MENU TERLARIS
+// Data menu terlaris.
 type BestSellingMenu = {
   name: string;
   quantity: number;
 };
 
-// TIPE DATA DASHBOARD
+// Data utama dashboard.
 type DashboardData = {
   statistics: Statistics;
   pesananTerbaru: RecentOrder[];
   menuTerlaris: BestSellingMenu[];
 };
 
-// DATA AWAL DASHBOARD
+// Nilai awal dashboard.
 const emptyDashboard: DashboardData = {
   statistics: {
     totalPesanan: 0,
@@ -59,7 +59,7 @@ const emptyDashboard: DashboardData = {
   menuTerlaris: [],
 };
 
-// TIPE IKON STATISTIK
+// Tipe ikon statistik.
 type AdminStatIconName =
   | "orders"
   | "calendar"
@@ -69,7 +69,7 @@ type AdminStatIconName =
   | "available"
   | "customers";
 
-// KOMPONEN IKON SVG
+// Komponen ikon untuk statistik dashboard.
 function AdminStatIcon({ name }: { name: AdminStatIconName }) {
   return (
     <svg
@@ -136,7 +136,7 @@ function AdminStatIcon({ name }: { name: AdminStatIconName }) {
   );
 }
 
-// MENGUBAH STATUS PEMBAYARAN MENJADI LABEL
+// Mengubah kode status pembayaran menjadi label.
 function formatPaymentStatus(status: string) {
   const labels: Record<string, string> = {
     LUNAS: "Lunas",
@@ -150,7 +150,7 @@ function formatPaymentStatus(status: string) {
   return labels[status] || status;
 }
 
-// MENENTUKAN CLASS STATUS PEMBAYARAN
+// Menentukan class berdasarkan status pembayaran.
 function getPaymentStatusClass(status: string) {
   switch (status) {
     case "LUNAS":
@@ -174,14 +174,14 @@ function getPaymentStatusClass(status: string) {
   }
 }
 
-// HALAMAN DASHBOARD ADMIN
+// Halaman dashboard admin.
 export default function AdminDashboard() {
   const [dashboard, setDashboard] = useState<DashboardData>(emptyDashboard);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // MEMUAT DATA DASHBOARD DARI DATABASE
+  // Mengambil data dashboard dari API.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  // FORMAT RUPIAH
+  // Format harga dalam rupiah.
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -237,7 +237,7 @@ export default function AdminDashboard() {
     }).format(angka);
   };
 
-  // FORMAT TANGGAL WIB
+  // Format tanggal berdasarkan waktu Jakarta.
   const formatTanggal = (tanggal: string) => {
     const date = new Date(tanggal);
 
@@ -256,13 +256,13 @@ export default function AdminDashboard() {
     });
   };
 
-  // PENJUALAN TERTINGGI UNTUK PROGRESS BAR
+  // Menentukan nilai tertinggi untuk progress bar.
   const penjualanTertinggi =
     dashboard.menuTerlaris.length > 0 ? dashboard.menuTerlaris[0].quantity : 0;
 
   return (
     <main className="admin-dashboard">
-      {/* HEADER DASHBOARD */}
+      {/* Header dashboard */}
       <header className="admin-dashboard-header">
         <div>
           <p className="admin-breadcrumb">Dashboard</p>
@@ -279,7 +279,7 @@ export default function AdminDashboard() {
         </Link>
       </header>
 
-      {/* PESAN ERROR */}
+      {/* Pesan error */}
       {error && (
         <div
           className="am-alert am-alert-error"
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* JUDUL RINGKASAN */}
+      {/* Ringkasan dashboard */}
       <div className="admin-dashboard-section-heading">
         <div>
           <p>OVERVIEW</p>
@@ -298,9 +298,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* STATISTIK UTAMA */}
+      {/* Statistik utama */}
       <section className="admin-dashboard-stats">
-        {/* TOTAL PESANAN */}
         <div className="admin-dashboard-stat-card">
           <div className="admin-stat-info">
             <p>Total Pesanan</p>
@@ -313,7 +312,6 @@ export default function AdminDashboard() {
           </span>
         </div>
 
-        {/* PESANAN HARI INI */}
         <div className="admin-dashboard-stat-card">
           <div className="admin-stat-info">
             <p>Pesanan Hari Ini</p>
@@ -326,7 +324,6 @@ export default function AdminDashboard() {
           </span>
         </div>
 
-        {/* TOTAL PENDAPATAN */}
         <div className="admin-dashboard-stat-card">
           <div className="admin-stat-info">
             <p>Total Pendapatan Diterima</p>
@@ -343,7 +340,6 @@ export default function AdminDashboard() {
           </span>
         </div>
 
-        {/* PESANAN MENUNGGU KONFIRMASI */}
         <div className="admin-dashboard-stat-card">
           <div className="admin-stat-info">
             <p>Menunggu Konfirmasi</p>
@@ -359,7 +355,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* BAGIAN PERLU PERHATIAN */}
+      {/* Bagian yang perlu diperhatikan */}
       <section className="admin-dashboard-attention">
         <div className="admin-attention-heading">
           <div>
@@ -374,7 +370,6 @@ export default function AdminDashboard() {
         </div>
 
         <div className="admin-attention-grid">
-          {/* PEMBAYARAN MENUNGGU VERIFIKASI */}
           <Link href="/admin/pesanan" className="admin-attention-item">
             <span className="admin-attention-icon warning">
               <AdminStatIcon name="pending" />
@@ -393,7 +388,6 @@ export default function AdminDashboard() {
             <span className="admin-attention-arrow">→</span>
           </Link>
 
-          {/* PEMBAYARAN BELUM LUNAS */}
           <Link href="/admin/pesanan" className="admin-attention-item">
             <span className="admin-attention-icon neutral">
               <AdminStatIcon name="revenue" />
@@ -412,7 +406,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* JUDUL RINGKASAN MENU DAN PELANGGAN */}
+      {/* Ringkasan menu dan pelanggan */}
       <div className="admin-dashboard-section-heading">
         <div>
           <p>KINERJA</p>
@@ -420,9 +414,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* STATISTIK TAMBAHAN */}
       <section className="admin-dashboard-secondary-stats">
-        {/* ITEM TERJUAL */}
         <div className="admin-secondary-stat-card">
           <span className="admin-secondary-stat-icon">
             <AdminStatIcon name="food" />
@@ -435,7 +427,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* MENU TERSEDIA */}
         <div className="admin-secondary-stat-card">
           <span className="admin-secondary-stat-icon">
             <AdminStatIcon name="available" />
@@ -451,7 +442,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* TOTAL CUSTOMER */}
         <div className="admin-secondary-stat-card">
           <span className="admin-secondary-stat-icon">
             <AdminStatIcon name="customers" />
@@ -465,7 +455,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* PESANAN TERBARU */}
+      {/* Pesanan terbaru */}
       <section className="admin-recent-orders">
         <div className="admin-card-header">
           <div>
@@ -548,7 +538,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* MENU TERLARIS */}
+      {/* Menu terlaris */}
       <section className="admin-best-selling">
         <div className="admin-card-header">
           <div>

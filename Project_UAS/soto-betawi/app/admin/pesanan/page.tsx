@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminPaymentReview from "@/app/components/AdminPaymentReview";
 
-// INI BAGIAN TIPE DATA ITEM PESANAN
+// Data item dalam pesanan.
 type OrderItem = {
   id: number;
   menuId: number | null;
@@ -12,7 +12,7 @@ type OrderItem = {
   quantity: number;
 };
 
-// INI BAGIAN TIPE DATA PEMBAYARAN
+// Data transaksi pembayaran.
 type PaymentRecord = {
   id: string;
   provider: string;
@@ -33,7 +33,7 @@ type PaymentRecord = {
   createdAt: string;
 };
 
-// INI BAGIAN TIPE DATA PESANAN
+// Data pesanan dari API admin.
 type Order = {
   id: string;
   orderNumber: string;
@@ -56,7 +56,7 @@ type Order = {
 
 type OrderTypeFilter = "Semua" | "Makan di Tempat" | "Bawa Pulang";
 
-// INI BAGIAN MENENTUKAN STATUS SELANJUTNYA
+// Menentukan status pesanan berikutnya.
 function getNextStatus(order: Order): string | null {
   switch (order.status) {
     case "Menunggu Konfirmasi":
@@ -79,12 +79,12 @@ function getNextStatus(order: Order): string | null {
   }
 }
 
-// INI BAGIAN MEMERIKSA PESANAN YANG DAPAT DIBATALKAN
+// Memeriksa apakah pesanan dapat dibatalkan.
 function canCancelOrder(status: string) {
   return status === "Menunggu Konfirmasi" || status === "Dikonfirmasi";
 }
 
-// INI BAGIAN MEMERIKSA APAKAH PEMBAYARAN DAPAT DIKONFIRMASI
+// Memeriksa apakah pembayaran dapat dikonfirmasi.
 function canMarkPaid(order: Order) {
   const paymentMethod = order.paymentMethod || "Bayar di Kasir";
 
@@ -95,7 +95,7 @@ function canMarkPaid(order: Order) {
   );
 }
 
-// INI BAGIAN MENENTUKAN WARNA STATUS PESANAN
+// Menentukan warna badge status pesanan.
 function getStatusClass(status: string) {
   switch (status) {
     case "Menunggu Konfirmasi":
@@ -122,7 +122,7 @@ function getStatusClass(status: string) {
   }
 }
 
-// INI BAGIAN MENENTUKAN WARNA STATUS PEMBAYARAN
+// Menentukan warna badge status pembayaran.
 function getPaymentStatusClass(status: string) {
   switch (status) {
     case "LUNAS":
@@ -149,7 +149,7 @@ function getPaymentStatusClass(status: string) {
   }
 }
 
-// INI BAGIAN MENGUBAH LABEL STATUS PEMBAYARAN
+// Mengubah kode status pembayaran menjadi label.
 function getPaymentStatusLabel(status: string) {
   const labels: Record<string, string> = {
     BELUM_DIBAYAR: "Belum Dibayar",
@@ -166,28 +166,28 @@ function getPaymentStatusLabel(status: string) {
 }
 
 export default function AdminOrdersPage() {
-  // INI BAGIAN DATA PESANAN
+  // State data pesanan.
   const [orders, setOrders] = useState<Order[]>([]);
 
-  // INI BAGIAN STATUS HALAMAN
+  // State tampilan halaman.
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // INI BAGIAN PENCARIAN DAN FILTER
+  // State pencarian dan filter.
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [filterPayment, setFilterPayment] = useState("Semua");
   const [filterType, setFilterType] = useState<OrderTypeFilter>("Semua");
 
-  // INI BAGIAN DETAIL PESANAN
+  // State detail pesanan.
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-  // INI BAGIAN REFRESH DATA
+  // Mengatur refresh data.
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // INI BAGIAN MEMUAT PESANAN DARI API ADMIN
+  // Mengambil daftar pesanan dari API admin.
   useEffect(() => {
     let cancelled = false;
 
@@ -233,7 +233,6 @@ export default function AdminOrdersPage() {
     };
   }, [refreshKey]);
 
-  // INI BAGIAN FORMAT RUPIAH
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -242,7 +241,6 @@ export default function AdminOrdersPage() {
     }).format(angka);
   };
 
-  // INI BAGIAN FORMAT TANGGAL
   const formatTanggal = (tanggal: string) => {
     return new Date(tanggal).toLocaleString("id-ID", {
       timeZone: "Asia/Jakarta",
@@ -251,7 +249,7 @@ export default function AdminOrdersPage() {
     });
   };
 
-  // INI BAGIAN PENCARIAN DAN FILTER PESANAN
+  // Memfilter pesanan berdasarkan pencarian dan status.
   const filteredOrders = orders.filter((order) => {
     const searchValue = search.trim().toLowerCase();
 
@@ -270,7 +268,7 @@ export default function AdminOrdersPage() {
     return matchSearch && matchStatus && matchPayment && matchType;
   });
 
-  // INI BAGIAN MENGHITUNG RINGKASAN PESANAN
+  // Menghitung ringkasan pesanan.
   const waitingOrders = orders.filter(
     (order) => order.status === "Menunggu Konfirmasi",
   ).length;
@@ -279,7 +277,6 @@ export default function AdminOrdersPage() {
     (order) => order.status === "Diproses",
   ).length;
 
-  // INI BAGIAN MENGHITUNG PESANAN YANG BELUM LUNAS
   const unpaidOrders = orders.filter(
     (order) =>
       order.paymentStatus !== "LUNAS" &&
@@ -291,7 +288,7 @@ export default function AdminOrdersPage() {
     (order) => order.status === "Selesai",
   ).length;
 
-  // INI BAGIAN MEMUAT ULANG DAFTAR PESANAN
+  // Memuat ulang daftar pesanan.
   const handleRefresh = () => {
     setLoading(true);
     setError("");
@@ -299,7 +296,6 @@ export default function AdminOrdersPage() {
     setRefreshKey((previous) => previous + 1);
   };
 
-  // INI BAGIAN MEMPERBARUI DATA PESANAN DI TAMPILAN
   const updateOrderInState = (updatedOrder: Order) => {
     setOrders((previous) =>
       previous.map((item) =>
@@ -312,11 +308,11 @@ export default function AdminOrdersPage() {
     );
   };
 
-  // INI BAGIAN MEMPERBARUI STATUS PESANAN
+  // Memproses perubahan status pesanan.
   const handleUpdateStatus = async (order: Order, targetStatus: string) => {
     if (updatingId) return;
 
-    // INI BAGIAN KONFIRMASI PEMBATALAN
+    // Konfirmasi pembatalan pesanan.
     if (targetStatus === "Dibatalkan") {
       const confirmed = window.confirm(
         `Yakin ingin membatalkan pesanan ${order.orderNumber}?`,
@@ -325,7 +321,7 @@ export default function AdminOrdersPage() {
       if (!confirmed) return;
     }
 
-    // INI BAGIAN KONFIRMASI PESANAN SELESAI
+    // Konfirmasi pesanan selesai.
     if (targetStatus === "Selesai") {
       const confirmed = window.confirm(
         "Pastikan pesanan sudah disajikan atau diambil dan pembayaran telah Lunas. Tandai pesanan sebagai Selesai?",
@@ -339,7 +335,7 @@ export default function AdminOrdersPage() {
     setSuccess("");
 
     try {
-      // INI BAGIAN MENGIRIM PERUBAHAN STATUS KE API
+      // Mengirim perubahan status ke API.
       const response = await fetch("/api/admin/orders", {
         method: "PATCH",
         headers: {
@@ -359,7 +355,6 @@ export default function AdminOrdersPage() {
 
       const updatedOrder = result.order as Order;
 
-      // INI BAGIAN MEMPERBARUI DATA DI TAMPILAN
       updateOrderInState(updatedOrder);
 
       setSuccess(
@@ -376,7 +371,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // INI BAGIAN MENGONFIRMASI PEMBAYARAN OLEH KASIR
+  // Proses konfirmasi pembayaran oleh kasir.
   const handleMarkPaid = async (order: Order) => {
     if (updatingId) return;
 
@@ -385,7 +380,7 @@ export default function AdminOrdersPage() {
       return;
     }
 
-    // INI BAGIAN KONFIRMASI PENERIMAAN UANG
+    // Memastikan uang diterima sebelum dikonfirmasi.
     const confirmed = window.confirm(
       `Pastikan uang sebesar ${formatRupiah(order.total)} telah diterima oleh kasir. Tandai pembayaran ${order.orderNumber} sebagai Lunas?`,
     );
@@ -397,7 +392,7 @@ export default function AdminOrdersPage() {
     setSuccess("");
 
     try {
-      // INI BAGIAN MENGIRIM KONFIRMASI PEMBAYARAN KE SERVER
+      // Mengirim konfirmasi pembayaran ke server.
       const response = await fetch("/api/admin/orders", {
         method: "PATCH",
         headers: {
@@ -417,7 +412,7 @@ export default function AdminOrdersPage() {
 
       const updatedOrder = result.order as Order;
 
-      // INI BAGIAN MEMPERBARUI DATA PESANAN
+      // Memperbarui daftar pesanan setelah pembayaran.
       updateOrderInState(updatedOrder);
 
       setSuccess(
@@ -436,7 +431,7 @@ export default function AdminOrdersPage() {
 
   return (
     <main className="ao-page">
-      {/* INI BAGIAN HEADER HALAMAN */}
+      {/* Header halaman */}
       <header className="ao-header">
         <div>
           <p className="ao-breadcrumb">Pesanan</p>
@@ -457,7 +452,7 @@ export default function AdminOrdersPage() {
         </button>
       </header>
 
-      {/* INI BAGIAN NOTIFIKASI */}
+      {/* Notifikasi */}
       {success && (
         <div className="ao-alert ao-alert-success" role="status">
           {success}
@@ -470,7 +465,7 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      {/* INI BAGIAN RINGKASAN PESANAN */}
+      {/* Ringkasan pesanan */}
       <section className="ao-summary">
         <div className="ao-summary-card">
           <span>Menunggu Konfirmasi</span>
@@ -493,7 +488,7 @@ export default function AdminOrdersPage() {
         </div>
       </section>
 
-      {/* INI BAGIAN PENCARIAN DAN FILTER */}
+      {/* Pencarian dan filter */}
       <section className="ao-table-card">
         <div className="ao-toolbar">
           <input
@@ -548,7 +543,7 @@ export default function AdminOrdersPage() {
           </select>
         </div>
 
-        {/* INI BAGIAN TABEL PESANAN */}
+        {/* Tabel pesanan */}
         <div className="ao-table-scroll">
           <table className="ao-table">
             <thead>
@@ -608,7 +603,6 @@ export default function AdminOrdersPage() {
                         {formatTanggal(order.createdAt)}
                       </td>
 
-                      {/* INI BAGIAN STATUS PESANAN */}
                       <td>
                         <span
                           className={`ao-status ${getStatusClass(order.status)}`}
@@ -617,7 +611,6 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
 
-                      {/* INI BAGIAN STATUS PEMBAYARAN */}
                       <td>
                         <span
                           className={`ao-payment-status ${getPaymentStatusClass(order.paymentStatus)}`}
@@ -626,7 +619,6 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
 
-                      {/* INI BAGIAN AKSI PESANAN */}
                       <td>
                         <div className="ao-actions">
                           <button
@@ -683,7 +675,6 @@ export default function AdminOrdersPage() {
           </table>
         </div>
 
-        {/* INI BAGIAN JUMLAH HASIL FILTER */}
         {!loading && (
           <p className="ao-result-count">
             Menampilkan {filteredOrders.length} dari {orders.length} pesanan.
@@ -691,7 +682,7 @@ export default function AdminOrdersPage() {
         )}
       </section>
 
-      {/* INI BAGIAN MODAL DETAIL PESANAN */}
+      {/* Modal detail pesanan */}
       {selectedOrder && (
         <div
           className="ao-modal-overlay"
@@ -724,7 +715,6 @@ export default function AdminOrdersPage() {
               </button>
             </div>
 
-            {/* INI BAGIAN STATUS PESANAN */}
             <div className="ao-modal-status">
               <span>Status Pesanan</span>
 
@@ -735,7 +725,6 @@ export default function AdminOrdersPage() {
               </strong>
             </div>
 
-            {/* INI BAGIAN STATUS PEMBAYARAN */}
             <div className="ao-modal-status">
               <span>Status Pembayaran</span>
 
@@ -746,7 +735,7 @@ export default function AdminOrdersPage() {
               </strong>
             </div>
 
-            {/* INI BAGIAN INFORMASI CUSTOMER */}
+            {/* Informasi customer */}
             <div className="ao-detail-section">
               <h3>Informasi Pemesan</h3>
 
@@ -810,7 +799,7 @@ export default function AdminOrdersPage() {
               )}
             </div>
 
-            {/* INI BAGIAN ITEM PESANAN */}
+            {/* Item pesanan */}
             <div className="ao-detail-section">
               <h3>Rincian Menu</h3>
 
@@ -829,14 +818,14 @@ export default function AdminOrdersPage() {
                 ))}
               </div>
 
-              {/* INI BAGIAN TOTAL PESANAN */}
+              {/* Total pesanan */}
               <div className="ao-detail-total">
                 <span>Total Pembayaran</span>
                 <strong>{formatRupiah(selectedOrder.total)}</strong>
               </div>
             </div>
 
-            {/* INI BAGIAN RIWAYAT TRANSAKSI PEMBAYARAN */}
+            {/* Riwayat transaksi pembayaran */}
             {selectedOrder.payments.length > 0 && (
               <div className="ao-detail-section">
                 <h3>Riwayat Pembayaran</h3>
@@ -857,7 +846,7 @@ export default function AdminOrdersPage() {
               </div>
             )}
 
-            {/* INI BAGIAN VERIFIKASI BUKTI PEMBAYARAN ONLINE */}
+            {/* Verifikasi bukti pembayaran online */}
             <AdminPaymentReview
               orderId={selectedOrder.id}
               orderNumber={selectedOrder.orderNumber}
@@ -871,7 +860,7 @@ export default function AdminOrdersPage() {
               }}
             />
 
-            {/* INI BAGIAN AKSI STATUS DAN PEMBAYARAN */}
+            {/* Aksi status dan pembayaran */}
             <div className="ao-modal-actions">
               {canMarkPaid(selectedOrder) && (
                 <button

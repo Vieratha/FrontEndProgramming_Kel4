@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-// INI BAGIAN TIPE DATA PEMBAYARAN
+// Data transaksi pembayaran.
 type PaymentRecord = {
   id: string;
   method: string;
@@ -21,7 +21,7 @@ type PaymentRecord = {
   createdAt: string;
 };
 
-// INI BAGIAN TIPE DATA PROPS
+// Props komponen verifikasi pembayaran.
 type AdminPaymentReviewProps = {
   orderId: string;
   orderNumber: string;
@@ -32,7 +32,6 @@ type AdminPaymentReviewProps = {
   onUpdated: () => void;
 };
 
-// INI BAGIAN FORMAT RUPIAH
 function formatRupiah(angka: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -41,7 +40,6 @@ function formatRupiah(angka: number) {
   }).format(angka);
 }
 
-// INI BAGIAN FORMAT TANGGAL
 function formatTanggal(tanggal: string) {
   return new Date(tanggal).toLocaleString("id-ID", {
     timeZone: "Asia/Jakarta",
@@ -50,7 +48,7 @@ function formatTanggal(tanggal: string) {
   });
 }
 
-// INI BAGIAN MENAMPILKAN BUKTI DAN VERIFIKASI PEMBAYARAN
+// Komponen pemeriksaan bukti pembayaran admin.
 export default function AdminPaymentReview({
   orderId,
   orderNumber,
@@ -60,35 +58,35 @@ export default function AdminPaymentReview({
   payments,
   onUpdated,
 }: AdminPaymentReviewProps) {
-  // API daftar pesanan mengurutkan Payment terbaru terlebih dahulu.
+  // Daftar pesanan dari API sudah mengurutkan pembayaran terbaru terlebih dahulu.
   const latestPayment = payments[0] ?? null;
 
-  // INI BAGIAN STATUS FORM VERIFIKASI
+  // State form verifikasi.
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // INI BAGIAN MEMERIKSA METODE PEMBAYARAN ONLINE
+  // Memeriksa metode pembayaran online.
   const isOnlinePayment =
     paymentMethod === "QRIS" || paymentMethod === "Transfer Bank";
 
-  // INI BAGIAN MEMERIKSA APAKAH BUKTI MENUNGGU VERIFIKASI
+  // Memeriksa apakah bukti menunggu verifikasi.
   const isAwaitingVerification =
     paymentStatus === "MENUNGGU_VERIFIKASI" &&
     latestPayment?.status === "MENUNGGU_VERIFIKASI" &&
     Boolean(latestPayment.proofMimeType);
 
-  // INI BAGIAN MENYETUJUI ATAU MENOLAK PEMBAYARAN
+  // Proses persetujuan atau penolakan pembayaran.
   const handleReview = async (action: "VERIFY_PAYMENT" | "REJECT_PAYMENT") => {
     if (!latestPayment || loading) return;
 
-    // INI BAGIAN VALIDASI CATATAN PENOLAKAN
+    // Validasi catatan jika pembayaran ditolak.
     if (action === "REJECT_PAYMENT" && note.trim().length < 3) {
       setError("Catatan penolakan minimal 3 karakter.");
       return;
     }
 
-    // INI BAGIAN KONFIRMASI ADMIN
+    // Meminta konfirmasi admin sebelum memproses pembayaran.
     const message =
       action === "VERIFY_PAYMENT"
         ? `Pastikan pembayaran ${formatRupiah(total)} sudah diterima pada rekening atau aplikasi merchant. Verifikasi pembayaran ${orderNumber}?`
@@ -100,7 +98,7 @@ export default function AdminPaymentReview({
     setError("");
 
     try {
-      // INI BAGIAN MENGIRIM KEPUTUSAN ADMIN KE SERVER
+      // Mengirim keputusan verifikasi ke server.
       const response = await fetch("/api/admin/orders", {
         method: "PATCH",
         headers: {
@@ -122,7 +120,7 @@ export default function AdminPaymentReview({
         );
       }
 
-      // INI BAGIAN MEMPERBARUI DAFTAR PESANAN ADMIN
+      // Memperbarui daftar pesanan setelah verifikasi.
       setNote("");
       onUpdated();
     } catch (err) {
@@ -143,7 +141,7 @@ export default function AdminPaymentReview({
 
   return (
     <section className="apr-card">
-      {/* INI BAGIAN HEADER PEMBAYARAN */}
+      {/* Header pembayaran */}
       <div className="apr-header">
         <div>
           <h3>Verifikasi Pembayaran Online</h3>
@@ -169,12 +167,12 @@ export default function AdminPaymentReview({
         </span>
       </div>
 
-      {/* INI BAGIAN PESAN JIKA BELUM ADA PEMBAYARAN */}
+      {/* Pesan jika belum ada pembayaran */}
       {!latestPayment && (
         <p className="apr-empty">Belum ada transaksi pembayaran.</p>
       )}
 
-      {/* INI BAGIAN BUKTI PEMBAYARAN */}
+      {/* Bukti pembayaran */}
       {latestPayment && (
         <>
           <div className="apr-information">
@@ -225,7 +223,7 @@ export default function AdminPaymentReview({
             )}
           </div>
 
-          {/* INI BAGIAN MENAMPILKAN GAMBAR BUKTI */}
+          {/* Preview gambar bukti */}
           {latestPayment.proofMimeType && (
             <div className="apr-proof">
               <h4>Bukti Pembayaran</h4>
@@ -247,7 +245,7 @@ export default function AdminPaymentReview({
             </div>
           )}
 
-          {/* INI BAGIAN CATATAN PENOLAKAN */}
+          {/* Catatan penolakan */}
           {latestPayment.verificationNote && (
             <div className="apr-rejection-note">
               <strong>Catatan Penolakan Sebelumnya</strong>
@@ -255,7 +253,7 @@ export default function AdminPaymentReview({
             </div>
           )}
 
-          {/* INI BAGIAN AKSI VERIFIKASI */}
+          {/* Aksi verifikasi */}
           {isAwaitingVerification && (
             <div className="apr-review">
               <p>
@@ -304,7 +302,7 @@ export default function AdminPaymentReview({
             </div>
           )}
 
-          {/* INI BAGIAN STATUS PEMBAYARAN AKHIR */}
+          {/* Status pembayaran */}
           {paymentStatus === "LUNAS" && (
             <div className="apr-success">
               Pembayaran telah diverifikasi oleh admin.

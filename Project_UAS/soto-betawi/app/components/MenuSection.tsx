@@ -31,26 +31,20 @@ export default function MenuSection({
   setIsCartOpen,
   onCartCountChange,
 }: MenuSectionProps) {
-  // DATA MENU
   const [menus, setMenus] = useState<MenuWithFavorite[]>([]);
   const [menusLoaded, setMenusLoaded] = useState(false);
   const [menuError, setMenuError] = useState("");
 
-  // SEARCH DAN FILTER
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
-  // FAVORIT
   const [favoriteBusyIds, setFavoriteBusyIds] = useState<number[]>([]);
 
-  // KERANJANG
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartLoaded, setCartLoaded] = useState(false);
 
-  // FEEDBACK CUSTOMER
   const [feedback, setFeedback] = useState<Feedback | null>(null);
 
-  // REF DRAWER DAN TOMBOL TUTUP
   const cartDrawerRef = useRef<HTMLElement | null>(null);
   const cartCloseButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -194,7 +188,6 @@ export default function MenuSection({
 
     document.body.style.overflow = "hidden";
 
-    // Arahkan fokus awal ke tombol tutup.
     const focusFrame = window.requestAnimationFrame(() => {
       cartCloseButtonRef.current?.focus();
     });
@@ -403,12 +396,10 @@ export default function MenuSection({
     );
   };
 
-  // HAPUS MENU DARI KERANJANG
   const removeFromCart = (id: number) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // TOTAL ITEM KERANJANG
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
   // KIRIM JUMLAH ITEM KE HOMECLIENT
@@ -416,18 +407,15 @@ export default function MenuSection({
     onCartCountChange(totalItems);
   }, [totalItems, onCartCountChange]);
 
-  // TOTAL HARGA
   const totalHarga = cart.reduce(
     (total, item) => total + item.price * item.quantity,
     0,
   );
 
-  // FORMAT RUPIAH
   const formatRupiah = (harga: number) => {
     return `Rp ${harga.toLocaleString("id-ID")}`;
   };
 
-  // FILTER MENU
   const menuFiltered = menus.filter((menu) => {
     const cocokNama = menu.name
       .toLowerCase()
@@ -472,7 +460,6 @@ export default function MenuSection({
           </div>
         </div>
 
-        {/* JUDUL MENU */}
         <div className="section-heading centered">
           <p className="pill-label">MENU PILIHAN</p>
           <h2>Menu Andalan Kami</h2>
@@ -524,7 +511,6 @@ export default function MenuSection({
                   <div className="menu-bottom">
                     <strong>{formatRupiah(menu.price)}</strong>
 
-                    {/* FAVORIT */}
                     <button
                       type="button"
                       className={`favorite-btn ${
@@ -559,7 +545,6 @@ export default function MenuSection({
                       </span>
                     </button>
 
-                    {/* TAMBAH KE KERANJANG */}
                     <button
                       type="button"
                       className="circle-btn add-to-cart"
@@ -688,7 +673,6 @@ export default function MenuSection({
               aria-modal="true"
               aria-labelledby="cart-drawer-title"
             >
-              {/* HEADER */}
               <div className="cart-drawer-header">
                 <div>
                   <p className="cart-drawer-eyebrow">PESANAN ANDA</p>
@@ -717,7 +701,6 @@ export default function MenuSection({
                 </button>
               </div>
 
-              {/* ISI KERANJANG */}
               <div className="cart-drawer-content">
                 {!cartLoaded ? (
                   <p className="cart-empty">Memuat keranjang...</p>
