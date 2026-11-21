@@ -103,3 +103,22 @@ export async function deleteCurrentSession() {
 
   cookieStore.delete(SESSION_COOKIE);
 }
+
+// MENGHAPUS SESSION DARI PERANGKAT LAIN
+export async function deleteOtherSessions(userId: number) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+
+  if (!token) {
+    return;
+  }
+
+  await prisma.session.deleteMany({
+    where: {
+      userId,
+      tokenHash: {
+        not: hashToken(token),
+      },
+    },
+  });
+}

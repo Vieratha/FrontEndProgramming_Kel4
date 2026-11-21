@@ -153,25 +153,77 @@ export default function CustomerProfile({ user }: CustomerProfileProps) {
             <small>{isAdmin ? "Administrator" : "Customer"}</small>
           </div>
 
-          {/* INI BAGIAN NAVIGASI BERDASARKAN ROLE */}
+          {/* NAVIGASI BERDASARKAN ROLE */}
           {isAdmin ? (
             <Link
               href="/admin"
               className="customer-profile-menu"
               onClick={() => setIsOpen(false)}
             >
-              <span>▦</span>
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="3" width="8" height="8" rx="1" />
+                <rect x="13" y="3" width="8" height="8" rx="1" />
+                <rect x="3" y="13" width="8" height="8" rx="1" />
+                <rect x="13" y="13" width="8" height="8" rx="1" />
+              </svg>
               Dashboard Admin
             </Link>
           ) : (
-            <Link
-              href="/riwayat"
-              className="customer-profile-menu"
-              onClick={() => setIsOpen(false)}
-            >
-              <span>▤</span>
-              Riwayat Pesanan
-            </Link>
+            <>
+              <Link
+                href="/akun"
+                className="customer-profile-menu"
+                onClick={() => setIsOpen(false)}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21a8 8 0 0 1 16 0" />
+                </svg>
+                Akun Saya
+              </Link>
+
+              <Link
+                href="/riwayat"
+                className="customer-profile-menu"
+                onClick={() => setIsOpen(false)}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M8 3h8l4 4v14H4V3h4Z" />
+                  <path d="M8 3v5h8V3M8 13h8M8 17h8" />
+                </svg>
+                Riwayat Pesanan
+              </Link>
+            </>
           )}
 
           {/* INI BAGIAN TOMBOL LOGOUT */}

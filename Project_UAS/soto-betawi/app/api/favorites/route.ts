@@ -34,6 +34,54 @@ async function checkCustomer() {
   };
 }
 
+// GET: MENGAMBIL DAFTAR FAVORIT MILIK CUSTOMER
+export async function GET() {
+  const auth = await checkCustomer();
+
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
+  try {
+    const favorites = await prisma.favorite.findMany({
+      where: {
+        userId: auth.user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        createdAt: true,
+        menu: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            category: true,
+            image: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      favorites: favorites.map((favorite) => ({
+        ...favorite.menu,
+        favoritedAt: favorite.createdAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Gagal mengambil menu favorit:", error);
+
+    return NextResponse.json(
+      { message: "Gagal mengambil daftar favorit." },
+      { status: 500 },
+    );
+  }
+}
+
 // INI BAGIAN VALIDASI ID MENU
 function validateMenuId(value: unknown) {
   const menuId = Number(value);
