@@ -3,6 +3,8 @@ import CustomerProfile from "./components/CustomerProfile";
 import { getCurrentUser } from "./lib/auth";
 import FAQ from "./components/FAQ";
 import Location from "./components/Location";
+import Image from "next/image";
+import MainNavigation from "./components/MainNavigation";
 
 export default async function Home() {
   // INI BAGIAN MENGAMBIL DATA USER DARI SESSION PRISMA
@@ -13,21 +15,27 @@ export default async function Home() {
       {/* INI BAGIAN HEADER DAN NAVBAR */}
       <header className="site-header">
         <div className="container navbar">
-          <a href="#home" className="brand">
-            <span className="brand-mark">♨</span>
-            <span className="brand-main">SOTO BETAWI</span>
-            <span className="brand-accent">JAKARTA</span>
+          <a
+            href="#home"
+            className="brand"
+            aria-label="Soto Betawi Jakarta - Beranda"
+          >
+            <Image
+              src="/images/logo-soto-betawi.png"
+              alt=""
+              width={52}
+              height={52}
+              priority
+              className="brand-logo"
+            />
+            <span className="brand-wordmark">
+              <span className="brand-main">SOTO BETAWI</span>
+              <span className="brand-accent">JAKARTA</span>
+            </span>
           </a>
 
           {/* INI BAGIAN NAVIGASI UTAMA */}
-          <nav className="main-nav" aria-label="Navigasi utama">
-            <a className="active" href="#home">
-              Home
-            </a>
-            <a href="#tentang">Tentang Kami</a>
-            <a href="#menu">Menu</a>
-            <a href="#lokasi">Lokasi</a>
-          </nav>
+          <MainNavigation />
 
           {/* INI BAGIAN AKSI NAVBAR */}
           <div className="nav-actions">
